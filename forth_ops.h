@@ -12,8 +12,7 @@
 #define RS_ARG()    (*current_ip++)
 #define RS_INTARG() ((cell)(*current_ip++))
 
-/* ops */
-/* todo: should I add _CODE suffix for clarity? */
+/* ops */ /* todo: should I add _CODE suffix for clarity? */
 #define DIE()           return 0;
 #define BYE()           goto OP(DIE);
 #define EOW()           /* do nothing */
