@@ -258,7 +258,7 @@ void forth_vm_dbg_print_rs(void) {
 int forth_vm_run() {
     register cell temp; /* this is an actual thing in forth -- a register called temp. */
 
-    /* 
+    /* todo: remove as globals???
         no cleaner way to do this if we want to name these as globals 
         (necessary in order to remove the interpret into the interpreter)
     */

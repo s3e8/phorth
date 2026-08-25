@@ -39,9 +39,9 @@ extern cell             dictionary_size;
 /* interpreter */
 extern int state;
 extern int base;
-extern void* builtin_immediatebuf[2];
-extern void* word_immediatebuf[3];
-extern xt call_code;
+extern void* builtin_immediatebuf[2];/* todo: this is arguably "vm" */
+extern void* word_immediatebuf[3]; /* as is this... */
+extern xt call_code; /* todo: codes not working as global */
 extern xt lit_code;
 
 /* forth interpreter */
