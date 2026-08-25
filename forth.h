@@ -8,6 +8,8 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "forth_ops.h"
+
 #define DEFAULT_DICTIONARY_SIZE         10*1024*1024
 #define DEFAULT_WORD_NAME_MAX_LENGTH    32
 
@@ -83,18 +85,7 @@ extern void forth_vm_schedule_word(xt code);
 extern void forth_vm_dbg_print_ds(void);
 extern void forth_vm_dbg_print_rs(void);
 
-/* todo: macro that inserts goto CODE(DEBUG) maybe.. not sure what best practices are here */
-#define NEXT() goto **current_ip++
-#define   OP(name)    op_##name
-#define CODE(name)  &&op_##name
-// #define EXTERNAL(fn) { fn; CODE(EXTERNAL) } /* todo: this */
-#define OFFSET(x) (void*)(x * sizeof(cell))
-#define RS_ARG()    (*current_ip++)
-#define RS_INTARG() ((cell)(*current_ip++))
-
 /* tests */
 void forth_io_test_all(void);
-
-/* ops */
 
 #endif /* FORTH_H */

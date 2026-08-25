@@ -246,12 +246,12 @@ void forth_vm_dbg_print_ds(void) {
 }
 
 void forth_vm_dbg_print_rs(void) {
-    printf("<rs> ");
-    for(xt* p = current_r0 - 1; p >= current_rs; p--) {
-        const char* name = forth_dictionary_get_name_by_cfa(*p);
-        printf(name ? "%s " : "%p ", name ? (void*)name : (void*)*p);
-    }
-    printf("\n");
+    // printf("<rs> ");
+    // for(xt* p = current_r0 - 1; p >= current_rs; p--) {
+    //     const char* name = forth_dictionary_get_name_by_cfa(*p);
+    //     printf(name ? "%s " : "%p ", name ? (void*)name : (void*)*p);
+    // }
+    // printf("\n");
 }
 
 /* execution engine -- todo: rename to run? */
@@ -288,11 +288,11 @@ int forth_vm_run() {
         forth_dictionary_defcode(":", CODE(COLON),          0);
         forth_dictionary_defcode(";", CODE(SEMICOLON),      FLAG_IMMEDIATE );
         /* vm */
-        forth_dictionary_defcode("exit",    CODE(EXIT),     0);
-        forth_dictionary_defcode("die",     CODE(DIE),      0);
-        forth_dictionary_defcode("0branch", CODE(0BRANCH),  FLAG_HASARG  );
-        forth_dictionary_defcode("1branch", CODE(1BRANCH),  FLAG_HASARG  );
-        forth_dictionary_defcode("jump",    CODE(JUMP),     FLAG_HASARG  );
+        forth_dictionary_defcode("exit",    CODE(EXIT),         0);
+        forth_dictionary_defcode("die",     CODE(DIE),          0);
+        forth_dictionary_defcode("0branch", CODE(ZERO_BRANCH),  FLAG_HASARG  );
+        forth_dictionary_defcode("1branch", CODE(IF_BRANCH),    FLAG_HASARG  );
+        forth_dictionary_defcode("jump",    CODE(JUMP),         FLAG_HASARG  );
         /* dictionary */
         forth_dictionary_defconst("here",    (cell)&dictionary_pointer);
         forth_dictionary_defcode("latest",    CODE(LATEST),       0                 );
@@ -331,59 +331,12 @@ int forth_vm_run() {
     return 1;
 
     /* labels */
-    OP(BYE): {
-        goto OP(DIE);
-    }
+    OP(DIE): DIE();
+    OP(BYE): BYE();
 
     /* forth core ops */
     OP(INTERPRET): {
-        char* wordbuf = forth_io_get_next_word();
-        if(!wordbuf) return 1;
-
-        word_header_t* word = forth_dictionary_find_word(wordbuf);
-        if(word) {
-            xt code = forth_dictionary_get_cfa(word);
-            if(state == STATE_COMPILE && !(word->flags & FLAG_IMMEDIATE)) {
-                if(word->flags & FLAG_BUILTIN) {
-                    forth_dictionary_compile((cell)*code);
-                } else { /* todo: use getcode here? so we can move the function into the interpreter module 
-                    and interpret outside of the outer interpreter loop */
-                    forth_dictionary_compile((cell)CODE(CALL));
-                    forth_dictionary_compile((cell)code);
-                }
-            } else {
-                forth_vm_push_ns();
-
-                if(word->flags & FLAG_BUILTIN) {
-                    builtin_immediatebuf[0] = *code;
-	                current_ip = builtin_immediatebuf;
-                } else {
-                    word_immediatebuf[1] = (void*)code;
-	                current_ip = word_immediatebuf;
-                }
-
-                NEXT();
-            }
-        }
-
-        else {
-            /* check if word is a number */
-            int number; /* todo: make is_number more forth friendly for builtin? 
-             * maybe not cause we define a new is_number in forth later */
-            int is_number = forth_interpreter_parse_number(wordbuf, &number);
-
-            if(is_number) {
-                if(state == STATE_COMPILE) {
-                    forth_dictionary_compile((cell) CODE(LIT));
-                    forth_dictionary_compile((cell) number);
-                }
-                else forth_vm_push_ds((cell)number);
-            }
-            else fprintf(stderr, "Error: no such word: %s\n", wordbuf);
-
-            /* move on to NEXT() and run ip */
-            NEXT();
-        }
+        INTERPRET();
         NEXT();
     }
 
@@ -393,54 +346,43 @@ int forth_vm_run() {
     // }
 
     OP(BRANCH): {
-        temp = RS_INTARG();
-        current_ip += (temp / sizeof(void*)) - 1; 
+        BRANCH();
         NEXT();
     }   
 
     OP(IRETURN): {
-        current_ip = *nestingstack++; 
+        IRETURN();
         NEXT();
     }
 
     OP(CALL): {
-        printf("calling...\n");
-        void* fn = RS_ARG();
-        forth_vm_push_rs(current_ip);
-        current_ip = fn;
+        CALL();
         NEXT();
     }
 
     OP(LIT): {
-        printf("-- LIT --\n");
-        forth_vm_push_ds(RS_INTARG());
+        LIT();
         NEXT();
     }
 
     OP(EOW): { /* end of word marker -- do nothing */
+        EOW();
         NEXT(); 
     }
 
     /* forth interpreter words */
     OP(LEFT_BRACKET): {
-        printf("state before: %d\n", state);
-        state = STATE_COMPILE;
-        printf("state after: %d\n", state);
+        LEFT_BRACKET();
         NEXT();
     }
 
     OP(RIGHT_BRACKET): {
-        printf("state before: %d\n", state);
-        state = STATE_IMMEDIATE;
-        printf("state after: %d\n", state);
+        RIGHT_BRACKET();
         NEXT();
     }
 
     OP(COLON): {
-        printf("colon...\n");
-        char* name = forth_io_get_next_word();
-        forth_dictionary_create_word(name, FLAG_HIDDEN);
-        state = STATE_COMPILE;
+        COLON();
         NEXT();
     }
 
@@ -457,111 +399,79 @@ int forth_vm_run() {
     }
 
     OP(EXIT): {
-        current_ip = forth_vm_pop_rs();
+        EXIT();
         NEXT();
     }
 
-    OP(DIE): { 
-        return 0; 
-    }
-
-    OP(0BRANCH): { /* todo: FLAG_HASARG */
-        temp = RS_INTARG();
-        if(!forth_vm_pop_ds()) current_ip += (temp / sizeof(void*)) - 1;
+    OP(ZERO_BRANCH): { /* todo: FLAG_HASARG */
+        ZERO_BRANCH();
         NEXT();
     }
 
-    OP(1BRANCH): { /* todo: FLAG_HASARG */
-        temp = RS_INTARG();
-        if(forth_vm_pop_ds()) current_ip += (temp / sizeof(void*)) - 1;
+    OP(IF_BRANCH): { /* todo: FLAG_HASARG */
+        IF_BRANCH(); /* todo: rename to BRANCH_IF_TRUE??? */
         NEXT();
     }
 
     OP(JUMP): {
-        void* fn = RS_ARG();
-        current_ip = fn;
+        JUMP();
         NEXT();
     }
 
     /* forth dictionary ops */
     OP(CREATE): {
-        char* next_word = forth_io_get_next_word();
-        forth_dictionary_create_word(next_word, 0);
+        CREATE();
         NEXT();
     }
 
     OP(WORD): { /* todo: check ans definitions of word and create... */
-        char* next_word = forth_io_get_next_word();
-        forth_vm_push_ds((cell)next_word);
+        WORD();
         NEXT();
     }
 
     OP(FIND): {
-        char* word = (char*)forth_vm_pop_ds();
-        forth_dictionary_find_word(word);
+        FIND();
         NEXT();
     }
 
     OP(HIDDEN): {
-        word_header_t* word = (word_header_t*)forth_vm_pop_ds();
-        word->flags ^= FLAG_HIDDEN;
+        HIDDEN();
         NEXT();
     }
 
     OP(TICK): {
-        char* next_word = forth_io_get_next_word();
-        word_header_t* word = forth_dictionary_find_word(next_word);
-
-        cell code;
-        if(word == NULL) {
-            fprintf(stderr, "Error: no such word: %s\n", next_word);
-            NEXT();
-        } else {
-            if(word->flags & FLAG_BUILTIN) { /* todo: put into it's own global get_cfa function? */
-                code = (cell)(*forth_dictionary_get_cfa(word));
-            } else { /* ... so that after some level we dont care if it's builtin or not... */
-                code = (cell)forth_dictionary_get_cfa(word);
-            }
-        }
-
-        if(state == STATE_IMMEDIATE) forth_vm_push_ds(code);
-        else {
-            forth_dictionary_compile((cell)CODE(LIT));
-            forth_dictionary_compile(code);
-        }
-
+        TICK();
         NEXT();
     }
 
     OP(COMMA): {
-        cell val = forth_vm_pop_ds();
-        forth_dictionary_compile(val);
+        COMMA();
+        NEXT();
     }
 
     OP(FETCH): { /* todo: a little confused about the pointer semantics here */
-        cell* address = (cell*)forth_vm_pop_ds();
-        forth_vm_push_ds(*address);        
+        FETCH();   
         NEXT();
     }
 
     OP(LATEST): {
-        forth_vm_push_ds((cell)&latest);
+        LATEST();
         NEXT();
     }
 
     OP(IMMEDIATE): {
-        latest->flags ^= FLAG_IMMEDIATE;
+        IMMEDIATE();
         NEXT();
     }
 
     /* forth io ops */
     OP(EMIT): {
-        forth_io_emit((int)forth_vm_pop_ds());
+        EMIT();
         NEXT();
     }
 
     OP(TELL): {
-        forth_io_tell((char*)forth_vm_pop_ds());
+        TELL();
         NEXT();
     }
 }
