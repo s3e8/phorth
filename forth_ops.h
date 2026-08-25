@@ -7,7 +7,7 @@
 #define NEXT() goto **current_ip++
 #define   OP(name)    op_##name
 #define CODE(name)  &&op_##name /* todo: rename to LABEL? */
-// #define EXTERNAL(fn) { fn; CODE(EXTERNAL) } /* todo: this */
+// #define EXTERNAL(fn) { fn; CODE(EXTERNAL) } /* todo: this (for "third-party" builtins defined after initialization)*/
 #define OFFSET(x)   (void*)(x * sizeof(cell))
 #define RS_ARG()    (*current_ip++)
 #define RS_INTARG() ((cell)(*current_ip++))
