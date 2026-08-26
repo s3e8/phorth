@@ -61,16 +61,14 @@ extern void  forth_io_read_string(const char* str);
 void forth_io_emit(int ch);
 void forth_io_tell(const char* str);
 
-// void forth_io_test_all(void);
-
 /* forth dictionary */
 extern void             forth_dictionary_init_defaults(void);
 extern word_header_t*   forth_dictionary_find_word(const char* name);                       /* FIND   */
 extern word_header_t*   forth_dictionary_create_word(const char* name, cell flags);         /* CREATE */
 extern void             forth_dictionary_compile(cell value);                               /* COMMA  */
-extern xt               forth_dictionary_get_cfa(word_header_t* word);                      /* CFA    */
-extern xt               forth_dictionary_get_cfa_by_name(const char* name);
-extern const char*      forth_dictionary_get_name_by_cfa(xt cfa);
+extern void**           forth_dictionary_get_cfa(word_header_t* word);                      /* CFA    */
+extern void**           forth_dictionary_get_cfa_by_name(const char* name);
+extern const char*      forth_dictionary_get_name_by_cfa(void** cfa);
 extern void             forth_dictionary_defcode(const char* name, void* code, cell flags);
 extern void             forth_dictionary_defconst(const char* name, cell value);
 

@@ -48,14 +48,14 @@ word_header_t* forth_dictionary_find_word(const char* name) {
 
 /* todo: rename xt to cfa? */
 /* todo: do we need this helper? */
-xt forth_dictionary_get_cfa(word_header_t* word) { return (xt)(word + 1); }
+void** forth_dictionary_get_cfa(word_header_t* word) { return (void**)(word + 1); }
 
-xt forth_dictionary_get_cfa_by_name(const char* name) {
+void** forth_dictionary_get_cfa_by_name(const char* name) {
     word_header_t* word = forth_dictionary_find_word(name);
     return forth_dictionary_get_cfa(word);;
 }
 
-const char* forth_dictionary_get_name_by_cfa(xt cfa) {
+const char* forth_dictionary_get_name_by_cfa(void** cfa) {
     if(!cfa) return NULL;
     for(word_header_t* w = latest; w; w = w->next) {
         if(forth_dictionary_get_cfa(w) == cfa) return w->name;
@@ -91,7 +91,7 @@ void forth_dictionary_defcode(const char* name, void* code, cell flags) {
     forth_dictionary_compile((cell)code);
 }
 
-void forth_dictionary_defword(const char* name, xt code, int codesize, cell flags) {
+void forth_dictionary_defword(const char* name, void** code, int codesize, cell flags) {
     forth_dictionary_create_word(name, flags);
     int i;
     for(i = 0; i < codesize; i++) forth_dictionary_compile((cell)code[i]);
@@ -118,14 +118,14 @@ void deffconst(const char* name, cell value) {
 /* debug stuff */
 
 /* todo: rename to find by xt? */
-word_header_t* forth_dictionary_find_word_by_cfa(xt cfa) {
+word_header_t* forth_dictionary_find_word_by_cfa(void** cfa) {
     if(!cfa) return NULL;
 
     printf("finding cfa: '%p'\n", cfa);
 
     word_header_t* word = latest;
     while(word) {
-        if (!(word->flags & FLAG_HIDDEN) && ((xt)(word + 1) == cfa)) {
+        if (!(word->flags & FLAG_HIDDEN) && ((void**)(word + 1) == cfa)) {
             return word;
         }
         word = word->next;
