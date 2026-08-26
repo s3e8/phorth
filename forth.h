@@ -77,8 +77,8 @@ extern void forth_vm_init_defaults(void);
 extern int  forth_vm_run(void);
 extern void forth_vm_push_ns(void);
 extern void forth_vm_push_ds(cell number);
-extern void forth_vm_schedule_builtin(xt code);
-extern void forth_vm_schedule_word(xt code);
+extern void forth_vm_schedule_builtin(void** code);
+extern void forth_vm_schedule_word(void** code);
 
 extern void forth_vm_dbg_print_ds(void);
 extern void forth_vm_dbg_print_rs(void);

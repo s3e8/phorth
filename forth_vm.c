@@ -17,9 +17,9 @@
 
 static int forth_initialized = 0;
 
-static xt      current_ip; /* ip points to subroutines */
-static xt*     current_rs; /* array of subroutine xt's */
-static xt*     current_r0;
+static void**  current_ip; /* ip points to subroutines */
+static void*** current_rs; /* array of subroutine xt's (void**) */
+static void*** current_r0;
 static cell*   current_ds; /* data stack */
 static cell*   current_d0;
 static cell*   current_ts; /* temp stack */
@@ -32,25 +32,25 @@ static int     current_ds_size;
 static int     current_ts_size;
 static int     current_fs_size;
 
-static xt     default_returnstack[DEFAULT_RETURNSTACK_SIZE];
-static xt     default_nestingstack[DEFAULT_NESTINGSTACK_MAX_DEPTH];
+static void** default_returnstack[DEFAULT_RETURNSTACK_SIZE];
+static void** default_nestingstack[DEFAULT_NESTINGSTACK_MAX_DEPTH];
 static cell   default_datastack[DEFAULT_DATASTACK_SIZE];
 static cell   default_tempstack[DEFAULT_TEMPSTACK_SIZE];
 static float  default_floatstack[DEFAULT_FLOATSTACK_SIZE];
 
 /* todo: rename this stuff to fit everything else */
-xt  nestingstack_space[DEFAULT_NESTINGSTACK_MAX_DEPTH];
-xt* nestingstack = nestingstack_space + DEFAULT_NESTINGSTACK_MAX_DEPTH;
+void**  nestingstack_space[DEFAULT_NESTINGSTACK_MAX_DEPTH];
+void*** nestingstack = nestingstack_space + DEFAULT_NESTINGSTACK_MAX_DEPTH;
 
 void* builtin_immediatebuf[2];
 void*    word_immediatebuf[3];
 
 typedef struct forth_vm_s {
-    xt      instruction_pointer;
-    xt*     returnstack;
-    xt*     returnstack_base;
-    // xt*     current_ns;
-    // xt*     nestingstack_base;
+    void**      instruction_pointer;
+    void***     returnstack;
+    void***     returnstack_base;
+    // void***     current_ns;
+    // void***     nestingstack_base;
     cell*   datastack;
     cell*   datastack_base;
     cell*   tempstack;
@@ -71,9 +71,9 @@ void forth_vm_print_state(void) {
 }
 
 forth_vm_t* forth_vm_init_thread(
-    xt     ip, /* entrypoint */
-    xt*    r0, 
-    // xt*    n0, /* todo: do we need nesting stack here? */
+    void**     ip, /* entrypoint */
+    void***    r0, 
+    // void***    n0, /* todo: do we need nesting stack here? */
     cell*  d0, 
     cell*  t0,
     float* f0
@@ -117,7 +117,7 @@ forth_vm_t* forth_vm_init_thread(
 }
 
 forth_vm_t* forth_vm_create_thread(
-    xt  entrypoint,
+    void**  entrypoint,
     int rs_size,
     // int ns_size,
     int ds_size,
@@ -126,8 +126,8 @@ forth_vm_t* forth_vm_create_thread(
 ) {
     return forth_vm_init_thread(
         entrypoint,
-        (xt*)    malloc(rs_size * sizeof(xt)),
-        // (xt*)    malloc(ns_size * sizeof(xt)),
+        (void***)    malloc(rs_size * sizeof(void**)),
+        // (void***)    malloc(ns_size * sizeof(void**)),
         (cell*)  malloc(ds_size * sizeof(cell)),
         (cell*)  malloc(ts_size * sizeof(cell)),
         (float*) malloc(fs_size * sizeof(float))
@@ -183,7 +183,7 @@ cell forth_vm_pop_ds(void) {
     return *current_ds++;
 }
 
-void forth_vm_push_rs(xt code) {
+void forth_vm_push_rs(void** code) {
     if(current_rs - 1 < current_r0 - current_rs_size) {
         fprintf(stderr, "Return stack underflow\n");
         return;
@@ -219,7 +219,7 @@ xt forth_vm_pop_ns(void) {
     return *nestingstack++;
 }
 
-void forth_vm_schedule_builtin(xt code) {
+void forth_vm_schedule_builtin(void** code) {
     // printf("pushed current rs to nestingstack\n");
     printf("scheduling builtin...\n");
     builtin_immediatebuf[0] = *code;
@@ -227,7 +227,7 @@ void forth_vm_schedule_builtin(xt code) {
     printf("done\n");
 }
 
-void forth_vm_schedule_word(xt code) {
+void forth_vm_schedule_word(void** code) {
     // printf("pushed current rs to nestingstack\n");
     word_immediatebuf[1] = (void*)code;
     current_ip = word_immediatebuf;
