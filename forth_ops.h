@@ -12,6 +12,9 @@
 #define RS_ARG()    (*current_ip++)
 #define RS_INTARG() ((cell)(*current_ip++))
 
+#define AT(x)       (*(current_ds+(x)))
+#define FAT(x)      (*(current_fs+(x)))
+
 /* ops */ /* todo: should I add _CODE suffix for clarity? */
 #define DIE()           return 0;
 #define BYE()           goto OP(DIE);
@@ -104,6 +107,10 @@
     char* ptr = (char*)forth_vm_pop_ds(); \
     temp = forth_vm_pop_ds(); \
     *ptr = (char)temp;  
+
+#define ADD() \
+    temp = forth_vm_pop_ds(); \
+    AT(0) += temp;
 
 #define INTERPRET()                                                         \
     char* wordbuf = forth_io_get_next_word();                               \

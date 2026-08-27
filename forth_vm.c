@@ -298,9 +298,10 @@ int forth_vm_run() {
         forth_dictionary_defconst("f0", (cell)&current_f0);
         forth_dictionary_defconst("t0", (cell)&current_t0);
         forth_dictionary_defcode("die",     CODE(DIE),          0);
-        forth_dictionary_defcode("0branch", CODE(ZERO_BRANCH),  FLAG_HASARG  );
+        forth_dictionary_defcode("0branch", CODE(ZERO_BRANCH),  FLAG_HASARG  ); /* todo: these are  definitely interpreter opcodes */
         forth_dictionary_defcode("1branch", CODE(IF_BRANCH),    FLAG_HASARG  );
         forth_dictionary_defcode("jump",    CODE(JUMP),         FLAG_HASARG  );
+        forth_dictionary_defcode("+",       CODE(ADD),          0);
         /* dictionary */
         forth_dictionary_defconst("here",    (cell)&dictionary_pointer);
         forth_dictionary_defcode("latest",    CODE(LATEST),       0                 );
@@ -484,6 +485,11 @@ int forth_vm_run() {
 
     OP(IMMEDIATE): {
         IMMEDIATE();
+        NEXT();
+    }
+
+    OP(ADD): {
+        ADD();
         NEXT();
     }
 
