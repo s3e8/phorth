@@ -95,6 +95,16 @@
     cell* address = (cell*)forth_vm_pop_ds();   \
     forth_vm_push_ds(*address);     
 
+#define STORE() \
+    cell* ptr = (cell*)forth_vm_pop_ds(); \
+    temp = forth_vm_pop_ds(); \
+    *ptr = temp;
+
+#define CSTORE() \
+    char* ptr = (char*)forth_vm_pop_ds(); \
+    temp = forth_vm_pop_ds(); \
+    *ptr = (char)temp;  
+
 #define INTERPRET()                                                         \
     char* wordbuf = forth_io_get_next_word();                               \
     if(!wordbuf) return 1;                                                  \

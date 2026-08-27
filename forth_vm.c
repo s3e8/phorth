@@ -276,7 +276,6 @@ int forth_vm_run() {
     if(!forth_initialized) {
         printf("initializing forth...\n");
 
-        forth_dictionary_defcode("bye",     CODE(BYE), 0);
         /* core -- inner interpreter */
         forth_dictionary_defcode("ireturn", CODE(IRETURN), 0);
         forth_dictionary_defcode("branch",  CODE(BRANCH),  0);
@@ -285,6 +284,10 @@ int forth_vm_run() {
         forth_dictionary_defcode("exit",    CODE(EXIT),    0);
         forth_dictionary_defcode("eow",     CODE(EOW),     0);
         /* interpreter */
+        forth_dictionary_defconst("state",      (cell)&state);
+        forth_dictionary_defconst("cellsize",   (cell)sizeof(cell));
+        forth_dictionary_defconst("floatsize",  (cell)sizeof(float));
+        forth_dictionary_defcode("bye",     CODE(BYE), 0);
         forth_dictionary_defcode("[", CODE(LEFT_BRACKET),   FLAG_IMMEDIATE );
         forth_dictionary_defcode("]", CODE(RIGHT_BRACKET),  FLAG_IMMEDIATE );
         forth_dictionary_defcode(":", CODE(COLON),          0);
@@ -310,6 +313,10 @@ int forth_vm_run() {
         forth_dictionary_defcode("emit",    CODE(EMIT),     0);
         forth_dictionary_defcode("tell",    CODE(TELL),     0);
         forth_dictionary_defcode(".",       CODE(DOT),      0);
+        /* other */
+        forth_dictionary_defcode("@",       CODE(FETCH),    0);
+        forth_dictionary_defcode("!",       CODE(STORE),    0);
+        forth_dictionary_defcode("c!",      CODE(CSTORE),   0);
         /* end defcodes */
 
         /* convenience codes -- kind of a hack tbh */
@@ -455,8 +462,18 @@ int forth_vm_run() {
         NEXT();
     }
 
-    OP(FETCH): { /* todo: a little confused about the pointer semantics here */
+    OP(FETCH): { /* todo: a little confused about the pointer semantics here, apparently */
         FETCH();   
+        NEXT();
+    }
+
+    OP(STORE): {
+        STORE();
+        NEXT();
+    }
+
+    OP(CSTORE): {
+        CSTORE();
         NEXT();
     }
 
