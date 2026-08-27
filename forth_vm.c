@@ -256,11 +256,12 @@ void forth_vm_dbg_print_rs(void) {
 
 /* execution engine -- todo: rename to run? */
 int forth_vm_run() {
-    register cell temp; /* this is an actual thing in forth -- a register called temp. */
+    register cell temp; /* this is an actual thing in figforth -- a register called temp. */
 
     /* todo: remove as globals???
         no cleaner way to do this if we want to name these as globals 
-        (necessary in order to remove the interpret into the interpreter)
+        (necessary in order to relocate "interpret" into the interpreter module,
+         which may not be necessary)
     */
     builtin_immediatebuf[0] = NULL;
     builtin_immediatebuf[1] = CODE(IRETURN);
@@ -276,11 +277,12 @@ int forth_vm_run() {
         printf("initializing forth...\n");
 
         forth_dictionary_defcode("bye",     CODE(BYE), 0);
-        /* core -- outer interpreter */
+        /* core -- inner interpreter */
         forth_dictionary_defcode("ireturn", CODE(IRETURN), 0);
         forth_dictionary_defcode("branch",  CODE(BRANCH),  0);
         forth_dictionary_defcode("call",    CODE(CALL),    0);
         forth_dictionary_defcode("lit",     CODE(LIT),     0);
+        forth_dictionary_defcode("exit",    CODE(EXIT),    0);
         forth_dictionary_defcode("eow",     CODE(EOW),     0);
         /* interpreter */
         forth_dictionary_defcode("[", CODE(LEFT_BRACKET),   FLAG_IMMEDIATE );
@@ -288,7 +290,10 @@ int forth_vm_run() {
         forth_dictionary_defcode(":", CODE(COLON),          0);
         forth_dictionary_defcode(";", CODE(SEMICOLON),      FLAG_IMMEDIATE );
         /* vm */
-        forth_dictionary_defcode("exit",    CODE(EXIT),         0);
+        forth_dictionary_defconst("s0", (cell)&current_d0); /* todo: change to current_s0? */
+        forth_dictionary_defconst("r0", (cell)&current_r0);
+        forth_dictionary_defconst("f0", (cell)&current_f0);
+        forth_dictionary_defconst("t0", (cell)&current_t0);
         forth_dictionary_defcode("die",     CODE(DIE),          0);
         forth_dictionary_defcode("0branch", CODE(ZERO_BRANCH),  FLAG_HASARG  );
         forth_dictionary_defcode("1branch", CODE(IF_BRANCH),    FLAG_HASARG  );
@@ -304,7 +309,7 @@ int forth_vm_run() {
         /* io */
         forth_dictionary_defcode("emit",    CODE(EMIT),     0);
         forth_dictionary_defcode("tell",    CODE(TELL),     0);
-        forth_dictionary_defcode(".",     CODE(DOT),      0);
+        forth_dictionary_defcode(".",       CODE(DOT),      0);
         /* end defcodes */
 
         /* convenience codes -- kind of a hack tbh */

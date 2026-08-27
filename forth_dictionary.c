@@ -88,7 +88,7 @@ void forth_dictionary_defword(const char* name, void** code, int codesize, cell 
     forth_dictionary_create_word(name, flags);
     int i;
     for(i = 0; i < codesize; i++) forth_dictionary_compile((cell)code[i]);
-    forth_dictionary_compile((cell)forth_dictionary_get_cfa_by_name("eow"));
+    forth_dictionary_compile((cell)forth_dictionary_get_xt_by_name("eow"));
 }
 
 void forth_dictionary_defconst(const char* name, cell value) {
