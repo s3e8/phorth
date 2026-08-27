@@ -182,6 +182,9 @@ void forth_io_tell(const char* str) {
     fputs(str, current_output_stream);
 }
 
+void forth_io_dot(cell value) {
+    printf("%ld ", (long)value);
+}
 
 
 

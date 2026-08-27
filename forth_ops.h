@@ -26,6 +26,7 @@
 #define IMMEDIATE()     latest->flags ^= FLAG_IMMEDIATE;
 #define EMIT()          forth_io_emit((int)forth_vm_pop_ds());
 #define TELL()          forth_io_tell((char*)forth_vm_pop_ds());
+#define DOT()           forth_io_dot(forth_vm_pop_ds());
 
 #define BRANCH()        \
     temp = RS_INTARG(); \

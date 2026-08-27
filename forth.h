@@ -58,8 +58,9 @@ extern void  forth_io_set_input_file(const char* filename);
 extern char* forth_io_get_next_word(void);                                                  /* WORD */
 extern void  forth_io_read_string(const char* str);
 /* other forth io ops */
-void forth_io_emit(int ch);
-void forth_io_tell(const char* str);
+extern void forth_io_emit(int ch);
+extern void forth_io_tell(const char* str);
+extern void forth_io_dot(cell value); /* todo: rename to print_cells? */
 
 /* forth dictionary */
 extern void             forth_dictionary_init_defaults(void);

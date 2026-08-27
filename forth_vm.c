@@ -17,8 +17,8 @@
 
 static int forth_initialized = 0;
 
-static void**  current_ip; /* ip points to subroutines */
-static void*** current_rs; /* array of subroutine xt's (void**) */
+static void**  current_ip; /* ip points to subroutines (array of xt/void*) */
+static void*** current_rs; /* array of subroutines */
 static void*** current_r0;
 static cell*   current_ds; /* data stack */
 static cell*   current_d0;
@@ -304,6 +304,7 @@ int forth_vm_run() {
         /* io */
         forth_dictionary_defcode("emit",    CODE(EMIT),     0);
         forth_dictionary_defcode("tell",    CODE(TELL),     0);
+        forth_dictionary_defcode(".",     CODE(DOT),      0);
         /* end defcodes */
 
         /* convenience codes -- kind of a hack tbh */
@@ -472,6 +473,11 @@ int forth_vm_run() {
 
     OP(TELL): {
         TELL();
+        NEXT();
+    }
+
+    OP(DOT): {
+        DOT();
         NEXT();
     }
 }
