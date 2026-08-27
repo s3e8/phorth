@@ -25,7 +25,7 @@
 #define STATE_COMPILE   1
 
 typedef intptr_t    cell;
-typedef void**      xt;
+typedef void*        xt; /* todo: is it too much to typedef the xt? I think I like the explicitness */
 typedef struct      word_header {
     cell                flags;
     struct word_header* next;
@@ -43,8 +43,8 @@ extern int state;
 extern int base;
 extern void* builtin_immediatebuf[2];/* todo: this is arguably "vm" */
 extern void* word_immediatebuf[3]; /* as is this... */
-extern xt call_code; /* todo: codes not working as global */
-extern xt lit_code;
+extern void* call_code; /* todo: codes not working as global */
+extern void* lit_code;
 
 /* forth interpreter */
 extern void forth_interpreter_init_defaults(void);
@@ -68,7 +68,8 @@ extern word_header_t*   forth_dictionary_create_word(const char* name, cell flag
 extern void             forth_dictionary_compile(cell value);                               /* COMMA  */
 extern void**           forth_dictionary_get_cfa(word_header_t* word);                      /* CFA    */
 extern void**           forth_dictionary_get_cfa_by_name(const char* name);
-extern const char*      forth_dictionary_get_name_by_cfa(void** cfa);
+extern void*            forth_dictionary_get_xt(word_header_t* word);
+// extern const char*      forth_dictionary_get_name_by_cfa(void** cfa);
 extern void             forth_dictionary_defcode(const char* name, void* code, cell flags);
 extern void             forth_dictionary_defconst(const char* name, cell value);
 

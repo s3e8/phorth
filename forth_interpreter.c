@@ -4,8 +4,8 @@
 int state = STATE_IMMEDIATE;
 int base  = 10;  /* todo: is this interpreter or vm? */
 
-xt call_code;
-xt lit_code;
+void* call_code;
+void* lit_code;
 
 void forth_interpreter_init_defaults(void) {
     state = STATE_IMMEDIATE; /* todo: probably don't need this here */
@@ -34,13 +34,13 @@ int forth_interpreter_interpret(void) {
 
     word_header_t* word = forth_dictionary_find_word(wordbuf);
     if(word) {
-        xt code = forth_dictionary_get_cfa(word);
+        void* code = forth_dictionary_get_xt(word);
         if(state == STATE_COMPILE && !(word->flags & FLAG_IMMEDIATE)) {
             if(word->flags & FLAG_BUILTIN) {
-                forth_dictionary_compile((cell)*code);
+                forth_dictionary_compile((cell)code);
             }
             else {
-                forth_dictionary_compile((cell)*call_code);
+                forth_dictionary_compile((cell)call_code);
                 forth_dictionary_compile((cell)code);
             }
         } else { /* execute */
@@ -48,12 +48,12 @@ int forth_interpreter_interpret(void) {
             // *--nestingstack = current_ip;
             if(word->flags & FLAG_BUILTIN) {
                 // builtin_immediatebuf[0] = *code;
-                forth_vm_schedule_builtin(*code);
+                forth_vm_schedule_builtin(code);
                 // current_ip = builtin_immediatebuf;
             }
             else { /* interpret */
                 // word_immediatebuf[1] = (void*)code;
-                forth_vm_schedule_word((void*)code);
+                forth_vm_schedule_word(code);
                 // current_ip = word_immediatebuf;
             }
             /* move on to NEXT() and run ip */
@@ -70,8 +70,8 @@ int forth_interpreter_interpret(void) {
         /* if number, compile or interpret (push to stack) */
         if(is_number) {
             if(state == STATE_COMPILE) {
-                forth_dictionary_compile((cell) *lit_code);
-                forth_dictionary_compile((cell) number);
+                forth_dictionary_compile((cell)lit_code);
+                forth_dictionary_compile((cell)number);
             }
             else forth_vm_push_ds((cell)number);
         }

@@ -78,15 +78,7 @@
         fprintf(stderr, "Error: no such word: %s\n", next_word);    \
         NEXT();                                                     \
     } else {                                                        \
-        if(word->flags & FLAG_BUILTIN) {                            \
-            /* todo: put into it's own global word/builtin agnostic \
-            get_cfa function? */                                    \
-            code = (cell)(*forth_dictionary_get_cfa(word));         \
-        } else {                                                    \
-            /* ... so that after some level we dont care if */      \
-            /* it's a builtin or not... */                          \
-            code = (cell)forth_dictionary_get_cfa(word);            \
-        }                                                           \
+        void* code = forth_dictionary_get_xt(word);                 \
 }                                                                   \
     if(state == STATE_IMMEDIATE) forth_vm_push_ds(code);            \
     else {                                                          \
@@ -107,10 +99,10 @@
     if(!wordbuf) return 1;                                                  \
     word_header_t* word = forth_dictionary_find_word(wordbuf);              \
     if(word) {                                                              \
-        xt code = forth_dictionary_get_cfa(word);                           \
+        void* code = forth_dictionary_get_xt(word);                           \
         if(state == STATE_COMPILE && !(word->flags & FLAG_IMMEDIATE)) {     \
             if(word->flags & FLAG_BUILTIN) {                                \
-                forth_dictionary_compile((cell)*code);                      \
+                forth_dictionary_compile((cell)code);                      \
             } else { /* todo: use getcode here? so we can move the          \
                 function into the interpreter module                        \
                 and interpret outside of the outer interpreter loop */      \
@@ -120,10 +112,10 @@
         } else {                                                            \
             forth_vm_push_ns();                                             \
             if(word->flags & FLAG_BUILTIN) {                                \
-                builtin_immediatebuf[0] = *code;                            \
+                builtin_immediatebuf[0] = code;                             \
                 current_ip = builtin_immediatebuf;                          \
             } else {                                                        \
-                word_immediatebuf[1] = (void*)code;                         \
+                word_immediatebuf[1] = code;                                \
                 current_ip = word_immediatebuf;                             \
             }                                                               \
             NEXT();                                                         \
@@ -146,5 +138,10 @@
         /* move on to NEXT() and run ip */                                  \
         NEXT();                                                             \
     }
+
+// #define INTERPRET() {                 \
+//     forth_interpreter_interpret();  \
+//         NEXT();                     \
+//     }
 
 #endif /* FORTH_OPS_H */
