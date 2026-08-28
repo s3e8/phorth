@@ -172,7 +172,7 @@ int check_stack_underflow(void) {
 }
 
 void forth_vm_push_ds(cell value) {
-    printf("pushing '%d'...\n", (int)value);
+    // printf("pushing '%d'...\n", (int)value);
     if(check_stack_overflow()) return;
     *--current_ds = value;
 }
@@ -188,7 +188,7 @@ void forth_vm_push_rs(void** code) {
         fprintf(stderr, "Return stack underflow\n");
         return;
     }
-    printf("pushing '%p' to return stack...\n", code);
+    // printf("pushing '%p' to return stack...\n", code);
     // if(check_stack_overflow()) return;
     *--current_rs = code;
 }
@@ -207,7 +207,7 @@ void forth_vm_push_ns(void) {
     //     return;
     // }
     // printf("pushing '%p' to return stack...\n", code);
-    printf("pushing '%p' to nesting stack...\n", current_ip);
+    // printf("pushing '%p' to nesting stack...\n", current_ip);
     *--nestingstack = current_ip;
 }
 
@@ -284,6 +284,11 @@ int forth_vm_run() {
         forth_dictionary_defcode("exit",    CODE(EXIT),    0);
         forth_dictionary_defcode("eow",     CODE(EOW),     0);
         /* interpreter */
+        forth_dictionary_defconst("f_builtin",   FLAG_BUILTIN);
+        forth_dictionary_defconst("f_hasarg",    FLAG_HASARG);
+        forth_dictionary_defconst("f_immediate", FLAG_IMMEDIATE);
+        forth_dictionary_defconst("f_hidden",    FLAG_HIDDEN);
+        forth_dictionary_defconst("f_inline",    FLAG_INLINE);
         forth_dictionary_defconst("state",      (cell)&state);
         forth_dictionary_defconst("cellsize",   (cell)sizeof(cell));
         forth_dictionary_defconst("floatsize",  (cell)sizeof(float));
@@ -302,14 +307,23 @@ int forth_vm_run() {
         forth_dictionary_defcode("1branch", CODE(IF_BRANCH),    FLAG_HASARG  );
         forth_dictionary_defcode("jump",    CODE(JUMP),         FLAG_HASARG  );
         forth_dictionary_defcode("+",       CODE(ADD),          0);
+        forth_dictionary_defcode("dup",     CODE(DUP),          0);
+        forth_dictionary_defcode("swap",    CODE(SWAP),         0);
+        forth_dictionary_defcode("xor",     CODE(XOR),          0);
+        forth_dictionary_defcode("and",     CODE(AND),          0);
+        forth_dictionary_defcode("1-",      CODE(SUB1),         0);
+        forth_dictionary_defcode("1+",      CODE(ADD1),         0);
+        forth_dictionary_defcode("invert",  CODE(INVERT),       0);
         /* dictionary */
         forth_dictionary_defconst("here",    (cell)&dictionary_pointer);
-        forth_dictionary_defcode("latest",    CODE(LATEST),       0                 );
-        forth_dictionary_defcode("create",    CODE(CREATE),       0                 );
-        forth_dictionary_defcode("word",      CODE(WORD),         0                 );
-        forth_dictionary_defcode("find",      CODE(FIND),         0                 );
+        forth_dictionary_defcode("latest",    CODE(LATEST),       0);
+        forth_dictionary_defcode("create",    CODE(CREATE),       0);
+        forth_dictionary_defcode("word",      CODE(WORD),         0);
+        forth_dictionary_defcode("find",      CODE(FIND),         0);
+        forth_dictionary_defcode(",",         CODE(COMMA),        0);
         forth_dictionary_defcode("'",         CODE(TICK),         FLAG_IMMEDIATE);
         forth_dictionary_defcode("immediate", CODE(IMMEDIATE),    FLAG_IMMEDIATE);
+        forth_dictionary_defcode("hidden",    CODE(HIDDEN),       0);
         /* io */
         forth_dictionary_defcode("emit",    CODE(EMIT),     0);
         forth_dictionary_defcode("tell",    CODE(TELL),     0);
@@ -318,11 +332,12 @@ int forth_vm_run() {
         forth_dictionary_defcode("@",       CODE(FETCH),    0);
         forth_dictionary_defcode("!",       CODE(STORE),    0);
         forth_dictionary_defcode("c!",      CODE(CSTORE),   0);
+        forth_dictionary_defcode("+!",      CODE(MEMADD),   0);
         /* end defcodes */
 
         /* convenience codes -- kind of a hack tbh */
-        // call_code = forth_dictionary_get_cfa_by_name("call");
-        // lit_code  = forth_dictionary_get_cfa_by_name("lit");
+        // call_code = forth_dictionary_get_xt_by_name("call");
+        // lit_code  = forth_dictionary_get_xt_by_name("lit");
 
         printf("initialized.\n");
         forth_initialized = 1;
@@ -493,6 +508,36 @@ int forth_vm_run() {
         NEXT();
     }
 
+    OP(SUB1): {
+        SUB1();
+        NEXT();
+    }
+
+    OP(ADD1): {
+        ADD1();
+        NEXT();
+    }
+
+    OP(MEMADD): {
+        MEMADD();
+        NEXT();
+    }
+    
+    OP(INVERT): {
+        INVERT();
+        NEXT();
+    }
+
+    OP(SWAP): {
+        SWAP();
+        NEXT();
+    }
+
+    OP(AND): {
+        AND();
+        NEXT();
+    }
+
     /* forth io ops */
     OP(EMIT): {
         EMIT();
@@ -506,6 +551,16 @@ int forth_vm_run() {
 
     OP(DOT): {
         DOT();
+        NEXT();
+    }
+
+    OP(DUP): {
+        DUP();
+        NEXT();
+    }
+
+    OP(XOR): {
+        XOR();
         NEXT();
     }
 }
