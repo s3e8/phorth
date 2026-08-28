@@ -110,7 +110,7 @@
 //     else {                                                          \
 //         forth_dictionary_compile((cell)CODE(LIT));                  \
 //         forth_dictionary_compile(code);                             \
-//     }
+//     }  
 
 #define TICK() \
     char* next_word = forth_io_get_next_word(); \
