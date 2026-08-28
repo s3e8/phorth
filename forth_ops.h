@@ -120,7 +120,7 @@
         fprintf(stderr, "Error: no such word: %s\n", next_word); \
         NEXT(); \
     } else { \
-        code = (cell)forth_dictionary_get_xt(word);   /* no `void*`, no new scope */ \
+        code = (cell)forth_dictionary_get_xt(word); \
     } \
     if(state == STATE_IMMEDIATE) forth_vm_push_ds(code); \
     else { \
