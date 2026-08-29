@@ -192,6 +192,15 @@ void forth_io_skip_line(void) {
     while(*current_linebuf_position) current_linebuf_position++;
 }
 
+void forth_io_skip_parens(void) {
+    char* word;
+    while ((word = forth_io_get_next_word())) {
+        size_t len = strlen(word);
+        if (len > 0 && word[len - 1] == ')') return;
+    }
+    fprintf(stderr, "Error: unterminated comment\n");
+}
+
 
 
 void forth_io_test_all(void) {

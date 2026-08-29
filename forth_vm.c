@@ -309,6 +309,7 @@ int forth_vm_run() {
         forth_dictionary_defcode("1branch", CODE(IF_BRANCH),    FLAG_HASARG  );
         forth_dictionary_defcode("jump",    CODE(JUMP),         FLAG_HASARG  );
         forth_dictionary_defcode("+",       CODE(ADD),          0);
+        forth_dictionary_defcode("-",       CODE(SUB),          0);
         forth_dictionary_defcode("dup",     CODE(DUP),          0);
         forth_dictionary_defcode("swap",    CODE(SWAP),         0);
         forth_dictionary_defcode("xor",     CODE(XOR),          0);
@@ -411,10 +412,10 @@ int forth_vm_run() {
         NEXT();
     }
 
+    OP(SKIP_PARENS): { SKIP_PARENS(); NEXT(); }
+
     OP(SEMICOLON): {
-        forth_dictionary_compile((cell)CODE(EXIT));
-        latest->flags &= ~FLAG_HIDDEN;
-        state = STATE_IMMEDIATE;
+        SEMICOLON();
         NEXT();
     }
 
@@ -499,15 +500,9 @@ int forth_vm_run() {
         NEXT();
     }
 
-    OP(ADD): {
-        ADD();
-        NEXT();
-    }
-
-    OP(SUB1): {
-        SUB1();
-        NEXT();
-    }
+    OP(ADD):  { ADD();  NEXT(); }
+    OP(SUB):  { SUB();  NEXT(); }
+    OP(SUB1): { SUB1(); NEXT(); }
 
     OP(ADD1): {
         ADD1();

@@ -4,6 +4,22 @@
     0 ,
 ;
 
+: then immediate
+    dup
+    here @ swap -
+    swap !
+;
+
+: else immediate
+    ' branch ,
+    here @
+    0 ,
+    swap
+    dup
+    here @ swap -
+    swap !
+;
+
 : make-inline
     latest @ dup
     @ f_inline xor

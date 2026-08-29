@@ -36,6 +36,7 @@
 #define ADD1()          AT(0) += 1;
 #define INVERT()        AT(0) = ~AT(0);
 #define SKIP_LINE()     forth_io_skip_line();
+#define SKIP_PARENS()   forth_io_skip_parens();
 
 #define AND() \
     temp = forth_vm_pop_ds(); \
@@ -67,6 +68,11 @@
     char* name = forth_io_get_next_word(); \
     forth_dictionary_create_word(name, FLAG_HIDDEN); \
     state = STATE_COMPILE;
+
+#define SEMICOLON() \
+    forth_dictionary_compile((cell)CODE(EXIT)); \
+    latest->flags &= ~FLAG_HIDDEN; \
+    state = STATE_IMMEDIATE; \
 
 #define ZERO_BRANCH() \
     temp = RS_INTARG(); \
@@ -150,6 +156,10 @@
 #define ADD() \
     temp = forth_vm_pop_ds(); \
     AT(0) += temp;
+
+#define SUB() \
+    temp = forth_vm_pop_ds(); \
+    AT(0) -= temp;
 
 #define MEMADD() \
     cell *addr = (cell*)forth_vm_pop_ds(); \
