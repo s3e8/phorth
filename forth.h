@@ -61,6 +61,7 @@ extern void  forth_io_read_string(const char* str);
 extern void forth_io_emit(int ch);
 extern void forth_io_tell(const char* str);
 extern void forth_io_dot(cell value); /* todo: rename to print_cells? */
+extern void forth_io_skip_line(void);
 
 /* forth dictionary */
 extern void             forth_dictionary_init_defaults(void);

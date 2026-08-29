@@ -156,6 +156,7 @@ void forth_vm_init_defaults(void) {
 }
 
 int check_stack_overflow(void) {
+    printf("todo: fix stack checking...\n");
     if((current_ds - 1) < (current_d0 - current_ds_size)) {
         fprintf(stderr, "Data stack overflow\n");
         return 1;
@@ -164,6 +165,7 @@ int check_stack_overflow(void) {
 }
 
 int check_stack_underflow(void) {
+    printf("todo: fix stack checking...\n");
     if(current_ds >= current_d0) {
         fprintf(stderr, "Data stack underflow\n");
         return 1;
@@ -328,6 +330,7 @@ int forth_vm_run() {
         forth_dictionary_defcode("emit",    CODE(EMIT),     0);
         forth_dictionary_defcode("tell",    CODE(TELL),     0);
         forth_dictionary_defcode(".",       CODE(DOT),      0);
+        forth_dictionary_defcode("\\",       CODE(SKIP_LINE), 0);
         /* other */
         forth_dictionary_defcode("@",       CODE(FETCH),    0);
         forth_dictionary_defcode("!",       CODE(STORE),    0);
@@ -374,16 +377,9 @@ int forth_vm_run() {
     //     NEXT();
     // }
 
-    OP(BRANCH): {
-        BRANCH();
-        NEXT();
-    }   
-
-    OP(IRETURN): {
-        IRETURN();
-        NEXT();
-    }
-
+    OP(SKIP_LINE):  { SKIP_LINE();  NEXT(); }
+    OP(BRANCH):     { BRANCH();     NEXT(); }   
+    OP(IRETURN):    { IRETURN();    NEXT(); }
     OP(CALL): {
         CALL();
         NEXT();

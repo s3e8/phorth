@@ -187,6 +187,11 @@ void forth_io_dot(cell value) {
 }
 
 
+/* other ops */
+void forth_io_skip_line(void) {
+    while(*current_linebuf_position) current_linebuf_position++;
+}
+
 
 
 void forth_io_test_all(void) {

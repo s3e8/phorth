@@ -35,6 +35,7 @@
 #define SUB1()          AT(0) -= 1;
 #define ADD1()          AT(0) += 1;
 #define INVERT()        AT(0) = ~AT(0);
+#define SKIP_LINE()     forth_io_skip_line();
 
 #define AND() \
     temp = forth_vm_pop_ds(); \
