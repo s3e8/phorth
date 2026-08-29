@@ -1,3 +1,9 @@
+: if immediate
+    ' 0branch ,
+    here @ 
+    0 ,
+;
+
 : make-inline
     latest @ dup
     @ f_inline xor

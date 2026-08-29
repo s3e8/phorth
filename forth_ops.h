@@ -128,12 +128,12 @@
         forth_dictionary_compile(code); \
     }
 
-#define COMMA()                     \
-    cell val = forth_vm_pop_ds();   \
+#define COMMA() \
+    cell val = forth_vm_pop_ds(); \
     forth_dictionary_compile(val);
 
-#define FETCH()                                 \
-    cell* address = (cell*)forth_vm_pop_ds();   \
+#define FETCH() \
+    cell* address = (cell*)forth_vm_pop_ds(); \
     forth_vm_push_ds(*address);     
 
 #define STORE() \
