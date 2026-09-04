@@ -75,7 +75,10 @@ extern void**           forth_dictionary_get_cfa_by_name(const char* name);
 extern void*            forth_dictionary_get_xt(word_header_t* word);
 // extern const char*      forth_dictionary_get_name_by_cfa(void** cfa);
 extern void             forth_dictionary_defcode(const char* name, void* code, cell flags);
+extern void             forth_dictionary_defextern(const char* name, void (*fn)(void), cell flags);
 extern void             forth_dictionary_defconst(const char* name, cell value);
+// defvar
+// defword
 
 /* forth vm */
 extern void forth_vm_init_defaults(void);
@@ -98,5 +101,7 @@ extern void forth_interpreter_debug_state(void);
 
 /* tests */
 void forth_io_test_all(void);
+
+extern void test_external(void);
 
 #endif /* FORTH_H */

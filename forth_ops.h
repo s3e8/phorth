@@ -45,6 +45,7 @@
 #define NEQ_ZERO()      AT(0) = AT(0) != 0;
 #define DEPTH()         forth_vm_push_ds((cell)(current_d0 - current_ds));
 #define BREAKPOINT()    forth_debug_breakpoint();
+#define EXTERNAL()      void (*fn)(void) = (void (*)(void)) *current_ip++; fn();
 
 #define AND() \
     temp = forth_vm_pop_ds(); \

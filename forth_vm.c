@@ -265,6 +265,10 @@ void forth_vm_print_rs(void) {
     printf("\n");
 }
 
+void test_external(void) {
+    printf("externals work?\n");
+}
+
 /* execution engine -- todo: rename to run? */
 int forth_vm_run() {
     register cell temp; /* this is an actual thing in figforth -- a register called temp. */
@@ -358,7 +362,10 @@ int forth_vm_run() {
         forth_dictionary_defcode("c!",      CODE(CSTORE),   0);
         forth_dictionary_defcode("+!",      CODE(MEMADD),   0);
         forth_dictionary_defcode("bp",      CODE(BREAKPOINT), 0);
+        forth_dictionary_defcode("external", CODE(EXTERNAL), FLAG_HASARG);
         /* end defcodes */
+
+        forth_dictionary_defextern("test-external", test_external, 0);
 
         /* convenience codes -- kind of a hack tbh */
         // call_code = forth_dictionary_get_xt_by_name("call");
@@ -486,6 +493,8 @@ int forth_vm_run() {
         HIDDEN();
         NEXT();
     }
+
+    OP(EXTERNAL): { EXTERNAL(); NEXT(); }
 
     OP(TICK): {
         TICK();

@@ -1,7 +1,7 @@
 /* forth_dictionary.c */
 #include "forth.h"
 
-void* dictionary_pointer; /* todo: dp? */
+void* dictionary_pointer;
 void* dictionary_base;
 cell  dictionary_size;
 
@@ -66,15 +66,6 @@ void* forth_dictionary_get_xt_by_name(const char* name) {
     return forth_dictionary_get_xt(word);
 }
 
-/* needs to get name by xt, taking into account builtin vs non-builtin */
-// const char* forth_dictionary_get_name_by_cfa(void** cfa) {
-//     if(!cfa) return NULL;
-//     for(word_header_t* w = latest; w; w = w->next) {
-//         if(forth_dictionary_get_cfa(w) == cfa) return w->name;
-//     }
-//     return NULL;
-// }
-
 void forth_dictionary_compile(cell value) {
     *(cell*)dictionary_pointer = value;
     dictionary_pointer += sizeof(cell);
@@ -107,19 +98,11 @@ void deffconst(const char* name, cell value) {
     forth_dictionary_defword(name, code, 3, FLAG_INLINE);
 }
 
-
-
-/* debug stuff */
-// /* todo: remake into find_by_xt? */
-// word_header_t* forth_dictionary_find_word_by_cfa(void** cfa) {
-//     if(!cfa) return NULL;
-//     printf("finding cfa: '%p'\n", cfa);
-//     word_header_t* word = latest;
-//     while(word) {
-//         if (!(word->flags & FLAG_HIDDEN) && ((void**)(word + 1) == cfa)) {
-//             return word;
-//         }
-//         word = word->next;
-//     }
-//     return NULL;
-// }
+void forth_dictionary_defextern(const char* name, void (*fn)(void), cell flags) {
+    void* code[] = {
+        forth_dictionary_get_xt_by_name("external"),
+        (void*)fn,
+        forth_dictionary_get_xt_by_name("exit")
+    };
+    forth_dictionary_defword(name, code, 3, flags & ~FLAG_BUILTIN);
+}
