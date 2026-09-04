@@ -9,6 +9,8 @@
 #define CODE(name)  &&op_##name /* todo: rename to LABEL? */
 // #define EXTERNAL(fn) { fn; CODE(EXTERNAL) } /* todo: this (for "third-party" builtins defined after initialization)*/
 #define OFFSET(x)   ((void*)(x * sizeof(cell)))
+// #define ERROR(x)    { printf("Error: %s\n", x); goto DIE(); }
+
 #define RS_ARG()    (*current_ip++)
 #define RS_INTARG() ((cell)(*current_ip++))
 
@@ -22,7 +24,7 @@
 #define BYE()           goto OP(DIE);
 #define EOW()           /* do nothing */
 #define NOOP()          /* do nothing */
-#define EXIT()          current_ip = forth_vm_pop_rs();
+#define EXIT()          forth_vm_print_rs(); current_ip = forth_vm_pop_rs();
 #define IRETURN()       current_ip = *nestingstack++;
 #define LIT()           forth_vm_push_ds(RS_INTARG());
 #define LEFT_BRACKET()  state = STATE_COMPILE;
@@ -37,6 +39,12 @@
 #define INVERT()        AT(0) = ~AT(0);
 #define SKIP_LINE()     forth_io_skip_line();
 #define SKIP_PARENS()   forth_io_skip_parens();
+// #define DROP()          ++current_ds;
+#define DROP()          forth_vm_pop_ds();
+#define EQ_ZERO()       AT(0) = AT(0) == 0;
+#define NEQ_ZERO()      AT(0) = AT(0) != 0;
+#define DEPTH()         forth_vm_push_ds((cell)(current_d0 - current_ds));
+#define BREAKPOINT()    forth_debug_breakpoint();
 
 #define AND() \
     temp = forth_vm_pop_ds(); \
@@ -44,7 +52,11 @@
 
 #define DUP() \
     temp = TOP(); \
-    forth_vm_push_ds(temp); 
+    forth_vm_push_ds(temp);
+
+#define COND_DUP() \
+    temp = TOP(); \
+    if(temp) forth_vm_push_ds(temp);   
 
 #define SWAP() \
     temp = AT(1); \
@@ -58,6 +70,10 @@
 #define BRANCH() \
     temp = RS_INTARG(); \
     current_ip += (temp / sizeof(void*)) - 1;
+
+#define EQ() \
+    temp = forth_vm_pop_ds(); \
+    AT(0) = AT(0) == temp;
 
 #define CALL() \
     void* fn = RS_ARG(); \
@@ -91,13 +107,13 @@
     char* next_word = forth_io_get_next_word(); \
     forth_dictionary_create_word(next_word, 0);
 
-#define WORD()                                  \
+#define WORD() \
     char* next_word = forth_io_get_next_word(); \
     forth_vm_push_ds((cell)next_word);
 
-#define FIND()                              \
-    char* word = (char*)forth_vm_pop_ds();  \
-    forth_dictionary_find_word(word);
+#define FIND() \
+    char* word = (char*)forth_vm_pop_ds(); \
+    forth_vm_push_ds((cell)forth_dictionary_find_word(word));
 
 #define HIDDEN() \
     word_header_t* word = (word_header_t*)forth_vm_pop_ds(); \
@@ -136,6 +152,8 @@
     }
 
 #define COMMA() \
+    forth_vm_print_rs(); \
+    forth_vm_print_ds(); \
     cell val = forth_vm_pop_ds(); \
     forth_dictionary_compile(val);
 
@@ -157,6 +175,10 @@
     temp = forth_vm_pop_ds(); \
     AT(0) += temp;
 
+#define MULTIPLY() \
+    temp = forth_vm_pop_ds(); \
+    AT(0) *= temp;     
+
 #define SUB() \
     temp = forth_vm_pop_ds(); \
     AT(0) -= temp;
@@ -165,6 +187,15 @@
     cell *addr = (cell*)forth_vm_pop_ds(); \
     temp = forth_vm_pop_ds(); \
     *addr += temp;    
+
+#define TO_XT() \
+    word_header_t* word = (word_header_t*)forth_vm_pop_ds(); \
+    forth_vm_push_ds((cell)forth_dictionary_get_xt(word));
+
+/* todo: to deprecate? */
+#define TO_CFA() \
+    word_header_t* word = (word_header_t*)forth_vm_pop_ds(); \
+    forth_vm_push_ds((cell)forth_dictionary_get_cfa(word));
 
 #define INTERPRET() \
     char* wordbuf = forth_io_get_next_word(); \
@@ -200,13 +231,14 @@
         in forth later */                                                   \
         int is_number = forth_interpreter_parse_number(wordbuf, &number);   \
         if(is_number) {                                                     \
-            if(state == STATE_COMPILE) {                                    \
+            if(state == STATE_COMPILE) { \
                 forth_dictionary_compile((cell) CODE(LIT)); \
                 forth_dictionary_compile((cell) number); \
             } \
             else forth_vm_push_ds((cell)number); \
         } \
-        else fprintf(stderr, "Error: no such word: %s\n", wordbuf); \
+        else { fprintf(stderr, "Error: no such word: %s\n", wordbuf); goto OP(DIE); } \
+        \
         /* move on to NEXT() and run ip */ \
         NEXT(); \
     }

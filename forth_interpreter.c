@@ -7,6 +7,14 @@ int base  = 10;  /* todo: is this interpreter or vm? */
 void* call_code;
 void* lit_code;
 
+// void forth_interpreter_debug_state(void) {
+//     int ch = forth_io_get_char();
+//     switch(ch) {
+//         case atoi("s"):
+            // break;
+//     }
+// }
+
 void forth_interpreter_init_defaults(void) {
     state = STATE_IMMEDIATE; /* todo: probably don't need this here */
     base  = 10;

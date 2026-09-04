@@ -30,6 +30,7 @@ FILE* forth_io_open_or_create_file(const char* filename, const char* mode)
         fprintf(stderr, "Error opening file: %s\n", filename);
         return NULL;
     }
+    setvbuf(fp, NULL, _IONBF, 0);  // disable input buffering, we have our own
 
     return fp;
 }
@@ -81,6 +82,8 @@ void forth_io_close_input() {
 void forth_io_close_all(void) {}
 
 void forth_io_init_defaults(void) {
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
     forth_io_set_input_stream(stdin);
     forth_io_set_output_stream(stdout);
     forth_io_set_wordbuf(default_wordbuf, sizeof(default_wordbuf));
@@ -151,6 +154,10 @@ char* forth_io_get_next_word()
     printf("word retrieved.\n");
 
     return current_wordbuf;
+}
+
+int forth_io_get_char() {
+    return fgetc(current_input_stream);
 }
 
 void forth_io_read_string(const char* str) {

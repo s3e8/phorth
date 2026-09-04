@@ -62,6 +62,7 @@ void* forth_dictionary_get_xt(word_header_t* word) {
 
 void* forth_dictionary_get_xt_by_name(const char* name) {
     word_header_t* word = forth_dictionary_find_word(name); /* todo: err_not_found? */
+    if (word == NULL) printf("ERROR NO WORD FOUND - GET XT BY NAME\n"); /* todo: (!word)*/
     return forth_dictionary_get_xt(word);
 }
 

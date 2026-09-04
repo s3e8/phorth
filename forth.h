@@ -55,7 +55,8 @@ extern int  forth_interpreter_interpret_string(const char* str);
 /* forth io */
 extern void  forth_io_init_defaults(void);
 extern void  forth_io_set_input_file(const char* filename);
-extern char* forth_io_get_next_word(void);                                                  /* WORD */
+extern char* forth_io_get_next_word(void);  /* WORD */
+extern int   forth_io_get_char(void);
 extern void  forth_io_read_string(const char* str);
 /* other forth io ops */
 extern void forth_io_emit(int ch);
@@ -85,13 +86,15 @@ extern void forth_vm_schedule_builtin(void** code); /* todo: make into macro */
 extern void forth_vm_schedule_word(void** code); /* todo: make into macro */
 
 /* dbg */
+extern void forth_debug_breakpoint(void);
 // extern void forth_vm_dbg_print_state(void);
-// extern void forth_vm_dbg_print_ds(void);
-// extern void forth_vm_dbg_print_rs(void);
+extern void forth_vm_print_ds(void);
+extern void forth_vm_print_rs(void);
 // extern void forth_vm_dbg_print_fs(void);
 // extern void forth_vm_dbg_print_ts(void);
 // extern void forth_vm_dbg_print_ns(void);
 // extern void forth_dictionary_dbg_print_state(state);
+extern void forth_interpreter_debug_state(void);
 
 /* tests */
 void forth_io_test_all(void);

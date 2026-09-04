@@ -156,7 +156,7 @@ void forth_vm_init_defaults(void) {
 }
 
 int check_stack_overflow(void) {
-    printf("todo: fix stack checking...\n");
+    // printf("todo: fix stack checking...\n");
     if((current_ds - 1) < (current_d0 - current_ds_size)) {
         fprintf(stderr, "Data stack overflow\n");
         return 1;
@@ -165,7 +165,7 @@ int check_stack_overflow(void) {
 }
 
 int check_stack_underflow(void) {
-    printf("todo: fix stack checking...\n");
+    // printf("todo: fix stack checking...\n");
     if(current_ds >= current_d0) {
         fprintf(stderr, "Data stack underflow\n");
         return 1;
@@ -174,13 +174,15 @@ int check_stack_underflow(void) {
 }
 
 void forth_vm_push_ds(cell value) {
-    // printf("pushing '%d'...\n", (int)value);
+    printf("pushing '%d'...\n", (int)value);
+    printf("current_ds ptr = %p\n", (void*)current_ds);
     if(check_stack_overflow()) return;
     *--current_ds = value;
 }
 
 /* todo: change to int? */
 cell forth_vm_pop_ds(void) {
+    printf("current_ds ptr = %p\n", (void*)current_ds);
     if(check_stack_underflow()) return 0;
     return *current_ds++;
 }
@@ -247,13 +249,20 @@ void forth_vm_dbg_print_ds(void) {
     printf("\n");
 }
 
-void forth_vm_dbg_print_rs(void) {
-    // printf("<rs> ");
-    // for(xt* p = current_r0 - 1; p >= current_rs; p--) {
-    //     const char* name = forth_dictionary_get_name_by_cfa(*p);
-    //     printf(name ? "%s " : "%p ", name ? (void*)name : (void*)*p);
-    // }
-    // printf("\n");
+// void forth_vm_dbg_print_rs(void) {
+//     // printf("<rs> ");
+//     // for(xt* p = current_r0 - 1; p >= current_rs; p--) {
+//     //     const char* name = forth_dictionary_get_name_by_cfa(*p);
+//     //     printf(name ? "%s " : "%p ", name ? (void*)name : (void*)*p);
+//     // }
+//     // printf("\n");
+// }
+
+void forth_vm_print_rs(void) {
+    printf("<rs> ");
+    for(void*** p = current_r0 - 1; p >= current_rs; p--)
+        printf("%p ", *p);
+    printf("\n");
 }
 
 /* execution engine -- todo: rename to run? */
@@ -279,6 +288,7 @@ int forth_vm_run() {
         printf("initializing forth...\n");
 
         /* core -- inner interpreter */
+        forth_dictionary_defcode("interpret", CODE(INTERPRET), 0);
         forth_dictionary_defcode("ireturn", CODE(IRETURN), 0);
         forth_dictionary_defcode("branch",  CODE(BRANCH),  0);
         forth_dictionary_defcode("call",    CODE(CALL),    0);
@@ -310,13 +320,20 @@ int forth_vm_run() {
         forth_dictionary_defcode("jump",    CODE(JUMP),         FLAG_HASARG  );
         forth_dictionary_defcode("+",       CODE(ADD),          0);
         forth_dictionary_defcode("-",       CODE(SUB),          0);
+        forth_dictionary_defcode("*",       CODE(MULTIPLY),     0);
+        forth_dictionary_defcode("depth",   CODE(DEPTH),        0);
         forth_dictionary_defcode("dup",     CODE(DUP),          0);
+        forth_dictionary_defcode("?dup",    CODE(COND_DUP),     0);
+        forth_dictionary_defcode("drop",    CODE(DROP),         0);
         forth_dictionary_defcode("swap",    CODE(SWAP),         0);
         forth_dictionary_defcode("xor",     CODE(XOR),          0);
         forth_dictionary_defcode("and",     CODE(AND),          0);
         forth_dictionary_defcode("1-",      CODE(SUB1),         0);
         forth_dictionary_defcode("1+",      CODE(ADD1),         0);
         forth_dictionary_defcode("invert",  CODE(INVERT),       0);
+        forth_dictionary_defcode("=",       CODE(EQ),           0);
+        forth_dictionary_defcode("0=",      CODE(EQ_ZERO),      0);
+        forth_dictionary_defcode("0<>",     CODE(NEQ_ZERO),     0);
         /* dictionary */
         forth_dictionary_defconst("here",    (cell)&dictionary_pointer);
         forth_dictionary_defcode("latest",    CODE(LATEST),       0);
@@ -327,16 +344,20 @@ int forth_vm_run() {
         forth_dictionary_defcode("'",         CODE(TICK),         FLAG_IMMEDIATE);
         forth_dictionary_defcode("immediate", CODE(IMMEDIATE),    FLAG_IMMEDIATE);
         forth_dictionary_defcode("hidden",    CODE(HIDDEN),       0);
+        forth_dictionary_defcode(">xt",       CODE(TO_XT),        0);
+        forth_dictionary_defcode(">cfa",      CODE(TO_CFA),       0);
         /* io */
         forth_dictionary_defcode("emit",    CODE(EMIT),     0);
         forth_dictionary_defcode("tell",    CODE(TELL),     0);
         forth_dictionary_defcode(".",       CODE(DOT),      0);
         forth_dictionary_defcode("\\",       CODE(SKIP_LINE), 0);
+        // forth_dictionary_defcode("(",       CODE(SKIP_PARENS),  0);
         /* other */
         forth_dictionary_defcode("@",       CODE(FETCH),    0);
         forth_dictionary_defcode("!",       CODE(STORE),    0);
         forth_dictionary_defcode("c!",      CODE(CSTORE),   0);
         forth_dictionary_defcode("+!",      CODE(MEMADD),   0);
+        forth_dictionary_defcode("bp",      CODE(BREAKPOINT), 0);
         /* end defcodes */
 
         /* convenience codes -- kind of a hack tbh */
@@ -413,6 +434,7 @@ int forth_vm_run() {
     }
 
     OP(SKIP_PARENS): { SKIP_PARENS(); NEXT(); }
+    OP(DEPTH): { DEPTH(); NEXT(); }
 
     OP(SEMICOLON): {
         SEMICOLON();
@@ -470,42 +492,40 @@ int forth_vm_run() {
         NEXT();
     }
 
-    OP(COMMA): {
-        COMMA();
-        NEXT();
-    }
-
     OP(FETCH): { /* todo: a little confused about the pointer semantics here, apparently */
         FETCH();   
         NEXT();
     }
 
-    OP(STORE): {
-        STORE();
-        NEXT();
-    }
-
-    OP(CSTORE): {
-        CSTORE();
-        NEXT();
-    }
-
-    OP(LATEST): {
-        LATEST();
-        NEXT();
-    }
-
-    OP(IMMEDIATE): {
-        IMMEDIATE();
-        NEXT();
-    }
-
-    OP(ADD):  { ADD();  NEXT(); }
-    OP(SUB):  { SUB();  NEXT(); }
-    OP(SUB1): { SUB1(); NEXT(); }
+    OP(COMMA):      { COMMA();      NEXT(); }
+    OP(STORE):      {  STORE();     NEXT(); }
+    OP(CSTORE):     { CSTORE();     NEXT(); }
+    OP(LATEST):     { LATEST();     NEXT(); }
+    OP(IMMEDIATE):  { IMMEDIATE();  NEXT(); }
+    OP(ADD):        { ADD();        NEXT(); }
+    OP(MULTIPLY):   { MULTIPLY();   NEXT(); }
+    OP(SUB):        { SUB();        NEXT(); }
+    OP(SUB1):       { SUB1();       NEXT(); }
+    OP(TO_XT):      { TO_XT();      NEXT(); }
+    OP(TO_CFA):     { TO_CFA();     NEXT(); }
 
     OP(ADD1): {
         ADD1();
+        NEXT();
+    }
+
+    OP(EQ): {
+        EQ();
+        NEXT();
+    }
+
+    OP(EQ_ZERO): {
+        EQ_ZERO();
+        NEXT();
+    }
+
+    OP(NEQ_ZERO): {
+        NEQ_ZERO();
         NEXT();
     }
 
@@ -550,10 +570,22 @@ int forth_vm_run() {
         NEXT();
     }
 
+    OP(COND_DUP): {
+        COND_DUP();
+        NEXT();
+    }
+
+    OP(DROP): {
+        DROP();
+        NEXT();
+    }
+
     OP(XOR): {
         XOR();
         NEXT();
     }
+
+    OP(BREAKPOINT): { BREAKPOINT(); NEXT(); }
 }
 
 void forth_vm_test(void) {
@@ -562,6 +594,9 @@ void forth_vm_test(void) {
     return;
 }
 
-void forth_vm_dbg_print_stack() {
-
+void forth_vm_print_ds() {
+    printf("<ds> ");
+    for(cell* p = current_d0 - 1; p >= current_ds; p--)
+        printf("%ld ", (long)*p);
+    printf("\n");
 }
