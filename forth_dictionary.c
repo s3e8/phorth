@@ -16,7 +16,7 @@ void forth_dictionary_init_defaults() {
 word_header_t* forth_dictionary_create_word(const char* name, cell flags) {
     if(!name) name = "\0";
 
-    printf("creating word: '%s'\n", name);
+    // printf("creating word: '%s'\n", name);
 
     word_header_t* new = (word_header_t*)dictionary_pointer;
     dictionary_pointer += sizeof(word_header_t); /* todo: size of type or struct or either? */
@@ -32,7 +32,7 @@ word_header_t* forth_dictionary_create_word(const char* name, cell flags) {
 word_header_t* forth_dictionary_find_word(const char* name) {
     if(!name) return NULL;
 
-    printf("finding word: '%s'\n", name);
+    // printf("finding word: '%s'\n", name);
 
     word_header_t* word = latest;
     while(word) {
@@ -64,6 +64,15 @@ void* forth_dictionary_get_xt_by_name(const char* name) {
     word_header_t* word = forth_dictionary_find_word(name); /* todo: err_not_found? */
     if (word == NULL) printf("ERROR NO WORD FOUND - GET XT BY NAME\n"); /* todo: (!word)*/
     return forth_dictionary_get_xt(word);
+}
+
+const char* forth_dictionary_get_name_by_xt(void* xt) {
+    word_header_t* word = latest;
+    while(word) {
+        if(forth_dictionary_get_xt(word) == xt) return word->name;
+        word = word->next;
+    }
+    return "?";
 }
 
 void forth_dictionary_compile(cell value) {

@@ -43,18 +43,6 @@
     swap !
 ;
 
-: test-else
-    0<>
-    if
-        1 .
-    else
-        2 .
-    then
-;
-1 test-else    \ expect: 1
-0 test-else    \ expect: 2
-
-
 : recurse immediate
     ' call ,
     latest @
@@ -92,3 +80,50 @@
     swap !
 ;
 
+: [compile] immediate
+    word find
+    dup @ f_builtin and
+    if
+	>cfa @ ,
+    else
+	' call , >cfa ,
+    then
+;
+
+: unless immediate
+    ' 0= ,
+    [compile] if
+;
+
+: case immediate 0 ;
+: of immediate
+    ' over ,
+    ' = ,
+    [compile] if
+    ' drop ,
+;
+: (of) immediate
+    [compile] if
+    ' drop ,
+;
+: endof immediate
+    [compile] else
+;
+: endcase immediate
+    ' drop ,
+    begin ?dup while [compile] then repeat
+;
+
+: '\n' inline 10 ;
+:  cr  inline 10 emit ;
+: literal immediate ' lit , , ;
+: char word c@ ;
+: ':' inline [ char : ] literal ;
+: ';' inline [ char ; ] literal ;
+: '(' inline [ char ( ] literal ;
+: ')' inline [ char ) ] literal ;
+: '"' inline [ char " ] literal ;
+: 'A' inline [ char A ] literal ;
+: '0' inline [ char 0 ] literal ;
+: '-' inline [ char - ] literal ;
+: '.' inline [ char . ] literal ;

@@ -24,8 +24,8 @@ int forth_interpreter_parse_number(const char* wordbuf, int* result) {
     char* endptr = NULL;
     cell val = (cell)strtol(wordbuf, &endptr, base);
 
-    printf("parse_number: '%s' -> val=%ld, endptr points to '%s', base=%d\n", 
-        wordbuf, (long)val, endptr, base);
+    // printf("parse_number: '%s' -> val=%ld, endptr points to '%s', base=%d\n", 
+    //     wordbuf, (long)val, endptr, base);
     
     if(*endptr == '\0') {
         *result = val;

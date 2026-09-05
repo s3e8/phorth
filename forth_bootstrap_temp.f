@@ -1,49 +1,32 @@
-: [compile] immediate
-    word find
-    dup @ f_builtin and
+
+: test-over 1 2 3 over . . . ;
+1 2 3 test-over
+
+
+: test-else
+    0<>
     if
-	>cfa @ ,
+        1 .
     else
-	' call , >cfa ,
+        2 .
     then
 ;
+1 test-else    \ expect: 1
+0 test-else    \ expect: 2
 
-: unless immediate
-    ' 0= ,
-    [compile] if
+: test-eq 5 5 = . 5 3 = . ;
+test-eq
+
+: test-case1
+    depth .
+    case
+        1 of 111 . endof
+    endcase
+    depth .
 ;
+1 test-case1
+2 test-case1
 
-: case immediate 0 ;
-: of immediate
-    ' over ,
-    ' = ,
-    [compile] if
-    ' drop ,
-;
-: (of) immediate
-    [compile] if
-    ' drop ,
-;
-: endof immediate
-    bp [compile] else
-;
-: endcase immediate
-    ' drop ,
-    begin ?dup bp while [compile] then repeat
-;
-
-
-
-
-
-
-
-\
-\
-\
-\
-\
-\ test stuff
 variable test1
 : countdown
     begin
@@ -110,3 +93,48 @@ variable test1
 2 day-name    \ expect: 200
 3 day-name    \ expect: 300
 4 day-name    \ expect: nothing printed, no crash, stack clean
+
+: test-case2
+    depth . cr
+    case
+        1 of 111 . endof
+        2 of 222 . endof
+    endcase
+    depth . cr
+;
+
+1 test-case2
+2 test-case2
+3 test-case2
+
+: test-case3
+    depth . cr
+    case
+        1 of 111 . endof
+        2 of 222 . endof
+        3 of 333 . endof
+    endcase
+    depth . cr
+;
+
+1 test-case3
+2 test-case3
+3 test-case3
+4 test-case3
+
+
+: day-name
+    case
+        1 of 100 . endof
+        2 of 200 . endof
+        3 of 300 . endof
+    endcase
+    cr
+;
+1 day-name
+2 day-name
+3 day-name
+4 day-name
+
+: test-char char . ;
+test-char A

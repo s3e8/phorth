@@ -5,6 +5,7 @@
 
 static FILE* current_input_stream;
 static FILE* current_output_stream;
+static int   current_input_stack;
 static char* current_wordbuf;
 static char* current_linebuf;
 static char* current_linebuf_position;
@@ -15,7 +16,7 @@ static char default_linebuf[DEFAULT_LINEBUF_SIZE];
 static char default_wordbuf[DEFAULt_WORDBUF_SIZE];
 
 void forth_io_set_input_stream(FILE* input_stream) {
-    /* todo: err if input_stream isnt file */
+    /* todo: err if input_stream isnt file? */
     current_input_stream = input_stream;
 }
 
@@ -91,8 +92,12 @@ void forth_io_init_defaults(void) {
 }
 
 /* io debug */
-void forth_io_print_state() {
-    printf("current_wordbuf: %s\n",     current_wordbuf);
+void forth_io_print_current_word(void) {
+    printf("current_wordbuf: %s\n", current_wordbuf);
+}
+
+void forth_io_print_state(void) {
+    forth_io_print_current_word();
     printf("current_linebuf: %s\n",     current_linebuf);
     printf("current_linebuf_pos: %s\n", current_linebuf_position);
 }
@@ -107,7 +112,7 @@ char* forth_io_get_next_line() {
 
     char* tmp = fgets(current_linebuf, current_linebuf_size, current_input_stream);
     if (!tmp && feof(current_input_stream)) {
-        printf("End of file reached, switching to stdin...\n");
+        printf("\nEnd of file reached, switching to stdin...\n");
         current_input_stream = stdin;
         printf("> ");
         tmp = fgets(current_linebuf, current_linebuf_size, current_input_stream);
@@ -127,7 +132,7 @@ char* forth_io_get_next_word()
     int    size      = current_wordbuf_size;
     size_t count     = 0;
 
-    printf("getting next word...\n");
+    // printf("getting next word...\n");
 
     /* Skip whitespace */
     skip_whitespace:
@@ -151,7 +156,7 @@ char* forth_io_get_next_word()
 
     current_linebuf_position = position;
 
-    printf("word retrieved.\n");
+    // printf("word retrieved.\n");
 
     return current_wordbuf;
 }

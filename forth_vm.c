@@ -168,21 +168,22 @@ int check_stack_underflow(void) {
     // printf("todo: fix stack checking...\n");
     if(current_ds >= current_d0) {
         fprintf(stderr, "Data stack underflow\n");
+        forth_io_print_current_word();
         return 1;
     }
     return 0;
 }
 
 void forth_vm_push_ds(cell value) {
-    printf("pushing '%d'...\n", (int)value);
-    printf("current_ds ptr = %p\n", (void*)current_ds);
+    // printf("pushing '%d'...\n", (int)value);
+    // printf("current_ds ptr = %p\n", (void*)current_ds);
     if(check_stack_overflow()) return;
     *--current_ds = value;
 }
 
 /* todo: change to int? */
 cell forth_vm_pop_ds(void) {
-    printf("current_ds ptr = %p\n", (void*)current_ds);
+    // printf("current_ds ptr = %p\n", (void*)current_ds);
     if(check_stack_underflow()) return 0;
     return *current_ds++;
 }
@@ -242,22 +243,6 @@ void breakpoint() {
     return;
 }
 
-void forth_vm_dbg_print_ds(void) {
-    printf("<ds> ");
-    for(cell* p = current_d0 - 1; p >= current_ds; p--)
-        printf("%ld ", (long)*p);
-    printf("\n");
-}
-
-// void forth_vm_dbg_print_rs(void) {
-//     // printf("<rs> ");
-//     // for(xt* p = current_r0 - 1; p >= current_rs; p--) {
-//     //     const char* name = forth_dictionary_get_name_by_cfa(*p);
-//     //     printf(name ? "%s " : "%p ", name ? (void*)name : (void*)*p);
-//     // }
-//     // printf("\n");
-// }
-
 void forth_vm_print_rs(void) {
     printf("<rs> ");
     for(void*** p = current_r0 - 1; p >= current_rs; p--)
@@ -271,9 +256,10 @@ void test_external(void) {
 
 /* execution engine -- todo: rename to run? */
 int forth_vm_run() {
-    register cell temp; /* this is an actual thing in figforth -- a register called temp. */
-
-    /* todo: remove as globals???
+    register cell temp; /* i think this is an actual thing in figforth -- a register called temp. */
+    /* todo: w register? 
+    */
+    /* todo: remove as globals??? kinda clunky here...
         no cleaner way to do this if we want to name these as globals 
         (necessary in order to relocate "interpret" into the interpreter module,
          which may not be necessary)
@@ -289,7 +275,7 @@ int forth_vm_run() {
     // return 0;
 
     if(!forth_initialized) {
-        printf("initializing forth...\n");
+        // printf("initializing forth...\n");
 
         /* core -- inner interpreter */
         forth_dictionary_defcode("interpret", CODE(INTERPRET), 0);
@@ -330,6 +316,7 @@ int forth_vm_run() {
         forth_dictionary_defcode("?dup",    CODE(COND_DUP),     0);
         forth_dictionary_defcode("drop",    CODE(DROP),         0);
         forth_dictionary_defcode("swap",    CODE(SWAP),         0);
+        forth_dictionary_defcode("over",    CODE(OVER),         0);
         forth_dictionary_defcode("xor",     CODE(XOR),          0);
         forth_dictionary_defcode("and",     CODE(AND),          0);
         forth_dictionary_defcode("1-",      CODE(SUB1),         0);
@@ -358,6 +345,7 @@ int forth_vm_run() {
         // forth_dictionary_defcode("(",       CODE(SKIP_PARENS),  0);
         /* other */
         forth_dictionary_defcode("@",       CODE(FETCH),    0);
+        forth_dictionary_defcode("c@",      CODE(CFETCH),   0);
         forth_dictionary_defcode("!",       CODE(STORE),    0);
         forth_dictionary_defcode("c!",      CODE(CSTORE),   0);
         forth_dictionary_defcode("+!",      CODE(MEMADD),   0);
@@ -371,7 +359,7 @@ int forth_vm_run() {
         // call_code = forth_dictionary_get_xt_by_name("call");
         // lit_code  = forth_dictionary_get_xt_by_name("lit");
 
-        printf("initialized.\n");
+        // printf("initialized.\n");
         forth_initialized = 1;
     }
 
@@ -383,7 +371,7 @@ int forth_vm_run() {
     };
     current_ip = quitcode;
 
-    printf("starting forth...\n");
+    // printf("starting forth...\n");
 
     NEXT();
 
@@ -506,6 +494,8 @@ int forth_vm_run() {
         NEXT();
     }
 
+    OP(CFETCH): { CFETCH(); NEXT(); }
+
     OP(COMMA):      { COMMA();      NEXT(); }
     OP(STORE):      {  STORE();     NEXT(); }
     OP(CSTORE):     { CSTORE();     NEXT(); }
@@ -588,6 +578,8 @@ int forth_vm_run() {
         DROP();
         NEXT();
     }
+
+    OP(OVER): { OVER(); NEXT(); }
 
     OP(XOR): {
         XOR();

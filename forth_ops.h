@@ -24,11 +24,11 @@
 #define BYE()           goto OP(DIE);
 #define EOW()           /* do nothing */
 #define NOOP()          /* do nothing */
-#define EXIT()          forth_vm_print_rs(); current_ip = forth_vm_pop_rs();
+#define EXIT()          current_ip = forth_vm_pop_rs();
 #define IRETURN()       current_ip = *nestingstack++;
 #define LIT()           forth_vm_push_ds(RS_INTARG());
-#define LEFT_BRACKET()  state = STATE_COMPILE;
-#define RIGHT_BRACKET() state = STATE_IMMEDIATE;
+#define LEFT_BRACKET()  state = STATE_IMMEDIATE; 
+#define RIGHT_BRACKET() state = STATE_COMPILE;
 #define LATEST()        forth_vm_push_ds((cell)&latest);
 #define IMMEDIATE()     latest->flags ^= FLAG_IMMEDIATE;
 #define EMIT()          forth_io_emit((int)forth_vm_pop_ds());
@@ -50,6 +50,10 @@
 #define AND() \
     temp = forth_vm_pop_ds(); \
     AT(0) &= temp; 
+
+#define OVER() \
+    temp = AT(1); \
+    forth_vm_push_ds(temp);
 
 #define DUP() \
     temp = TOP(); \
@@ -120,22 +124,6 @@
     word_header_t* word = (word_header_t*)forth_vm_pop_ds(); \
     word->flags ^= FLAG_HIDDEN;
 
-// #define TICK() /* todo: cleanup */ \
-//     char* next_word = forth_io_get_next_word(); \
-//     word_header_t* word = forth_dictionary_find_word(next_word); \
-//     cell code; \
-//     if(word == NULL) { \
-//         fprintf(stderr, "Error: no such word: %s\n", next_word); \
-//         NEXT(); \
-//     } else { \
-//         code = forth_dictionary_get_xt(word); \
-//     } \
-//     if(state == STATE_IMMEDIATE) forth_vm_push_ds(code);            \
-//     else {                                                          \
-//         forth_dictionary_compile((cell)CODE(LIT));                  \
-//         forth_dictionary_compile(code);                             \
-//     }  
-
 #define TICK() \
     char* next_word = forth_io_get_next_word(); \
     word_header_t* word = forth_dictionary_find_word(next_word); \
@@ -153,14 +141,16 @@
     }
 
 #define COMMA() \
-    forth_vm_print_rs(); \
-    forth_vm_print_ds(); \
     cell val = forth_vm_pop_ds(); \
     forth_dictionary_compile(val);
 
 #define FETCH() \
     cell* address = (cell*)forth_vm_pop_ds(); \
     forth_vm_push_ds(*address);     
+
+#define CFETCH() \
+    char *ptr = (char*)forth_vm_pop_ds(); \
+    forth_vm_push_ds((cell)*ptr);   
 
 #define STORE() \
     cell* ptr = (cell*)forth_vm_pop_ds(); \

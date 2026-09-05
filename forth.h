@@ -64,6 +64,8 @@ extern void forth_io_tell(const char* str);
 extern void forth_io_dot(cell value); /* todo: rename to print_cells? */
 extern void forth_io_skip_line(void);
 extern void forth_io_skip_parens(void);
+/* io dbg */
+extern void forth_io_print_current_word(void);
 
 /* forth dictionary */
 extern void             forth_dictionary_init_defaults(void);
@@ -73,7 +75,7 @@ extern void             forth_dictionary_compile(cell value);                   
 extern void**           forth_dictionary_get_cfa(word_header_t* word);                      /* CFA    */
 extern void**           forth_dictionary_get_cfa_by_name(const char* name);
 extern void*            forth_dictionary_get_xt(word_header_t* word);
-// extern const char*      forth_dictionary_get_name_by_cfa(void** cfa);
+extern const char*      forth_dictionary_get_name_by_xt(void* xt);
 extern void             forth_dictionary_defcode(const char* name, void* code, cell flags);
 extern void             forth_dictionary_defextern(const char* name, void (*fn)(void), cell flags);
 extern void             forth_dictionary_defconst(const char* name, cell value);
