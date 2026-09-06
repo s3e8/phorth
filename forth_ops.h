@@ -49,6 +49,7 @@
 #define KEY()           forth_vm_push_ds((cell)forth_io_get_next_char());
 #define LTE_ZERO()      DS_AT(0) = DS_AT(0) <= 0;
 #define GTE_ZERO()      DS_AT(0) = DS_AT(0) >= 0;
+#define NIP()           DS_AT(1) = DS_AT(0); current_ds++;
 
 /* : <> = 0= ; */
 #define NOT_EQUAL() \

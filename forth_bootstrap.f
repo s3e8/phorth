@@ -143,3 +143,67 @@
 : true inline 1 ;
 : false inline 0 ;
 : not inline 0= ;
+
+\ : min 2dup < if drop else nip then ;
+\ : max 2dup > if drop else nip then ;
+\ : fmin f2dup f< if fdrop else fnip then ;
+\ : fmax f2dup f> if fdrop else fnip then ;
+
+
+( vocabulary-aware new version of find )
+: find ( wordname -- word )
+    dup find            ( wordname dictentry ) \ try to find from current latest first
+    ?dup if
+	nip exit
+    else
+	latest @                         ( wordname latest )
+	current-vocab @ vocab-useslist   ( wordname latest useslist )
+	begin
+	    dup @                        ( wordname latest useslist vocabentry/0 )
+	while
+		dup @ vocab-latest       ( wordname latest useslist usedlatest )
+		latest !                 ( wordname latest useslist )
+		2 pick                   ( wordname latest useslist wordname)
+		find                     ( wordname latest useslist word/0 )
+		?dup if
+		    nip over latest !
+		    2nip
+		    exit
+		else
+		    cell+
+		then
+	repeat
+	drop latest ! drop 0
+    then
+;
+
+: ?hidden @ f_hidden and ;
+: ?immediate @ f_immediate and ;
+: ?builtin @ f_builtin and ;
+: ?inline @ f_inline and ;
+
+: ' immediate  ( better version of tick )
+    word find
+    dup 0= if
+	." no such word" cr drop
+	exit
+    then
+    dup ?builtin if
+	>cfa @
+    else
+	>cfa
+    then
+    state @ if
+	' lit , ,
+    then
+;
+
+: [compile] immediate
+    word find
+    dup @ f_builtin and
+    if
+	>cfa @ ,
+    else
+	' call , >cfa ,
+    then
+;

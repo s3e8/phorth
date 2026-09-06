@@ -317,6 +317,7 @@ int forth_vm_run() {
         forth_dictionary_defcode("drop",    CODE(DROP),         0);
         forth_dictionary_defcode("swap",    CODE(SWAP),         0);
         forth_dictionary_defcode("over",    CODE(OVER),         0);
+        forth_dictionary_defcode("nip",     CODE(NIP),          0);
         forth_dictionary_defcode("xor",     CODE(XOR),          0);
         forth_dictionary_defcode("and",     CODE(AND),          0);
         forth_dictionary_defcode("1-",      CODE(SUB1),         0);
@@ -421,6 +422,7 @@ int forth_vm_run() {
     OP(NOT_EQUAL): { NOT_EQUAL(); NEXT(); }
     OP(LTE_ZERO): { LTE_ZERO(); NEXT(); }
     OP(GTE_ZERO): { GTE_ZERO(); NEXT(); }
+    OP(NIP): { NIP(); NEXT(); }
 
     /* forth interpreter words */
     OP(LEFT_BRACKET): {
