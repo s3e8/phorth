@@ -50,6 +50,10 @@
 #define LTE_ZERO()      DS_AT(0) = DS_AT(0) <= 0;
 #define GTE_ZERO()      DS_AT(0) = DS_AT(0) >= 0;
 #define NIP()           DS_AT(1) = DS_AT(0); current_ds++;
+#define GET_T0()        forth_vm_push_ds((cell)current_t0); /* todo: should ts be type cell? */
+#define SET_T0()        current_ts = (cell*)forth_vm_pop_ds(); 
+#define GET_F0()        forth_vm_push_ds((cell)current_f0); /* todo: should it be fzero? */
+#define SET_F0()        current_fs = (float*)forth_vm_pop_ds(); 
 
 /* : <> = 0= ; */
 #define NOT_EQUAL() \

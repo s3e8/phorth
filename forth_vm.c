@@ -358,6 +358,10 @@ int forth_vm_run() {
         forth_dictionary_defcode("+!",      CODE(MEMADD),   0);
         forth_dictionary_defcode("bp",      CODE(BREAKPOINT), 0);
         forth_dictionary_defcode("external", CODE(EXTERNAL), FLAG_HASARG);
+        forth_dictionary_defcode("tsp!",    CODE(SET_T0),   0);
+        forth_dictionary_defcode("tsp@",    CODE(GET_T0),   0);
+        forth_dictionary_defcode("fsp!",    CODE(SET_F0),   0);
+        forth_dictionary_defcode("fsp@",    CODE(GET_F0),   0);
         /* end defcodes */
 
         forth_dictionary_defextern("test-external", test_external, 0);
@@ -423,6 +427,10 @@ int forth_vm_run() {
     OP(LTE_ZERO): { LTE_ZERO(); NEXT(); }
     OP(GTE_ZERO): { GTE_ZERO(); NEXT(); }
     OP(NIP): { NIP(); NEXT(); }
+    OP(GET_T0): { GET_T0(); NEXT(); }
+    OP(SET_T0): { SET_T0(); NEXT(); }
+    OP(GET_F0): { GET_F0(); NEXT(); }
+    OP(SET_F0): { SET_F0(); NEXT(); }
 
     /* forth interpreter words */
     OP(LEFT_BRACKET): {

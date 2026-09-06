@@ -20,6 +20,33 @@
 ;
 
 : variable cellsize make-variable ;
+: fvariable floatsize make-variable ;
+: v3variable 3 floatsize *  make-variable ;
+: m3variable 3 3 * floatsize *  make-variable ;
+
+variable consthere
+variable consthere0
+
+4096 cellsize * allot
+dup consthere !
+consthere0 !
+
+variable datahere
+variable datahere0
+4096 cellsize * allot
+dup datahere !
+datahere0 !
+
+1024 cellsize * allot
+dup t0 !
+tsp!
+
+1024 floatsize * allot
+dup f0 !
+fsp!
+
+\ : null-debugger-vector ;
+\ ' null-debugger-vector debugger-vector !
 
 : if immediate
     ' 0branch ,
@@ -148,3 +175,10 @@
 \ : max 2dup > if drop else nip then ;
 \ : fmin f2dup f< if fdrop else fnip then ;
 \ : fmax f2dup f> if fdrop else fnip then ;
+
+
+: constalign consthere @ aligned consthere ! ;
+
+: c, here @ c! here @ 1+ here ! ;
+: const, consthere @ ! consthere @ cell+ consthere ! ;
+: constc, consthere @ c! consthere @ 1+ consthere ! ;
