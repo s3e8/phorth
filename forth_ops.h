@@ -14,10 +14,10 @@
 #define RS_ARG()    (*current_ip++)
 #define RS_INTARG() ((cell)(*current_ip++))
 
-#define  TOP()      (*current_ds)
-#define FTOP()      (*current_fs)
-#define  AT(x)      (*(current_ds+(x)))
-#define FAT(x)      (*(current_fs+(x)))
+#define DS_TOP()      (*current_ds)
+#define FS_TOP()      (*current_fs)
+#define DS_AT(x)      (*(current_ds+(x)))
+#define FS_AT(x)      (*(current_fs+(x)))
 
 /* ops */ /* todo: should I add _CODE suffix for clarity? */
 #define DIE()           return 0;
@@ -34,43 +34,49 @@
 #define EMIT()          forth_io_emit((int)forth_vm_pop_ds());
 #define TELL()          forth_io_tell((char*)forth_vm_pop_ds());
 #define DOT()           forth_io_dot(forth_vm_pop_ds());
-#define SUB1()          AT(0) -= 1;
-#define ADD1()          AT(0) += 1;
-#define INVERT()        AT(0) = ~AT(0);
+#define SUB1()          DS_AT(0) -= 1;
+#define ADD1()          DS_AT(0) += 1;
+#define INVERT()        DS_AT(0) = ~DS_AT(0);
 #define SKIP_LINE()     forth_io_skip_line();
 #define SKIP_PARENS()   forth_io_skip_parens();
 // #define DROP()          ++current_ds;
 #define DROP()          forth_vm_pop_ds();
-#define EQ_ZERO()       AT(0) = AT(0) == 0;
-#define NEQ_ZERO()      AT(0) = AT(0) != 0;
+#define EQ_ZERO()       DS_AT(0) = DS_AT(0) == 0;
+#define NEQ_ZERO()      DS_AT(0) = DS_AT(0) != 0;
 #define DEPTH()         forth_vm_push_ds((cell)(current_d0 - current_ds));
 #define BREAKPOINT()    forth_debug_breakpoint();
 #define EXTERNAL()      void (*fn)(void) = (void (*)(void)) *current_ip++; fn();
+#define KEY()           forth_vm_push_ds((cell)forth_io_get_next_char());
+
+/* : <> = 0= ; */
+#define NOT_EQUAL() \
+    temp = forth_vm_pop_ds(); \
+    DS_AT(0) = DS_AT(0) != temp;
 
 #define AND() \
     temp = forth_vm_pop_ds(); \
-    AT(0) &= temp; 
+    DS_AT(0) &= temp; 
 
 #define OVER() \
-    temp = AT(1); \
+    temp = DS_AT(1); \
     forth_vm_push_ds(temp);
 
 #define DUP() \
-    temp = TOP(); \
+    temp = DS_TOP(); \
     forth_vm_push_ds(temp);
 
 #define COND_DUP() \
-    temp = TOP(); \
+    temp = DS_TOP(); \
     if(temp) forth_vm_push_ds(temp);   
 
 #define SWAP() \
-    temp = AT(1); \
-    AT(1) = AT(0); \
-    AT(0) = temp; 
+    temp = DS_AT(1); \
+    DS_AT(1) = DS_AT(0); \
+    DS_AT(0) = temp; 
 
 #define XOR() \
     temp = forth_vm_pop_ds(); \
-    AT(0) ^= temp;
+    DS_AT(0) ^= temp;
 
 #define BRANCH() \
     temp = RS_INTARG(); \
@@ -78,7 +84,7 @@
 
 #define EQ() \
     temp = forth_vm_pop_ds(); \
-    AT(0) = AT(0) == temp;
+    DS_AT(0) = DS_AT(0) == temp;
 
 #define CALL() \
     void* fn = RS_ARG(); \
@@ -164,15 +170,15 @@
 
 #define ADD() \
     temp = forth_vm_pop_ds(); \
-    AT(0) += temp;
+    DS_AT(0) += temp;
 
 #define MULTIPLY() \
     temp = forth_vm_pop_ds(); \
-    AT(0) *= temp;     
+    DS_AT(0) *= temp;     
 
 #define SUB() \
     temp = forth_vm_pop_ds(); \
-    AT(0) -= temp;
+    DS_AT(0) -= temp;
 
 #define MEMADD() \
     cell *addr = (cell*)forth_vm_pop_ds(); \

@@ -138,3 +138,6 @@ variable test1
 
 : test-char char . ;
 test-char A
+
+: test-quotes ':' . ';' . '(' . ')' . '"' . 'A' . '0' . '-' . '.' . ;
+test-quotes    \ expect: 58 59 40 41 34 65 48 45 46

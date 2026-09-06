@@ -56,7 +56,7 @@ extern int  forth_interpreter_interpret_string(const char* str);
 extern void  forth_io_init_defaults(void);
 extern void  forth_io_set_input_file(const char* filename);
 extern char* forth_io_get_next_word(void);  /* WORD */
-extern int   forth_io_get_char(void);
+extern int   forth_io_get_next_char(void);
 extern void  forth_io_read_string(const char* str);
 /* other forth io ops */
 extern void forth_io_emit(int ch);

@@ -323,6 +323,7 @@ int forth_vm_run() {
         forth_dictionary_defcode("1+",      CODE(ADD1),         0);
         forth_dictionary_defcode("invert",  CODE(INVERT),       0);
         forth_dictionary_defcode("=",       CODE(EQ),           0);
+        forth_dictionary_defcode("<>",      CODE(NOT_EQUAL),    0);
         forth_dictionary_defcode("0=",      CODE(EQ_ZERO),      0);
         forth_dictionary_defcode("0<>",     CODE(NEQ_ZERO),     0);
         /* dictionary */
@@ -341,8 +342,9 @@ int forth_vm_run() {
         forth_dictionary_defcode("emit",    CODE(EMIT),     0);
         forth_dictionary_defcode("tell",    CODE(TELL),     0);
         forth_dictionary_defcode(".",       CODE(DOT),      0);
-        forth_dictionary_defcode("\\",       CODE(SKIP_LINE), 0);
-        // forth_dictionary_defcode("(",       CODE(SKIP_PARENS),  0);
+        forth_dictionary_defcode("\\",       CODE(SKIP_LINE), FLAG_IMMEDIATE);
+        forth_dictionary_defcode("(",       CODE(SKIP_PARENS),  FLAG_IMMEDIATE);
+        forth_dictionary_defcode("key",     CODE(KEY),      0);
         /* other */
         forth_dictionary_defcode("@",       CODE(FETCH),    0);
         forth_dictionary_defcode("c@",      CODE(CFETCH),   0);
@@ -412,6 +414,8 @@ int forth_vm_run() {
         NEXT(); 
     }
 
+    OP(NOT_EQUAL): { NOT_EQUAL(); NEXT(); }
+
     /* forth interpreter words */
     OP(LEFT_BRACKET): {
         LEFT_BRACKET();
@@ -427,6 +431,8 @@ int forth_vm_run() {
         COLON();
         NEXT();
     }
+
+    OP(KEY): { KEY(); NEXT(); }
 
     OP(SKIP_PARENS): { SKIP_PARENS(); NEXT(); }
     OP(DEPTH): { DEPTH(); NEXT(); }

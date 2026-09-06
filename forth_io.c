@@ -112,7 +112,7 @@ char* forth_io_get_next_line() {
 
     char* tmp = fgets(current_linebuf, current_linebuf_size, current_input_stream);
     if (!tmp && feof(current_input_stream)) {
-        printf("\nEnd of file reached, switching to stdin...\n");
+        printf("End of file reached, switching to stdin...\n");
         current_input_stream = stdin;
         printf("> ");
         tmp = fgets(current_linebuf, current_linebuf_size, current_input_stream);
@@ -196,6 +196,17 @@ void forth_io_tell(const char* str) {
 
 void forth_io_dot(cell value) {
     printf("%ld ", (long)value);
+}
+
+/* todo: without the (unsigned char) cast, a byte >=127 sign-extends to a negative int 
+   and could collide with the -1 EOF sentinel — fine for ASCII bootstrap text, 
+   revisit if non-ASCII input matters later 
+*/
+int forth_io_get_next_char(void) { /* todo: read_key vs get_char? */
+    if(*current_linebuf_position == '\0') {
+        if(!forth_io_get_next_line()) return -1;
+    }
+    return *current_linebuf_position++;
 }
 
 
