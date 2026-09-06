@@ -211,3 +211,70 @@ fsp!
 	consthere @
     then
 ;
+
+
+: ." immediate
+    state @ if
+	[compile] s"
+	' tell ,
+    else
+	begin
+	    key
+	    dup '"' = if
+		drop exit
+	    then
+	    emit
+	again
+    then
+;
+
+: pick 1+ cellsize * dsp@ + @ ;
+
+: make-const-str ( str -- conststr )
+    dup consthere @
+    strcpy drop
+    consthere @ swap
+    strlen 1+ consthere +!
+    constalign
+;
+
+( sanakirjat )
+variable current-vocab
+variable latest-defined-vocab
+
+0 current-vocab !
+0 latest-defined-vocab !
+
+: vocab-name ( vocabentry -- name ) cell+ @ ;
+: vocab-next ( vocabentry -- nextvocabentry/0 ) 2 cells + @ ;
+: vocab-latest ( vocab-entry -- latest ) @ ;
+: set-vocab-name ( name vocabentry -- ) cell+ ! ;
+: set-vocab-next ( nextentry vocabentry -- ) 2 cells + ! ;
+: set-vocab-latest ( latest vocabentry -- ) ! ;
+: vocab-useslist ( vocabentry -- useslist ) 3 cells + ;
+
+\ : test-pick 10 20 30 2 pick . cr ;    \ expect 10 (three deep)
+\ test-pick
+
+\ : test-strlen s" hello" strlen . cr ;  \ expect 5
+\ test-strlen
+
+\ : test-strlen-compiled s" hello" strlen . cr ;
+\ test-strlen-compiled
+
+\ : test-raw-strlen
+\     consthere @
+\     dup 104 over c!         \ 'h'
+\     dup 1+ 101 swap c!      \ 'e'
+\     dup 2 + 108 swap c!     \ 'l'
+\     dup 3 + 108 swap c!     \ 'l'
+\     dup 4 + 111 swap c!     \ 'o'
+\     dup 5 + 0 swap c!       \ null terminator
+\     strlen . cr
+\ ;
+\ test-raw-strlen
+
+: test-first-char
+    s" hello" dup c@ .  cr    \ print the first byte's ASCII value
+;
+test-first-char

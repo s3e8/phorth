@@ -154,6 +154,7 @@ char* forth_io_get_next_word()
     }
     *tmp = '\0';
 
+    if(*position) position++; 
     current_linebuf_position = position;
 
     // printf("word retrieved.\n");

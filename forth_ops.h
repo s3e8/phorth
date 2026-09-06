@@ -11,6 +11,8 @@
 #define OFFSET(x)   ((void*)(x * sizeof(cell)))
 // #define ERROR(x)    { printf("Error: %s\n", x); goto DIE(); }
 
+#define DS_PUSH(x)  forth_vm_push_ds((cell)x);
+#define DS_POP()    forth_vm_pop_ds();
 #define RS_ARG()    (*current_ip++)
 #define RS_INTARG() ((cell)(*current_ip++))
 
@@ -54,6 +56,25 @@
 #define SET_T0()        current_ts = (cell*)forth_vm_pop_ds(); 
 #define GET_F0()        forth_vm_push_ds((cell)current_f0); /* todo: should it be fzero? */
 #define SET_F0()        current_fs = (float*)forth_vm_pop_ds(); 
+
+/* todo: do I even need temp here? */
+/* todo: rename to fetch_d0? get vs fetch... */
+#define GET_D0() \
+    temp = (cell)current_ds; \
+    forth_vm_push_ds(temp); 
+
+#define SET_D0() \
+    cell *new_ds = (cell*)forth_vm_pop_ds(); \
+    current_ds = new_ds;
+
+#define STRCPY() \
+    char *dest = (char*)DS_POP(); \
+    char *src = (char*)DS_POP(); \
+    DS_PUSH(strcpy(dest, src));
+
+#define STRLEN() \
+    char* str = (char*)DS_POP(); \
+    DS_PUSH(strlen(str));
 
 #define LT() \
     temp = forth_vm_pop_ds(); \

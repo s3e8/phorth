@@ -157,3 +157,37 @@ consthere @ .  cr
 10 const,
 consthere @ .  cr
 consthere0 @ .  cr
+
+variable v1
+42 v1 !
+v1 @ . cr
+
+fvariable fv1
+
+: test-misc
+    5 negate . cr
+    true . cr
+    false . cr
+    0 not . cr
+    1 not . cr
+    space 65 emit cr
+;
+test-misc
+
+." hello world" cr
+: greet ." compiled hello" cr ;
+greet
+
+: test-s"
+    s" test string" tell cr
+;
+test-s"
+
+: test-depth depth . cr s" abc" tell cr depth . cr ;
+test-depth
+
+: test-two-strings
+    s" first" tell cr
+    s" second" tell cr
+;
+test-two-strings

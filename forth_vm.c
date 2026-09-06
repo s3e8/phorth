@@ -168,7 +168,7 @@ int check_stack_underflow(void) {
     // printf("todo: fix stack checking...\n");
     if(current_ds >= current_d0) {
         fprintf(stderr, "Data stack underflow\n");
-        forth_io_print_current_word();
+        // forth_io_print_current_word();
         return 1;
     }
     return 0;
@@ -352,6 +352,8 @@ int forth_vm_run() {
         forth_dictionary_defcode("key",     CODE(KEY),      0);
         /* strings */
         forth_dictionary_defcode("strcmp", CODE(STRCMP), 0);
+        forth_dictionary_defcode("strcpy",  CODE(STRCPY),   0);
+        forth_dictionary_defcode("strlen",  CODE(STRLEN),   0);
         /* other */
         forth_dictionary_defcode("@",       CODE(FETCH),    0);
         forth_dictionary_defcode("c@",      CODE(CFETCH),   0);
@@ -364,6 +366,8 @@ int forth_vm_run() {
         forth_dictionary_defcode("tsp@",    CODE(GET_T0),   0);
         forth_dictionary_defcode("fsp!",    CODE(SET_F0),   0);
         forth_dictionary_defcode("fsp@",    CODE(GET_F0),   0);
+        forth_dictionary_defcode("dsp@",    CODE(GET_D0),   0); /* todo: rename to fetch_d0? */
+        forth_dictionary_defcode("dsp!",    CODE(SET_D0),   0);
         /* end defcodes */
 
         forth_dictionary_defextern("test-external", test_external, 0);
@@ -433,6 +437,8 @@ int forth_vm_run() {
     OP(SET_T0): { SET_T0(); NEXT(); }
     OP(GET_F0): { GET_F0(); NEXT(); }
     OP(SET_F0): { SET_F0(); NEXT(); }
+    OP(GET_D0): { GET_D0(); NEXT(); }
+    OP(SET_D0): { SET_D0(); NEXT(); }
     OP(LT): { LT(); NEXT(); }
     OP(GT): { GT(); NEXT(); }
 
@@ -457,6 +463,8 @@ int forth_vm_run() {
     OP(SKIP_PARENS): { SKIP_PARENS(); NEXT(); }
     OP(DEPTH): { DEPTH(); NEXT(); }
     OP(STRCMP): { STRCMP(); NEXT(); }
+    OP(STRCPY): { STRCPY(); NEXT(); }
+    OP(STRLEN): { STRLEN(); NEXT(); }
 
     OP(SEMICOLON): {
         SEMICOLON();
