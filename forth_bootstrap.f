@@ -253,28 +253,236 @@ variable latest-defined-vocab
 : set-vocab-latest ( latest vocabentry -- ) ! ;
 : vocab-useslist ( vocabentry -- useslist ) 3 cells + ;
 
-\ : test-pick 10 20 30 2 pick . cr ;    \ expect 10 (three deep)
-\ test-pick
 
-\ : test-strlen s" hello" strlen . cr ;  \ expect 5
-\ test-strlen
-
-\ : test-strlen-compiled s" hello" strlen . cr ;
-\ test-strlen-compiled
-
-\ : test-raw-strlen
-\     consthere @
-\     dup 104 over c!         \ 'h'
-\     dup 1+ 101 swap c!      \ 'e'
-\     dup 2 + 108 swap c!     \ 'l'
-\     dup 3 + 108 swap c!     \ 'l'
-\     dup 4 + 111 swap c!     \ 'o'
-\     dup 5 + 0 swap c!       \ null terminator
-\     strlen . cr
-\ ;
-\ test-raw-strlen
-
-: test-first-char
-    s" hello" dup c@ .  cr    \ print the first byte's ASCII value
+: find-vocabulary ( name -- vocabulary/0 )
+    latest-defined-vocab @         ( name latestvocab )
+    begin
+	dup 0= if                  \ is the entry zero?
+	    2drop 0 exit           \ return zero
+	else
+	    2dup vocab-name str<>   \ compare names
+	then
+    while
+	    vocab-next
+    repeat
+    nip
 ;
-test-first-char
+
+: in: immediate
+    word find-vocabulary
+    ?dup if
+	latest @ current-vocab @ set-vocab-latest   \ save latest to current vocabulary
+	dup current-vocab !                         \ this is the new current vocabulary
+	vocab-latest latest !                       \ get new latest from current vocabulary and save it to latest
+    else
+	." no such vocabulary" cr
+    then
+;
+
+\ todo: prevent duplicate names later?
+: vocabulary immediate
+    word            ( vocabname )
+    make-const-str  ( constvocabname )
+    consthere @     ( constvocabname vocabulary )
+    2dup set-vocab-name   ( constvocabname vocabulary )
+    nip                   ( vocabulary )
+
+    current-vocab @       ( vocabulary currentvocab )
+    ?dup if
+	latest @ swap set-vocab-latest
+    then
+    latest-defined-vocab @  ( vocabulary latestvocab )
+    over set-vocab-next     ( vocabulary )  \ link them
+    latest @                ( vocabulary currlatest )
+    over set-vocab-latest   ( vocabulary )  \ save latest
+    dup latest-defined-vocab !  \ make it the last defined vocab
+    dup current-vocab !         \ it also becomes the current vocab like with in:
+    vocab-useslist consthere !       \ advance consthere
+;
+
+: use immediate
+    word find-vocabulary
+    ?dup if
+	const,
+    else
+	." no such vocabulary to use" cr
+    then
+;
+
+: definitions immediate
+    0 const,   \ terminate uses list
+;
+
+: vocabularies ( -- )
+    latest-defined-vocab @
+    begin
+	dup
+    while
+	    dup vocab-name tell space
+	    vocab-next
+    repeat
+    drop
+;
+
+
+\
+\
+\
+\
+\
+
+
+( vocabulary-aware new version of find )
+: find ( wordname -- word )
+    dup find            ( wordname dictentry ) \ try to find from current latest first
+    ?dup if
+	nip exit
+    else
+	latest @                         ( wordname latest )
+	current-vocab @ vocab-useslist   ( wordname latest useslist )
+	begin
+	    dup @                        ( wordname latest useslist vocabentry/0 )
+	while
+		dup @ vocab-latest       ( wordname latest useslist usedlatest )
+		latest !                 ( wordname latest useslist )
+		2 pick                   ( wordname latest useslist wordname)
+		find                     ( wordname latest useslist word/0 )
+		?dup if
+		    nip over latest !
+		    2nip
+		    exit
+		else
+		    cell+
+		then
+	repeat
+	drop latest ! drop 0
+    then
+;
+
+\ \ safe version of find
+\ ( vocabulary-aware new version of find )
+\ : find ( wordname -- word )
+\     dup find
+\     ?dup if
+\         nip exit
+\     else
+\         current-vocab @ 0= if
+\             drop 0 exit
+\         then
+\         latest @
+\         current-vocab @ vocab-useslist
+\         begin
+\             dup @
+\         while
+\ 		dup @ vocab-latest       ( wordname latest useslist usedlatest )
+\ 		latest !                 ( wordname latest useslist )
+\ 		2 pick                   ( wordname latest useslist wordname)
+\ 		find                     ( wordname latest useslist word/0 )
+\ 		?dup if
+\ 		    nip over latest !
+\ 		    2nip
+\ 		    exit
+\ 		else
+\ 		    cell+
+\ 		then
+\ 	repeat
+\ 	drop latest ! drop 0
+\     then
+\ ;
+
+: ?hidden    @ f_hidden    and ;
+: ?immediate @ f_immediate and ;
+: ?builtin   @ f_builtin   and ;
+: ?inline    @ f_inline    and ;
+
+: ' immediate  ( better version of tick )
+    word find
+    dup 0= if
+	." no such word" cr drop
+	exit
+    then
+    dup ?builtin if
+	>cfa @
+    else
+	>cfa
+    then
+    state @ if
+	' lit , ,
+    then
+;
+
+\ \ safer tick? 
+\ : ' immediate
+\     word find
+\     dup 0= if
+\         drop
+\     else
+\         dup ?builtin if
+\             >cfa @
+\         else
+\             >cfa
+\         then
+\         state @ if
+\             ' lit , ,
+\         then
+\     then
+\ ;
+
+: [compile] immediate
+    word find
+    dup @ f_builtin and
+    if
+	>cfa @ ,
+    else
+	' call , >cfa ,
+    then
+;
+
+
+vocabulary forth
+definitions
+
+: hide word find hidden ;
+
+hide latest-defined-vocab
+hide vocab-next
+hide vocab-latest
+hide set-vocab-name
+hide set-vocab-next
+hide set-vocab-latest
+hide vocab-useslist
+hide find-vocabulary
+
+variable firstbuiltin
+
+: find-first-builtin ( -- )
+    latest @
+    begin
+	dup ?builtin not
+    while	    
+	    cell+ @
+    repeat
+    firstbuiltin !
+;
+
+find-first-builtin
+
+: find-bytecode ( bytecode -- dicthdr )
+    firstbuiltin @     ( bytecode dictentry )
+    begin
+	2dup >cfa @ <>   ( bytecode dictentry issame? )
+    while
+	    cell+ @
+    repeat
+    nip
+;
+
+: ?hasarg ( dict-entry -- true/false )
+    @ f_hasarg and ;
+
+: ?iscall ( dict-entry -- true/false )
+    >cfa @ ' call = ;
+
+: copytohere ( addr -- addr+cellsize )
+    dup @ , cell+
+;

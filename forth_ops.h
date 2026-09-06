@@ -56,6 +56,15 @@
 #define SET_T0()        current_ts = (cell*)forth_vm_pop_ds(); 
 #define GET_F0()        forth_vm_push_ds((cell)current_f0); /* todo: should it be fzero? */
 #define SET_F0()        current_fs = (float*)forth_vm_pop_ds(); 
+#define DROP2()         current_ds += 2;
+#define NIP2()          DS_AT(2) = DS_AT(0); current_ds+=2;
+
+/* todo: ... */
+#define DUP2() \
+    temp = DS_AT(1); \
+    DS_PUSH(temp); \
+    temp = DS_AT(1); \
+    DS_PUSH(temp);
 
 /* todo: do I even need temp here? */
 /* todo: rename to fetch_d0? get vs fetch... */

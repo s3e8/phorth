@@ -1,3 +1,10 @@
+: expect ( actual expected -- )
+    2dup = if
+        2drop ." PASS" cr
+    else
+        ." FAIL: got " swap . ." expected " . cr
+    then
+;
 
 : test-over 1 2 3 over . . . ;
 1 2 3 test-over
@@ -191,3 +198,103 @@ test-depth
     s" second" tell cr
 ;
 test-two-strings
+
+
+: test-pick 10 20 30 2 pick . cr ;    \ expect 10 (three deep)
+test-pick
+
+: test-strlen s" hello" strlen . cr ;  \ expect 5
+test-strlen
+
+: test-strlen-compiled s" hello" strlen . cr ;
+test-strlen-compiled
+
+: test-raw-strlen
+    consthere @
+    dup 104 over c!         \ 'h'
+    dup 1+ 101 swap c!      \ 'e'
+    dup 2 + 108 swap c!     \ 'l'
+    dup 3 + 108 swap c!     \ 'l'
+    dup 4 + 111 swap c!     \ 'o'
+    dup 5 + 0 swap c!       \ null terminator
+    strlen . cr
+;
+test-raw-strlen
+
+: test-first-char
+    s" hello" dup c@ .  cr    \ print the first byte's ASCII value
+;
+test-first-char
+
+: test-2dup 1 2 2dup . . . . cr ;      \ expect 2 1 2 1
+test-2dup
+
+: test-2drop 1 2 3 4 2drop . . cr ;    \ expect 2 1
+test-2drop
+
+: test-nip 1 2 nip . cr ;              \ expect 2
+test-nip
+
+: test-strneq s" abc" s" abc" str<> . cr ;   \ expect 0 (equal)
+: test-strneq2 s" abc" s" xyz" str<> . cr ;  \ expect nonzero
+test-strneq test-strneq2
+
+: test-loop-exit
+    begin
+        dup 3 =
+        if
+            drop 999 . cr
+            exit
+        then
+        dup .
+        1+
+    again
+;
+0 test-loop-exit    \ expect: 0 1 2 999, then stops cleanly
+
+s" nonexistent" find-vocabulary . cr   \ expect 0, since latest-defined-vocab is still 0
+
+: test-nip2 1 2 nip 2 expect ;
+test-nip2
+
+: test-const-str
+    s" abc"
+    make-const-str
+    dup tell cr
+;
+test-const-str
+
+: test-newtick-ok ' dup drop ." ok" cr ;
+test-newtick-ok
+
+: test-newtick-fail ' totallynotarealword drop ." shouldn't reach here" cr ;
+test-newtick-fail
+
+
+\ \ : test-newtick-ok ' dup drop ." ok" cr ;
+\ \ test-newtick-ok
+
+\ \ : test-newtick-fail ' totallynotarealword drop ." shouldn't reach here" cr ;
+\ \ test-newtick-fail
+
+\ : test-newtick-fail2 ' totallynotarealword drop cr ;
+\ test-newtick-fail2
+
+: test-tick-fail-clean
+    depth .          \ record depth before
+    ' totallynotarealword
+    depth .          \ record depth after — should match, since ' produced nothing to drop
+    cr
+;
+test-tick-fail-clean
+
+
+
+: test-find-fail-clean
+    depth .
+    s" totallynotarealword" find
+    .                \ print whatever find actually returned (should be 0)
+    depth .
+    cr
+;
+test-find-fail-clean

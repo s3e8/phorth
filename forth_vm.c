@@ -313,11 +313,14 @@ int forth_vm_run() {
         forth_dictionary_defcode("*",       CODE(MULTIPLY),     0);
         forth_dictionary_defcode("depth",   CODE(DEPTH),        0);
         forth_dictionary_defcode("dup",     CODE(DUP),          0);
+        forth_dictionary_defcode("2dup",    CODE(DUP2),         0); /* todo: DUP2 ok for name?*/
         forth_dictionary_defcode("?dup",    CODE(COND_DUP),     0);
         forth_dictionary_defcode("drop",    CODE(DROP),         0);
+        forth_dictionary_defcode("2drop",   CODE(DROP2),        0);
         forth_dictionary_defcode("swap",    CODE(SWAP),         0);
         forth_dictionary_defcode("over",    CODE(OVER),         0);
         forth_dictionary_defcode("nip",     CODE(NIP),          0);
+        forth_dictionary_defcode("2nip",    CODE(NIP2),         0);
         forth_dictionary_defcode("xor",     CODE(XOR),          0);
         forth_dictionary_defcode("and",     CODE(AND),          0);
         forth_dictionary_defcode("1-",      CODE(SUB1),         0);
@@ -465,6 +468,9 @@ int forth_vm_run() {
     OP(STRCMP): { STRCMP(); NEXT(); }
     OP(STRCPY): { STRCPY(); NEXT(); }
     OP(STRLEN): { STRLEN(); NEXT(); }
+    OP(DROP2): { DROP2(); NEXT(); }
+    OP(DUP2): { DUP2(); NEXT(); }
+    OP(NIP2): { NIP2(); NEXT(); }
 
     OP(SEMICOLON): {
         SEMICOLON();
