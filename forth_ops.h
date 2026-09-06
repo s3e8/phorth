@@ -55,6 +55,14 @@
 #define GET_F0()        forth_vm_push_ds((cell)current_f0); /* todo: should it be fzero? */
 #define SET_F0()        current_fs = (float*)forth_vm_pop_ds(); 
 
+#define LT() \
+    temp = forth_vm_pop_ds(); \
+    DS_AT(0) = DS_AT(0) < temp;
+
+#define GT() \
+    temp = forth_vm_pop_ds(); \
+    DS_AT(0) = DS_AT(0) > temp;
+
 /* : <> = 0= ; */
 #define NOT_EQUAL() \
     temp = forth_vm_pop_ds(); \

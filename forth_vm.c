@@ -324,6 +324,8 @@ int forth_vm_run() {
         forth_dictionary_defcode("1+",      CODE(ADD1),         0);
         forth_dictionary_defcode("invert",  CODE(INVERT),       0);
         forth_dictionary_defcode("=",       CODE(EQ),           0);
+        forth_dictionary_defcode("<", CODE(LT), 0);
+        forth_dictionary_defcode(">", CODE(GT), 0);
         forth_dictionary_defcode("<>",      CODE(NOT_EQUAL),    0);
         forth_dictionary_defcode("0=",      CODE(EQ_ZERO),      0);
         forth_dictionary_defcode("0<>",     CODE(NEQ_ZERO),     0);
@@ -431,6 +433,8 @@ int forth_vm_run() {
     OP(SET_T0): { SET_T0(); NEXT(); }
     OP(GET_F0): { GET_F0(); NEXT(); }
     OP(SET_F0): { SET_F0(); NEXT(); }
+    OP(LT): { LT(); NEXT(); }
+    OP(GT): { GT(); NEXT(); }
 
     /* forth interpreter words */
     OP(LEFT_BRACKET): {
