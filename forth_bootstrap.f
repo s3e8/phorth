@@ -182,3 +182,32 @@ fsp!
 : c, here @ c! here @ 1+ here ! ;
 : const, consthere @ ! consthere @ cell+ consthere ! ;
 : constc, consthere @ c! consthere @ 1+ consthere ! ;
+
+: s" immediate
+    state @ if            ( if compiling, emit a lit instruction with the starting pointer )
+	consthere @          ( save string starting pos )
+	begin
+	    key     ( startpos key )
+	    dup '"' <>  ( startpos key notadoublequote )
+	while
+		constc,
+	repeat
+	drop
+	0 constc,  ( null-terminate! )
+	' lit ,
+	,              ( emit starting pos )
+	constalign
+    else
+	consthere @
+	begin
+	    key
+	    dup '"' <>
+	while
+		over c!
+		1+
+	repeat
+	drop
+	0 over c! drop
+	consthere @
+    then
+;
