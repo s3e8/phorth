@@ -326,6 +326,8 @@ int forth_vm_run() {
         forth_dictionary_defcode("<>",      CODE(NOT_EQUAL),    0);
         forth_dictionary_defcode("0=",      CODE(EQ_ZERO),      0);
         forth_dictionary_defcode("0<>",     CODE(NEQ_ZERO),     0);
+        forth_dictionary_defcode("0<",      CODE(LTE_ZERO),     0);
+        forth_dictionary_defcode("0>",      CODE(GTE_ZERO),     0);
         /* dictionary */
         forth_dictionary_defconst("here",    (cell)&dictionary_pointer);
         forth_dictionary_defcode("latest",    CODE(LATEST),       0);
@@ -345,6 +347,8 @@ int forth_vm_run() {
         forth_dictionary_defcode("\\",       CODE(SKIP_LINE), FLAG_IMMEDIATE);
         forth_dictionary_defcode("(",       CODE(SKIP_PARENS),  FLAG_IMMEDIATE);
         forth_dictionary_defcode("key",     CODE(KEY),      0);
+        /* strings */
+        forth_dictionary_defcode("strcmp", CODE(STRCMP), 0);
         /* other */
         forth_dictionary_defcode("@",       CODE(FETCH),    0);
         forth_dictionary_defcode("c@",      CODE(CFETCH),   0);
@@ -415,6 +419,8 @@ int forth_vm_run() {
     }
 
     OP(NOT_EQUAL): { NOT_EQUAL(); NEXT(); }
+    OP(LTE_ZERO): { LTE_ZERO(); NEXT(); }
+    OP(GTE_ZERO): { GTE_ZERO(); NEXT(); }
 
     /* forth interpreter words */
     OP(LEFT_BRACKET): {
@@ -436,6 +442,7 @@ int forth_vm_run() {
 
     OP(SKIP_PARENS): { SKIP_PARENS(); NEXT(); }
     OP(DEPTH): { DEPTH(); NEXT(); }
+    OP(STRCMP): { STRCMP(); NEXT(); }
 
     OP(SEMICOLON): {
         SEMICOLON();

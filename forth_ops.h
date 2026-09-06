@@ -47,6 +47,8 @@
 #define BREAKPOINT()    forth_debug_breakpoint();
 #define EXTERNAL()      void (*fn)(void) = (void (*)(void)) *current_ip++; fn();
 #define KEY()           forth_vm_push_ds((cell)forth_io_get_next_char());
+#define LTE_ZERO()      DS_AT(0) = DS_AT(0) <= 0;
+#define GTE_ZERO()      DS_AT(0) = DS_AT(0) >= 0;
 
 /* : <> = 0= ; */
 #define NOT_EQUAL() \
@@ -60,6 +62,11 @@
 #define OVER() \
     temp = DS_AT(1); \
     forth_vm_push_ds(temp);
+
+#define STRCMP() \
+    char* b = (char*)forth_vm_pop_ds(); \
+    char* a = (char*)forth_vm_pop_ds(); \
+    forth_vm_push_ds(strcmp(a, b));
 
 #define DUP() \
     temp = DS_TOP(); \

@@ -127,3 +127,19 @@
 : '0' inline [ char 0 ] literal ;
 : '-' inline [ char - ] literal ;
 : '.' inline [ char . ] literal ;
+
+
+: cell+ inline cellsize + ;
+: cell- inline cellsize - ;
+
+: str= inline strcmp 0= ;
+: str< inline strcmp 0< ;
+: str> inline strcmp 0> ;
+: str<> inline strcmp ;
+
+: bl inline  32 ;
+: space inline bl emit ;
+: negate inline 0 swap - ;
+: true inline 1 ;
+: false inline 0 ;
+: not inline 0= ;
