@@ -486,3 +486,17 @@ find-first-builtin
 : copytohere ( addr -- addr+cellsize )
     dup @ , cell+
 ;
+
+: perform-inline ( codetoinline -- )
+    begin
+	dup @ ' eow <>
+    while
+	    dup @
+	    find-bytecode ?hasarg if
+		copytohere
+	    then
+	    copytohere
+    repeat
+    here @ cell- here !
+    drop
+;
