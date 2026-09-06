@@ -83,6 +83,7 @@ int forth_interpreter_interpret(void) {
             }
             else forth_vm_push_ds((cell)number);
         }
+        /* todo: no such word probably doesn't need to be an error? */
         else fprintf(stderr, "Error: no such word: %s\n", wordbuf);
 
         /* move on to NEXT() and run ip */
