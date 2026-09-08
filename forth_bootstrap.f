@@ -596,9 +596,44 @@ defer quit
     begin
 	?eof not
     while
+    ." interpretting" cr
 	interpret
     repeat
     ." simple-quit done" cr
 ;
 
 ' simple-quit is quit
+
+
+( redefine to inline )
+: cell inline cellsize ;
+: cells inline cellsize * ;
+
+\ new version of colon to support deferred words-aware create
+: :
+    word       ( wordname )
+    create
+    latest
+    @
+    hidden
+    ]
+;
+
+hide copytohere
+\ hide perform-inline
+
+: cell+ inline cellsize + ;
+: cell- inline cellsize - ;
+
+: do immediate
+    ' >r , ' >r ,
+    [compile] begin ;
+
+: loop immediate
+    ' r> , ' r> ,
+    ' 1+ ,     \ add loop var
+    ' 2dup , ' >r , ' >r ,
+    ' = ,
+    [compile] until
+    ' rdrop , ' rdrop ,
+;

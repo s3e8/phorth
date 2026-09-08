@@ -15,6 +15,7 @@
 #define DS_POP()        forth_vm_pop_ds()
 #define FS_PUSH(x)      forth_vm_push_fs((cell)x)
 #define FS_POP()        forth_vm_pop_fs()
+// #define RS_PUSH(x)      forth_vm_push_rs(x);
 #define RS_ARG()        (*current_ip++)
 #define RS_INTARG()     ((cell)(*current_ip++))
 #define RS_FLOAT_ARG()  (*(float*)current_ip) /* todo: feels like a bad name */
@@ -63,7 +64,11 @@
 #define NIP2()          DS_AT(2) = DS_AT(0); current_ds += 2;
 #define FLIT()          FS_PUSH(RS_FLOAT_ARG()); current_ip++;
 #define IS_EOF()        DS_PUSH((cell)forth_io_is_eof()); /* todo: at_eof? */
-#define CURRENT_WORDBUF() DS_PUSH((cell)forth_io_get_current_wordbuf());
+#define CURRENT_WORDBUF() DS_PUSH((cell)forth_io_get_current_wordbuf()); /* todo: use temp? */
+
+#define TO_RS() \
+    temp = DS_POP(); \
+    RS_PUSH(temp);
 
 /* todo: err msg if not header? */
 #define TO_NAME() \

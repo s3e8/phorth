@@ -384,6 +384,7 @@ int forth_vm_run() {
         forth_dictionary_defcode("dsp!",    CODE(SET_D0),   0);
         forth_dictionary_defcode("current-wordbuf", CODE(CURRENT_WORDBUF), 0); /* todo: rm.. this was dumb */
         forth_dictionary_defcode(">name",   CODE(TO_NAME),  0);
+        forth_dictionary_defcode(">r",  CODE(TO_RS), 0);
         /* outer? */
         forth_dictionary_defcode("iword",   CODE(IWORD),    0);
         forth_dictionary_defcode("iexecute", CODE(IEXECUTE), 0);
@@ -475,6 +476,7 @@ int forth_vm_run() {
     OP(LT): { LT(); NEXT(); }
     OP(GT): { GT(); NEXT(); }
     OP(IS_EOF): { IS_EOF(); NEXT(); }
+    OP(TO_RS): { TO_RS(); NEXT(); }
 
     /* forth interpreter words */
     OP(LEFT_BRACKET): {
