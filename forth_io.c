@@ -96,10 +96,18 @@ void forth_io_print_current_word(void) {
     printf("current_wordbuf: %s\n", current_wordbuf);
 }
 
+char* forth_io_get_current_wordbuf(void) {
+    return current_wordbuf;
+}
+
 void forth_io_print_state(void) {
     forth_io_print_current_word();
     printf("current_linebuf: %s\n",     current_linebuf);
     printf("current_linebuf_pos: %s\n", current_linebuf_position);
+}
+
+int forth_io_is_eof(void) {
+    return (*current_linebuf_position == '\0') && feof(current_input_stream);
 }
 
 /* input stuff */

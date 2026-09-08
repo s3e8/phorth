@@ -11,10 +11,13 @@
 #define OFFSET(x)   ((void*)(x * sizeof(cell)))
 // #define ERROR(x)    { printf("Error: %s\n", x); goto DIE(); }
 
-#define DS_PUSH(x)  forth_vm_push_ds((cell)x);
-#define DS_POP()    forth_vm_pop_ds();
-#define RS_ARG()    (*current_ip++)
-#define RS_INTARG() ((cell)(*current_ip++))
+#define DS_PUSH(x)      forth_vm_push_ds((cell)x)
+#define DS_POP()        forth_vm_pop_ds()
+#define FS_PUSH(x)      forth_vm_push_fs((cell)x)
+#define FS_POP()        forth_vm_pop_fs()
+#define RS_ARG()        (*current_ip++)
+#define RS_INTARG()     ((cell)(*current_ip++))
+#define RS_FLOAT_ARG()  (*(float*)current_ip) /* todo: feels like a bad name */
 
 #define DS_TOP()      (*current_ds)
 #define FS_TOP()      (*current_fs)
@@ -41,8 +44,8 @@
 #define INVERT()        DS_AT(0) = ~DS_AT(0);
 #define SKIP_LINE()     forth_io_skip_line();
 #define SKIP_PARENS()   forth_io_skip_parens();
-// #define DROP()          ++current_ds;
-#define DROP()          forth_vm_pop_ds();
+#define IWORD()         forth_vm_push_ds((cell)forth_io_get_next_word()); /* should I use linebuf? */
+#define DROP()          forth_vm_pop_ds(); /* aka ++current_ds;*/
 #define EQ_ZERO()       DS_AT(0) = DS_AT(0) == 0;
 #define NEQ_ZERO()      DS_AT(0) = DS_AT(0) != 0;
 #define DEPTH()         forth_vm_push_ds((cell)(current_d0 - current_ds));
@@ -57,7 +60,39 @@
 #define GET_F0()        forth_vm_push_ds((cell)current_f0); /* todo: should it be fzero? */
 #define SET_F0()        current_fs = (float*)forth_vm_pop_ds(); 
 #define DROP2()         current_ds += 2;
-#define NIP2()          DS_AT(2) = DS_AT(0); current_ds+=2;
+#define NIP2()          DS_AT(2) = DS_AT(0); current_ds += 2;
+#define FLIT()          FS_PUSH(RS_FLOAT_ARG()); current_ip++;
+#define IS_EOF()        forth_io_is_eof(); /* todo: at_eof? */
+#define CURRENT_WORDBUF() DS_PUSH((cell)forth_io_get_current_wordbuf());
+
+/* todo: err msg if not header? */
+#define TO_NAME() \
+    word_header_t* word = (word_header_t*)DS_POP(); \
+    DS_PUSH((cell)forth_dictionary_get_name_by_header(word));
+
+// #define IEXECUTE()
+//     word_header_t* entry = (word_header_t*)DS_POP();
+//     void** code = cfa(entry);
+//     *--nestingstack = ip;
+//     if(entry->flags & FLAG_BUILTIN) {
+//       builtin_immediatebuf[0] = *code;
+//       ip = builtin_immediatebuf;
+//     } else {
+//       word_immediatebuf[1] = (void*)code;
+//       ip = word_immediatebuf;
+//     }
+
+#define IEXECUTE() \
+    word_header_t* word = (word_header_t*)DS_POP(); \
+    void* code = forth_dictionary_get_xt(word); \
+    *--nestingstack = current_ip; \
+    if(word->flags & FLAG_BUILTIN) { \
+        builtin_immediatebuf[0] = code; \
+        current_ip = builtin_immediatebuf; \
+    } else { \
+        word_immediatebuf[1] = code; \
+        current_ip = word_immediatebuf; \
+    }
 
 /* todo: ... */
 #define DUP2() \
@@ -92,6 +127,32 @@
 #define GT() \
     temp = forth_vm_pop_ds(); \
     DS_AT(0) = DS_AT(0) > temp;
+
+#define PARSE_NUMBER() \
+    char* endptr = NULL; \
+    char* str = (char*)DS_POP(); \
+    cell val = (cell)strtol(str, &endptr, base); \
+    if(*endptr!='\0') { DS_PUSH(0); } /* todo: why do i need brackets here? */ \
+    else { \
+        DS_PUSH(val); \
+        DS_PUSH(1); /* success flag */ \
+    }
+
+#define PARSE_FNUMBER() \
+    char* endptr = NULL; \
+    char* str = (char*)DS_POP(); \
+    float val = strtof(str, &endptr); \
+    if(*endptr!='\0') { \
+      DS_PUSH(0); \
+    } else { \
+        FS_PUSH(val); \
+        DS_PUSH(1); \
+    }
+
+#define FCOMMA() \
+    float val = FS_POP(); \
+    *(float*)dictionary_pointer = val; \
+    dictionary_pointer += sizeof(cell);  
 
 /* : <> = 0= ; */
 #define NOT_EQUAL() \

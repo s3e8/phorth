@@ -500,3 +500,108 @@ find-first-builtin
     here @ cell- here !
     drop
 ;
+
+: interpret
+    iword
+    dup 0= if
+	drop exit
+    then
+    dup find
+    ?dup if
+	nip
+	dup ?immediate if
+	    iexecute
+	else
+	    state @ if
+		dup ?builtin if
+		    >cfa @ ,
+		else
+		    dup ?inline if
+			>cfa perform-inline
+		    else
+			' call , >cfa ,
+		    then
+		then
+	    else
+		iexecute
+	    then
+	then
+    else
+	dup number
+	if
+	    state @ if
+		' lit ,
+		,
+		drop
+	    else
+		nip
+	    then
+	else
+	    fnumber
+	    if
+		state @ if
+		    ' flit ,
+		    f,
+		then
+	    else
+		." no such word" cr
+	    then
+	then
+    then
+;
+
+\
+\
+\
+\
+\
+
+: defer immediate
+    create \ todo: make sure word and create are correct definitions
+    latest @ @ f_deferred xor latest @ !
+    ' jump ,
+    0 ,
+    ' exit ,
+    ' eow ,
+;
+
+: is immediate
+    word find
+    ?dup if
+	>cfa cell+ !
+    else
+	." no such word" cr
+    then
+;
+
+: create ( wordname )
+    dup find       ( wordname previousdef )
+    ?dup if    \ if previous definition was found
+	dup @ f_deferred and if  \ and it was deferred
+	    over create    \ create new word  ( wordname dictentry )
+	    >cfa cell+     ( wordname callptr )
+	    latest @ >cfa  ( wordname callptr newwordimpl )
+	    swap !
+	    drop      \ wordname
+	    exit
+	then
+	drop
+    then    
+    create
+;
+
+defer quit 
+latest @ >name tell cr
+
+: simple-quit
+    begin
+	?eof not
+    while
+	interpret
+    repeat
+;
+
+latest @ >name tell cr
+
+\ ' simple-quit is quit
+

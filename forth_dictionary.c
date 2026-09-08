@@ -75,6 +75,10 @@ const char* forth_dictionary_get_name_by_xt(void* xt) {
     return "?";
 }
 
+const char* forth_dictionary_get_name_by_header(word_header_t* word) {
+    return word->name;
+}
+
 void forth_dictionary_compile(cell value) {
     *(cell*)dictionary_pointer = value;
     dictionary_pointer += sizeof(cell);

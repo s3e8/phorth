@@ -188,6 +188,15 @@ cell forth_vm_pop_ds(void) {
     return *current_ds++;
 }
 
+cell forth_vm_push_fs(cell value) {
+    *--current_fs = value;
+}
+
+cell forth_vm_pop_fs(void) {
+    /* todo: check fs underflow */
+    return *current_fs++;
+}
+
 void forth_vm_push_rs(void** code) {
     if(current_rs - 1 < current_r0 - current_rs_size) {
         fprintf(stderr, "Return stack underflow\n");
@@ -291,6 +300,7 @@ int forth_vm_run() {
         forth_dictionary_defconst("f_immediate", FLAG_IMMEDIATE);
         forth_dictionary_defconst("f_hidden",    FLAG_HIDDEN);
         forth_dictionary_defconst("f_inline",    FLAG_INLINE);
+        forth_dictionary_defconst("f_deferred",  FLAG_DEFERRED);
         forth_dictionary_defconst("state",      (cell)&state);
         forth_dictionary_defconst("cellsize",   (cell)sizeof(cell));
         forth_dictionary_defconst("floatsize",  (cell)sizeof(float));
@@ -353,6 +363,7 @@ int forth_vm_run() {
         forth_dictionary_defcode("\\",       CODE(SKIP_LINE), FLAG_IMMEDIATE);
         forth_dictionary_defcode("(",       CODE(SKIP_PARENS),  FLAG_IMMEDIATE);
         forth_dictionary_defcode("key",     CODE(KEY),      0);
+        forth_dictionary_defcode("?eof", CODE(IS_EOF),      0);
         /* strings */
         forth_dictionary_defcode("strcmp", CODE(STRCMP), 0);
         forth_dictionary_defcode("strcpy",  CODE(STRCPY),   0);
@@ -371,6 +382,15 @@ int forth_vm_run() {
         forth_dictionary_defcode("fsp@",    CODE(GET_F0),   0);
         forth_dictionary_defcode("dsp@",    CODE(GET_D0),   0); /* todo: rename to fetch_d0? */
         forth_dictionary_defcode("dsp!",    CODE(SET_D0),   0);
+        forth_dictionary_defcode("current-wordbuf", CODE(CURRENT_WORDBUF), 0); /* todo: rm.. this was dumb */
+        forth_dictionary_defcode(">name",   CODE(TO_NAME),  0);
+        /* outer? */
+        forth_dictionary_defcode("iword",   CODE(IWORD),    0);
+        forth_dictionary_defcode("iexecute", CODE(IEXECUTE), 0);
+        forth_dictionary_defcode("number",  CODE(PARSE_NUMBER), 0);
+        forth_dictionary_defcode("fnumber",  CODE(PARSE_FNUMBER), 0);
+        forth_dictionary_defcode("f,",      CODE(FCOMMA),   0);
+        forth_dictionary_defcode("flit",    CODE(FLIT), 0);
         /* end defcodes */
 
         forth_dictionary_defextern("test-external", test_external, 0);
@@ -422,6 +442,16 @@ int forth_vm_run() {
         NEXT();
     }
 
+    OP(IEXECUTE): { IEXECUTE(); NEXT(); }
+
+    /* todo: reorder inner ops */
+    /* todo: move parse_number to interpreter? */
+    /* as in.. rename to inumber or something */
+    /* maybe parse_number_from_stack? */
+    OP(PARSE_NUMBER):  { PARSE_NUMBER();  NEXT(); }
+    OP(PARSE_FNUMBER): { PARSE_FNUMBER(); NEXT(); }
+    OP(FCOMMA): { FCOMMA(); NEXT(); }
+
     OP(LIT): {
         LIT();
         NEXT();
@@ -444,6 +474,7 @@ int forth_vm_run() {
     OP(SET_D0): { SET_D0(); NEXT(); }
     OP(LT): { LT(); NEXT(); }
     OP(GT): { GT(); NEXT(); }
+    OP(IS_EOF): { IS_EOF(); NEXT(); }
 
     /* forth interpreter words */
     OP(LEFT_BRACKET): {
@@ -455,6 +486,10 @@ int forth_vm_run() {
         RIGHT_BRACKET();
         NEXT();
     }
+
+    /* todo: rename to wordname? */
+    OP(CURRENT_WORDBUF): { CURRENT_WORDBUF(); NEXT(); }
+    OP(TO_NAME): { TO_NAME(); NEXT(); }
 
     OP(COLON): {
         COLON();
@@ -471,7 +506,7 @@ int forth_vm_run() {
     OP(DROP2): { DROP2(); NEXT(); }
     OP(DUP2): { DUP2(); NEXT(); }
     OP(NIP2): { NIP2(); NEXT(); }
-
+    OP(IWORD): { IWORD(); NEXT(); }
     OP(SEMICOLON): {
         SEMICOLON();
         NEXT();
@@ -491,6 +526,8 @@ int forth_vm_run() {
         ZERO_BRANCH();
         NEXT();
     }
+
+    OP(FLIT): { FLIT(); NEXT(); }
 
     OP(IF_BRANCH): { /* todo: FLAG_HASARG */
         IF_BRANCH(); /* todo: rename to BRANCH_IF_TRUE??? */

@@ -55,6 +55,8 @@ extern int  forth_interpreter_interpret_string(const char* str);
 /* forth io */
 extern void  forth_io_init_defaults(void);
 extern void  forth_io_set_input_file(const char* filename);
+extern char* forth_io_get_current_wordbuf(void);
+extern int   forth_io_is_eof(void);
 extern char* forth_io_get_next_word(void);  /* WORD */
 extern int   forth_io_get_next_char(void);
 extern void  forth_io_read_string(const char* str);
@@ -76,6 +78,7 @@ extern void**           forth_dictionary_get_cfa(word_header_t* word);          
 extern void**           forth_dictionary_get_cfa_by_name(const char* name);
 extern void*            forth_dictionary_get_xt(word_header_t* word);
 extern const char*      forth_dictionary_get_name_by_xt(void* xt);
+extern const char*      forth_dictionary_get_name_by_header(word_header_t* word);
 extern void             forth_dictionary_defcode(const char* name, void* code, cell flags);
 extern void             forth_dictionary_defextern(const char* name, void (*fn)(void), cell flags);
 extern void             forth_dictionary_defconst(const char* name, cell value);
