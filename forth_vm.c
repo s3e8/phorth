@@ -339,6 +339,7 @@ int forth_vm_run() {
         forth_dictionary_defcode("=",       CODE(EQ),           0);
         forth_dictionary_defcode("<", CODE(LT), 0);
         forth_dictionary_defcode(">", CODE(GT), 0);
+        forth_dictionary_defcode("<=",  CODE(LTE), 0);
         forth_dictionary_defcode("<>",      CODE(NOT_EQUAL),    0);
         forth_dictionary_defcode("0=",      CODE(EQ_ZERO),      0);
         forth_dictionary_defcode("0<>",     CODE(NEQ_ZERO),     0);
@@ -385,6 +386,11 @@ int forth_vm_run() {
         forth_dictionary_defcode("current-wordbuf", CODE(CURRENT_WORDBUF), 0); /* todo: rm.. this was dumb */
         forth_dictionary_defcode(">name",   CODE(TO_NAME),  0);
         forth_dictionary_defcode(">r",  CODE(TO_RS), 0);
+        forth_dictionary_defcode("r>",  CODE(FROM_RS), 0);
+        forth_dictionary_defcode("rdrop",   CODE(RS_DROP), 0);
+        forth_dictionary_defcode("2rdrop",  CODE(RS_DROP2), 0);
+        forth_dictionary_defcode("rsp@",    CODE(RSP_GET),  0);
+        forth_dictionary_defcode("-rot",    CODE(MINUS_ROT), 0);
         /* outer? */
         forth_dictionary_defcode("iword",   CODE(IWORD),    0);
         forth_dictionary_defcode("iexecute", CODE(IEXECUTE), 0);
@@ -477,6 +483,12 @@ int forth_vm_run() {
     OP(GT): { GT(); NEXT(); }
     OP(IS_EOF): { IS_EOF(); NEXT(); }
     OP(TO_RS): { TO_RS(); NEXT(); }
+    OP(FROM_RS): { FROM_RS(); NEXT(); }
+    OP(RS_DROP): { RS_DROP(); NEXT(); }
+    OP(RSP_GET): { RSP_GET(); NEXT(); }
+    OP(RS_DROP2): { RS_DROP2(); NEXT(); }
+    OP(LTE): { LTE(); NEXT(); }
+    OP(MINUS_ROT): { MINUS_ROT(); NEXT(); }
 
     /* forth interpreter words */
     OP(LEFT_BRACKET): {

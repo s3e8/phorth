@@ -15,7 +15,8 @@
 #define DS_POP()        forth_vm_pop_ds()
 #define FS_PUSH(x)      forth_vm_push_fs((cell)x)
 #define FS_POP()        forth_vm_pop_fs()
-// #define RS_PUSH(x)      forth_vm_push_rs(x);
+#define RS_PUSH(x)      forth_vm_push_rs((void**)x);
+#define RS_POP()        forth_vm_pop_rs();
 #define RS_ARG()        (*current_ip++)
 #define RS_INTARG()     ((cell)(*current_ip++))
 #define RS_FLOAT_ARG()  (*(float*)current_ip) /* todo: feels like a bad name */
@@ -65,10 +66,29 @@
 #define FLIT()          FS_PUSH(RS_FLOAT_ARG()); current_ip++;
 #define IS_EOF()        DS_PUSH((cell)forth_io_is_eof()); /* todo: at_eof? */
 #define CURRENT_WORDBUF() DS_PUSH((cell)forth_io_get_current_wordbuf()); /* todo: use temp? */
+#define RS_DROP()         current_rs++;
+#define RSP_GET()           RS_PUSH(current_rs);
+#define RS_DROP2()      current_rs += 2; /* todo: do i need semicolons here? */
+
+#define LTE() \
+    temp = DS_POP(); \
+    DS_AT(0) = DS_AT(0) <= temp;
+
+#define MINUS_ROT() \
+    cell eax = DS_POP(); \
+    cell ebx = DS_POP(); \
+    cell ecx = DS_POP(); \
+    DS_PUSH(eax); \
+    DS_PUSH(ecx); \
+    DS_PUSH(ebx);
 
 #define TO_RS() \
     temp = DS_POP(); \
     RS_PUSH(temp);
+
+#define FROM_RS() \
+    temp = (cell)RS_POP(); \
+    DS_PUSH(temp);   
 
 /* todo: err msg if not header? */
 #define TO_NAME() \

@@ -574,6 +574,7 @@ find-first-builtin
     then
 ;
 
+\ todo: have create take next word in io, rather than pop word off stack
 : create ( wordname )
     dup find       ( wordname previousdef )
     ?dup if    \ if previous definition was found
@@ -604,18 +605,14 @@ defer quit
 
 ' simple-quit is quit
 
-
 ( redefine to inline )
 : cell inline cellsize ;
 : cells inline cellsize * ;
 
 \ new version of colon to support deferred words-aware create
 : :
-    word       ( wordname )
-    create
-    latest
-    @
-    hidden
+    word create
+    latest @ hidden
     ]
 ;
 
@@ -629,6 +626,7 @@ hide copytohere
     ' >r , ' >r ,
     [compile] begin ;
 
+
 : loop immediate
     ' r> , ' r> ,
     ' 1+ ,     \ add loop var
@@ -637,3 +635,25 @@ hide copytohere
     [compile] until
     ' rdrop , ' rdrop ,
 ;
+
+
+: unloop immediate
+    ' 2rdrop ,
+;
+
+: i inline ( -- loopvar ) rsp@ cell+ @ ;
+
+: depth
+    s0 @ dsp@ -
+    cell-
+;
+
+: fdepth
+    f0 @ fsp@ -
+;
+
+: tdepth
+    t0 @ tsp@ -
+;
+
+: ? @ . ;
