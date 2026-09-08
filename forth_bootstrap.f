@@ -590,8 +590,7 @@ find-first-builtin
     create
 ;
 
-defer quit 
-latest @ >name tell cr
+defer quit
 
 : simple-quit
     begin
@@ -599,9 +598,7 @@ latest @ >name tell cr
     while
 	interpret
     repeat
+    ." simple-quit done" cr
 ;
 
-latest @ >name tell cr
-
-\ ' simple-quit is quit
-
+' simple-quit is quit

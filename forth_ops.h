@@ -62,7 +62,7 @@
 #define DROP2()         current_ds += 2;
 #define NIP2()          DS_AT(2) = DS_AT(0); current_ds += 2;
 #define FLIT()          FS_PUSH(RS_FLOAT_ARG()); current_ip++;
-#define IS_EOF()        forth_io_is_eof(); /* todo: at_eof? */
+#define IS_EOF()        DS_PUSH((cell)forth_io_is_eof()); /* todo: at_eof? */
 #define CURRENT_WORDBUF() DS_PUSH((cell)forth_io_get_current_wordbuf());
 
 /* todo: err msg if not header? */
