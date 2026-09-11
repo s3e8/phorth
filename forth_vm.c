@@ -263,8 +263,8 @@ void test_external(void) {
     printf("externals work?\n");
 }
 
-/* execution engine -- todo: rename to run? */
-int forth_vm_run() {
+/* execution engine -- todo: rename to...? */
+int forth_vm_run(void) {
     register cell temp; /* i think this is an actual thing in figforth -- a register called temp. */
     /* todo: w register? 
     */

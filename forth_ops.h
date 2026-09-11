@@ -333,6 +333,7 @@
 #define INTERPRET() \
     char* wordbuf = forth_io_get_next_word(); \
     if(!wordbuf) return 1; \
+    printf("interpretting: %s...\n", wordbuf); \
     word_header_t* word = forth_dictionary_find_word(wordbuf); \
     if(word) { \
         void* code = forth_dictionary_get_xt(word); \

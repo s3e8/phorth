@@ -1,8 +1,8 @@
-: make-inline
-    latest @ dup
-    @ f_inline xor
-    swap !
-;
+\ : make-inline
+\     latest @ dup
+\     @ f_inline xor
+\     swap !
+\ ;
 
 : inline  immediate make-inline ;
 : cell    inline cellsize   ;
@@ -238,142 +238,111 @@ fsp!
     constalign
 ;
 
-( sanakirjat )
-variable current-vocab
-variable latest-defined-vocab
+\ ( sanakirjat )
+\ variable current-vocab
+\ variable latest-defined-vocab
 
-0 current-vocab !
-0 latest-defined-vocab !
+\ 0 current-vocab !
+\ 0 latest-defined-vocab !
 
-: vocab-name ( vocabentry -- name ) cell+ @ ;
-: vocab-next ( vocabentry -- nextvocabentry/0 ) 2 cells + @ ;
-: vocab-latest ( vocab-entry -- latest ) @ ;
-: set-vocab-name ( name vocabentry -- ) cell+ ! ;
-: set-vocab-next ( nextentry vocabentry -- ) 2 cells + ! ;
-: set-vocab-latest ( latest vocabentry -- ) ! ;
-: vocab-useslist ( vocabentry -- useslist ) 3 cells + ;
-
-
-: find-vocabulary ( name -- vocabulary/0 )
-    latest-defined-vocab @         ( name latestvocab )
-    begin
-	dup 0= if                  \ is the entry zero?
-	    2drop 0 exit           \ return zero
-	else
-	    2dup vocab-name str<>   \ compare names
-	then
-    while
-	    vocab-next
-    repeat
-    nip
-;
-
-: in: immediate
-    word find-vocabulary
-    ?dup if
-	latest @ current-vocab @ set-vocab-latest   \ save latest to current vocabulary
-	dup current-vocab !                         \ this is the new current vocabulary
-	vocab-latest latest !                       \ get new latest from current vocabulary and save it to latest
-    else
-	." no such vocabulary" cr
-    then
-;
-
-\ todo: prevent duplicate names later?
-: vocabulary immediate
-    word            ( vocabname )
-    make-const-str  ( constvocabname )
-    consthere @     ( constvocabname vocabulary )
-    2dup set-vocab-name   ( constvocabname vocabulary )
-    nip                   ( vocabulary )
-
-    current-vocab @       ( vocabulary currentvocab )
-    ?dup if
-	latest @ swap set-vocab-latest
-    then
-    latest-defined-vocab @  ( vocabulary latestvocab )
-    over set-vocab-next     ( vocabulary )  \ link them
-    latest @                ( vocabulary currlatest )
-    over set-vocab-latest   ( vocabulary )  \ save latest
-    dup latest-defined-vocab !  \ make it the last defined vocab
-    dup current-vocab !         \ it also becomes the current vocab like with in:
-    vocab-useslist consthere !       \ advance consthere
-;
-
-: use immediate
-    word find-vocabulary
-    ?dup if
-	const,
-    else
-	." no such vocabulary to use" cr
-    then
-;
-
-: definitions immediate
-    0 const,   \ terminate uses list
-;
-
-: vocabularies ( -- )
-    latest-defined-vocab @
-    begin
-	dup
-    while
-	    dup vocab-name tell space
-	    vocab-next
-    repeat
-    drop
-;
+\ : vocab-name ( vocabentry -- name ) cell+ @ ;
+\ : vocab-next ( vocabentry -- nextvocabentry/0 ) 2 cells + @ ;
+\ : vocab-latest ( vocab-entry -- latest ) @ ;
+\ : set-vocab-name ( name vocabentry -- ) cell+ ! ;
+\ : set-vocab-next ( nextentry vocabentry -- ) 2 cells + ! ;
+\ : set-vocab-latest ( latest vocabentry -- ) ! ;
+\ : vocab-useslist ( vocabentry -- useslist ) 3 cells + ;
 
 
-\
-\
-\
-\
-\
+\ : find-vocabulary ( name -- vocabulary/0 )
+\     latest-defined-vocab @         ( name latestvocab )
+\     begin
+\ 	dup 0= if                  \ is the entry zero?
+\ 	    2drop 0 exit           \ return zero
+\ 	else
+\ 	    2dup vocab-name str<>   \ compare names
+\ 	then
+\     while
+\ 	    vocab-next
+\     repeat
+\     nip
+\ ;
+
+\ : in: immediate
+\     word find-vocabulary
+\     ?dup if
+\ 	latest @ current-vocab @ set-vocab-latest   \ save latest to current vocabulary
+\ 	dup current-vocab !                         \ this is the new current vocabulary
+\ 	vocab-latest latest !                       \ get new latest from current vocabulary and save it to latest
+\     else
+\ 	." no such vocabulary" cr
+\     then
+\ ;
+
+\ \ todo: prevent duplicate names later?
+\ : vocabulary immediate
+\     word            ( vocabname )
+\     make-const-str  ( constvocabname )
+\     consthere @     ( constvocabname vocabulary )
+\     2dup set-vocab-name   ( constvocabname vocabulary )
+\     nip                   ( vocabulary )
+
+\     current-vocab @       ( vocabulary currentvocab )
+\     ?dup if
+\ 	latest @ swap set-vocab-latest
+\     then
+\     latest-defined-vocab @  ( vocabulary latestvocab )
+\     over set-vocab-next     ( vocabulary )  \ link them
+\     latest @                ( vocabulary currlatest )
+\     over set-vocab-latest   ( vocabulary )  \ save latest
+\     dup latest-defined-vocab !  \ make it the last defined vocab
+\     dup current-vocab !         \ it also becomes the current vocab like with in:
+\     vocab-useslist consthere !       \ advance consthere
+\ ;
+
+\ : use immediate
+\     word find-vocabulary
+\     ?dup if
+\ 	const,
+\     else
+\ 	." no such vocabulary to use" cr
+\     then
+\ ;
+
+\ : definitions immediate
+\     0 const,   \ terminate uses list
+\ ;
+
+\ : vocabularies ( -- )
+\     latest-defined-vocab @
+\     begin
+\ 	dup
+\     while
+\ 	    dup vocab-name tell space
+\ 	    vocab-next
+\     repeat
+\     drop
+\ ;
 
 
-( vocabulary-aware new version of find )
-: find ( wordname -- word )
-    dup find            ( wordname dictentry ) \ try to find from current latest first
-    ?dup if
-	nip exit
-    else
-	latest @                         ( wordname latest )
-	current-vocab @ vocab-useslist   ( wordname latest useslist )
-	begin
-	    dup @                        ( wordname latest useslist vocabentry/0 )
-	while
-		dup @ vocab-latest       ( wordname latest useslist usedlatest )
-		latest !                 ( wordname latest useslist )
-		2 pick                   ( wordname latest useslist wordname)
-		find                     ( wordname latest useslist word/0 )
-		?dup if
-		    nip over latest !
-		    2nip
-		    exit
-		else
-		    cell+
-		then
-	repeat
-	drop latest ! drop 0
-    then
-;
+\ \
+\ \
+\ \
+\ \
+\ \
 
-\ \ safe version of find
+
 \ ( vocabulary-aware new version of find )
 \ : find ( wordname -- word )
-\     dup find
+\     dup find            ( wordname dictentry ) \ try to find from current latest first
 \     ?dup if
-\         nip exit
+\ 	nip exit
 \     else
-\         current-vocab @ 0= if
-\             drop 0 exit
-\         then
-\         latest @
-\         current-vocab @ vocab-useslist
-\         begin
-\             dup @
-\         while
+\ 	latest @                         ( wordname latest )
+\ 	current-vocab @ vocab-useslist   ( wordname latest useslist )
+\ 	begin
+\ 	    dup @                        ( wordname latest useslist vocabentry/0 )
+\ 	while
 \ 		dup @ vocab-latest       ( wordname latest useslist usedlatest )
 \ 		latest !                 ( wordname latest useslist )
 \ 		2 pick                   ( wordname latest useslist wordname)
@@ -390,270 +359,326 @@ variable latest-defined-vocab
 \     then
 \ ;
 
-: ?hidden    @ f_hidden    and ;
-: ?immediate @ f_immediate and ;
-: ?builtin   @ f_builtin   and ;
-: ?inline    @ f_inline    and ;
+\ \ \ safe version of find
+\ \ ( vocabulary-aware new version of find )
+\ \ : find ( wordname -- word )
+\ \     dup find
+\ \     ?dup if
+\ \         nip exit
+\ \     else
+\ \         current-vocab @ 0= if
+\ \             drop 0 exit
+\ \         then
+\ \         latest @
+\ \         current-vocab @ vocab-useslist
+\ \         begin
+\ \             dup @
+\ \         while
+\ \ 		dup @ vocab-latest       ( wordname latest useslist usedlatest )
+\ \ 		latest !                 ( wordname latest useslist )
+\ \ 		2 pick                   ( wordname latest useslist wordname)
+\ \ 		find                     ( wordname latest useslist word/0 )
+\ \ 		?dup if
+\ \ 		    nip over latest !
+\ \ 		    2nip
+\ \ 		    exit
+\ \ 		else
+\ \ 		    cell+
+\ \ 		then
+\ \ 	repeat
+\ \ 	drop latest ! drop 0
+\ \     then
+\ \ ;
 
-: ' immediate  ( better version of tick )
-    word find
-    dup 0= if
-	." no such word" cr drop
-	exit
-    then
-    dup ?builtin if
-	>cfa @
-    else
-	>cfa
-    then
-    state @ if
-	' lit , ,
-    then
-;
+\ : ?hidden    @ f_hidden    and ;
+\ : ?immediate @ f_immediate and ;
+\ : ?builtin   @ f_builtin   and ;
+\ : ?inline    @ f_inline    and ;
 
-\ \ safer tick? 
-\ : ' immediate
+\ : ' immediate  ( better version of tick )
 \     word find
 \     dup 0= if
-\         drop
+\ 	." no such word" cr drop
+\ 	exit
+\     then
+\     dup ?builtin if
+\ 	>cfa @
 \     else
-\         dup ?builtin if
-\             >cfa @
-\         else
-\             >cfa
-\         then
-\         state @ if
-\             ' lit , ,
-\         then
+\ 	>cfa
+\     then
+\     state @ if
+\ 	' lit , ,
 \     then
 \ ;
 
-: [compile] immediate
-    word find
-    dup @ f_builtin and
-    if
-	>cfa @ ,
-    else
-	' call , >cfa ,
-    then
-;
+\ \ \ safer tick? 
+\ \ : ' immediate
+\ \     word find
+\ \     dup 0= if
+\ \         drop
+\ \     else
+\ \         dup ?builtin if
+\ \             >cfa @
+\ \         else
+\ \             >cfa
+\ \         then
+\ \         state @ if
+\ \             ' lit , ,
+\ \         then
+\ \     then
+\ \ ;
+
+\ : [compile] immediate
+\     word find
+\     dup @ f_builtin and
+\     if
+\ 	>cfa @ ,
+\     else
+\ 	' call , >cfa ,
+\     then
+\ ;
 
 
-vocabulary forth
-definitions
+\ vocabulary forth
+\ definitions
 
-: hide word find hidden ;
+\ : hide word find hidden ;
 
-hide latest-defined-vocab
-hide vocab-next
-hide vocab-latest
-hide set-vocab-name
-hide set-vocab-next
-hide set-vocab-latest
-hide vocab-useslist
-hide find-vocabulary
+\ hide latest-defined-vocab
+\ hide vocab-next
+\ hide vocab-latest
+\ hide set-vocab-name
+\ hide set-vocab-next
+\ hide set-vocab-latest
+\ hide vocab-useslist
+\ hide find-vocabulary
 
-variable firstbuiltin
+\ variable firstbuiltin
 
-: find-first-builtin ( -- )
-    latest @
-    begin
-	dup ?builtin not
-    while	    
-	    cell+ @
-    repeat
-    firstbuiltin !
-;
+\ : find-first-builtin ( -- )
+\     latest @
+\     begin
+\ 	dup ?builtin not
+\     while	    
+\ 	    cell+ @
+\     repeat
+\     firstbuiltin !
+\ ;
 
-find-first-builtin
+\ find-first-builtin
 
-: find-bytecode ( bytecode -- dicthdr )
-    firstbuiltin @     ( bytecode dictentry )
-    begin
-	2dup >cfa @ <>   ( bytecode dictentry issame? )
-    while
-	    cell+ @
-    repeat
-    nip
-;
+\ : find-bytecode ( bytecode -- dicthdr )
+\     firstbuiltin @     ( bytecode dictentry )
+\     begin
+\ 	2dup >cfa @ <>   ( bytecode dictentry issame? )
+\     while
+\ 	    cell+ @
+\     repeat
+\     nip
+\ ;
 
-: ?hasarg ( dict-entry -- true/false )
-    @ f_hasarg and ;
+\ : ?hasarg ( dict-entry -- true/false )
+\     @ f_hasarg and ;
 
-: ?iscall ( dict-entry -- true/false )
-    >cfa @ ' call = ;
+\ : ?iscall ( dict-entry -- true/false )
+\     >cfa @ ' call = ;
 
-: copytohere ( addr -- addr+cellsize )
-    dup @ , cell+
-;
+\ : copytohere ( addr -- addr+cellsize )
+\     dup @ , cell+
+\ ;
 
-: perform-inline ( codetoinline -- )
-    begin
-	dup @ ' eow <>
-    while
-	    dup @
-	    find-bytecode ?hasarg if
-		copytohere
-	    then
-	    copytohere
-    repeat
-    here @ cell- here !
-    drop
-;
+\ : perform-inline ( codetoinline -- )
+\     begin
+\ 	dup @ ' eow <>
+\     while
+\ 	    dup @
+\ 	    find-bytecode ?hasarg if
+\ 		copytohere
+\ 	    then
+\ 	    copytohere
+\     repeat
+\     here @ cell- here !
+\     drop
+\ ;
 
-: interpret
-    iword
-    dup 0= if
-	drop exit
-    then
-    dup find
-    ?dup if
-	nip
-	dup ?immediate if
-	    iexecute
-	else
-	    state @ if
-		dup ?builtin if
-		    >cfa @ ,
-		else
-		    dup ?inline if
-			>cfa perform-inline
-		    else
-			' call , >cfa ,
-		    then
-		then
-	    else
-		iexecute
-	    then
-	then
-    else
-	dup number
-	if
-	    state @ if
-		' lit ,
-		,
-		drop
-	    else
-		nip
-	    then
-	else
-	    fnumber
-	    if
-		state @ if
-		    ' flit ,
-		    f,
-		then
-	    else
-		." no such word" cr
-	    then
-	then
-    then
-;
+\ : interpret
+\     iword
+\     dup 0= if
+\ 	drop exit
+\     then
+\     dup find
+\     ?dup if
+\ 	nip
+\ 	dup ?immediate if
+\ 	    iexecute
+\ 	else
+\ 	    state @ if
+\ 		dup ?builtin if
+\ 		    >cfa @ ,
+\ 		else
+\ 		    dup ?inline if
+\ 			>cfa perform-inline
+\ 		    else
+\ 			' call , >cfa ,
+\ 		    then
+\ 		then
+\ 	    else
+\ 		iexecute
+\ 	    then
+\ 	then
+\     else
+\ 	dup number
+\ 	if
+\ 	    state @ if
+\ 		' lit ,
+\ 		,
+\ 		drop
+\ 	    else
+\ 		nip
+\ 	    then
+\ 	else
+\ 	    fnumber
+\ 	    if
+\ 		state @ if
+\ 		    ' flit ,
+\ 		    f,
+\ 		then
+\ 	    else
+\ 		." no such word" cr
+\ 	    then
+\ 	then
+\     then
+\ ;
 
-\
-\
-\
-\
-\
+\ \
+\ \
+\ \
+\ \
+\ \
 
-: defer immediate
-    create \ todo: make sure word and create are correct definitions
-    latest @ @ f_deferred xor latest @ !
-    ' jump ,
-    0 ,
-    ' exit ,
-    ' eow ,
-;
+\ : defer immediate
+\     create \ todo: make sure word and create are correct definitions
+\     latest @ @ f_deferred xor latest @ !
+\     ' jump ,
+\     0 ,
+\     ' exit ,
+\     ' eow ,
+\ ;
 
-: is immediate
-    word find
-    ?dup if
-	>cfa cell+ !
-    else
-	." no such word" cr
-    then
-;
+\ : is immediate
+\     word find
+\     ?dup if
+\ 	>cfa cell+ !
+\     else
+\ 	." no such word" cr
+\     then
+\ ;
 
-\ todo: have create take next word in io, rather than pop word off stack
-: create ( wordname )
-    dup find       ( wordname previousdef )
-    ?dup if    \ if previous definition was found
-	dup @ f_deferred and if  \ and it was deferred
-	    over create    \ create new word  ( wordname dictentry )
-	    >cfa cell+     ( wordname callptr )
-	    latest @ >cfa  ( wordname callptr newwordimpl )
-	    swap !
-	    drop      \ wordname
-	    exit
-	then
-	drop
-    then    
-    create
-;
+\ \ \ todo: have create take next word in io, rather than pop word off stack
+\ \ : create ( wordname )
+\ \     dup find       ( wordname previousdef )
+\ \     ?dup if    \ if previous definition was found
+\ \ 	dup @ f_deferred and if  \ and it was deferred
+\ \ 	    over create    \ create new word  ( wordname dictentry )
+\ \ 	    >cfa cell+     ( wordname callptr )
+\ \ 	    latest @ >cfa  ( wordname callptr newwordimpl )
+\ \ 	    swap !
+\ \ 	    drop      \ wordname
+\ \ 	    exit
+\ \ 	then
+\ \ 	drop
+\ \     then    
+\ \     create
+\ \ ;
 
-defer quit
+\ : create ( wordname )
+\     word
+\     dup find
+\     ?dup if
+\         dup @ f_deferred and if
+\             over create
+\             >cfa cell+
+\             latest @ >cfa
+\             swap !
+\             drop
+\             exit
+\         then
+\         drop
+\     then
+\     create
+\ ;
 
-: simple-quit
-    begin
-	?eof not
-    while
-    ." interpretting" cr
-	interpret
-    repeat
-    ." simple-quit done" cr
-;
+\ defer quit
 
-' simple-quit is quit
+\ : simple-quit
+\     begin
+\ 	?eof not
+\     while
+\     ." interpretting" cr
+\ 	interpret
+\     repeat
+\     ." simple-quit done" cr
+\ ;
 
-( redefine to inline )
-: cell inline cellsize ;
-: cells inline cellsize * ;
+\ ' simple-quit is quit
 
-\ new version of colon to support deferred words-aware create
-: :
-    word create
-    latest @ hidden
-    ]
-;
+\ ( redefine to inline )
+\ : cell inline cellsize ;
+\ : cells inline cellsize * ;
 
-hide copytohere
-\ hide perform-inline
+\ \ \ new version of colon to support deferred words-aware create
+\ \ : :
+\ \     word create
+\ \     latest @ hidden
+\ \     ]
+\ \ ;
+\ depth . cr
+\ : :
+\     create
+\     ." AFTER-CREATE " bp
+\     latest @ hidden
+\     ." AFTER-HIDDEN " bp
+\     ]
+\ ;
 
-: cell+ inline cellsize + ;
-: cell- inline cellsize - ;
+\ hide copytohere
+\ \ hide perform-inline
 
-: do immediate
-    ' >r , ' >r ,
-    [compile] begin ;
+\ : cell+ inline cellsize + ;
+\ : cell- inline cellsize - ;
 
-
-: loop immediate
-    ' r> , ' r> ,
-    ' 1+ ,     \ add loop var
-    ' 2dup , ' >r , ' >r ,
-    ' = ,
-    [compile] until
-    ' rdrop , ' rdrop ,
-;
+\ : do immediate
+\     ' >r , ' >r ,
+\     [compile] begin ;
 
 
-: unloop immediate
-    ' 2rdrop ,
-;
+\ : loop immediate
+\     ' r> , ' r> ,
+\     ' 1+ ,     \ add loop var
+\     ' 2dup , ' >r , ' >r ,
+\     ' = ,
+\     [compile] until
+\     ' rdrop , ' rdrop ,
+\ ;
 
-: i inline ( -- loopvar ) rsp@ cell+ @ ;
 
-: depth
-    s0 @ dsp@ -
-    cell-
-;
+\ : unloop immediate
+\     ' 2rdrop ,
+\ ;
 
-: fdepth
-    f0 @ fsp@ -
-;
+\ : i inline ( -- loopvar ) rsp@ cell+ @ ;
 
-: tdepth
-    t0 @ tsp@ -
-;
+\ : depth
+\     s0 @ dsp@ -
+\     cell-
+\ ;
 
-: ? @ . ;
+\ : fdepth
+\     f0 @ fsp@ -
+\ ;
+
+\ : tdepth
+\     t0 @ tsp@ -
+\ ;
+
+\ : ? @ . ;

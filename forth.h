@@ -10,8 +10,9 @@
 
 #include "forth_ops.h"
 
-#define DEFAULT_DICTIONARY_SIZE         10*1024*1024
+#define DEFAULT_DICTIONARY_SIZE         10*1024*1024 /* 10mb */
 #define DEFAULT_WORD_NAME_MAX_LENGTH    32
+/* todo: default stacksizes */
 
 #define BIT(x) (1<<(x))
 #define FLAG_HIDDEN     BIT(0)
@@ -25,7 +26,7 @@
 #define STATE_COMPILE   1
 
 typedef intptr_t    cell;
-typedef void*        xt; /* todo: is it too much to typedef the xt? I think I like the explicitness */
+typedef void*        xt; 
 typedef struct      word_header {
     cell                flags;
     struct word_header* next;
@@ -34,7 +35,7 @@ typedef struct      word_header {
 
 /* dictionary */
 extern word_header_t*   latest;
-extern void*            dictionary_pointer; /* todo: dp? */
+extern void*            dictionary_pointer;
 extern void*            dictionary_base;
 extern cell             dictionary_size;
 
@@ -59,6 +60,7 @@ extern char* forth_io_get_current_wordbuf(void);
 extern int   forth_io_is_eof(void);
 extern char* forth_io_get_next_word(void);  /* WORD */
 extern int   forth_io_get_next_char(void);
+extern void  forth_io_set_string_input(const char* input);
 extern void  forth_io_read_string(const char* str);
 /* other forth io ops */
 extern void forth_io_emit(int ch);

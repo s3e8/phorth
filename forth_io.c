@@ -174,25 +174,29 @@ int forth_io_get_char() {
     return fgetc(current_input_stream);
 }
 
-void forth_io_read_string(const char* str) {
-    const char* position = str;
-    char* tempbuf = current_linebuf;
-
-    int i;
-    /* fill linebuf */
-    /* todo: I dont think it needs to be - 1 */
-    for (i = 0; i < current_linebuf_size - 1 && *position; i++) {
-        *tempbuf++ = *position++;
+void forth_io_set_string_input(const char* input) {
+        if(strlen(input) >= current_linebuf_size) { /* todo: > or >= */
+        printf("Error: Input string must be shorter than linebuf.\n");
+        return;
     }
-    *tempbuf = '\0'; 
-    current_linebuf_position = current_linebuf;
+
+    const char* position = input;
+    int i;
+
+    for (i = 0; i < current_linebuf_size - 1 && *position; i++) {
+        current_linebuf[i] = *position++;
+    }
+    current_linebuf[i] = '\0';
+}
+
+void forth_io_read_string(const char* str) {
+    forth_io_set_string_input(str);
 
     while(*current_linebuf_position) {
         forth_io_get_next_word();
         printf("Got word: '%s'\n", current_wordbuf);
     }
 }
-
 
 /* ops */
 void forth_io_emit(int ch) {
