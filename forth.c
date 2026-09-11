@@ -21,9 +21,7 @@ int main(void) {
     forth_io_init_defaults();
 
     // forth_interpret_string("this is a test bye");
-    forth_interpret_string(": make-inline latest @ dup @ f_inline xor swap ! ; bye");
-
-
+    // forth_interpret_string(": make-inline latest @ dup @ f_inline xor swap ! ; bye");
 
     forth_io_set_input_file("forth_bootstrap.f");
     forth_vm_run();

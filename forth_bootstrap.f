@@ -1,8 +1,8 @@
-\ : make-inline
-\     latest @ dup
-\     @ f_inline xor
-\     swap !
-\ ;
+: make-inline
+    latest @ dup
+    @ f_inline xor
+    swap !
+;
 
 : inline  immediate make-inline ;
 : cell    inline cellsize   ;
