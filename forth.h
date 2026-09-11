@@ -55,7 +55,7 @@ void forth_run(void);
 /* forth interpreter */
 extern void forth_interpreter_init_defaults(void);
 extern int  forth_interpreter_parse_number(const char* wordbuf, int* result);
-extern int  forth_interpreter_interpret(void);
+extern int  forth_interpreter_interpret(void); /* todo: not in use yet */
 extern int  forth_interpreter_interpret_string(const char* str);
 
 /* forth io */

@@ -11,7 +11,8 @@
 #define OFFSET(x)   ((void*)(x * sizeof(cell)))
 // #define ERROR(x)    { printf("Error: %s\n", x); goto DIE(); }
 
-#define DS_PUSH(x)      forth_vm_push_ds((cell)x)
+// #define DS_PUSH(x)      forth_vm_push_ds((cell)x)
+#define DS_PUSH(x)       if(forth_vm_check_ds_overflow()) NEXT(); (*--current_ds = (cell)(x));
 #define DS_POP()        forth_vm_pop_ds()
 #define FS_PUSH(x)      forth_vm_push_fs((cell)x)
 #define FS_POP()        forth_vm_pop_fs()
