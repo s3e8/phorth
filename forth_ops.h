@@ -333,7 +333,6 @@
 #define INTERPRET() \
     char* wordbuf = forth_io_get_next_word(); \
     if(!wordbuf) return 1; \
-    printf("interpretting: %s...\n", wordbuf); \
     word_header_t* word = forth_dictionary_find_word(wordbuf); \
     if(word) { \
         void* code = forth_dictionary_get_xt(word); \
@@ -371,15 +370,13 @@
             } \
             else forth_vm_push_ds((cell)number); \
         } \
-        else { fprintf(stderr, "Error: no such word: %s\n", wordbuf); goto OP(DIE); } \
-        \
-        /* move on to NEXT() and run ip */ \
+        else { fprintf(stderr, "Error: no such word: %s\n", wordbuf); NEXT(); } \
         NEXT(); \
     }
 
-// #define INTERPRET() {                 \
-//     forth_interpreter_interpret();  \
-//         NEXT();                     \
+// #define INTERPRET() { \
+//     forth_interpreter_interpret(); \
+//         NEXT(); \
 //     }
 
 #endif /* FORTH_OPS_H */

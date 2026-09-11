@@ -47,6 +47,11 @@ extern void* word_immediatebuf[3]; /* as is this... */
 extern void* call_code; /* todo: codes not working as global */
 extern void* lit_code;
 
+/* forth */
+void forth_init_defaults(void);
+void forth_interpret_string(const char* str);
+void forth_run(void);
+
 /* forth interpreter */
 extern void forth_interpreter_init_defaults(void);
 extern int  forth_interpreter_parse_number(const char* wordbuf, int* result);

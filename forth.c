@@ -14,15 +14,15 @@ void forth_interpret_string(const char* str) {
     forth_vm_run();
 }
 
-int main(void) {
+void forth_init_defaults(void) {
     forth_interpreter_init_defaults();
     forth_dictionary_init_defaults();
     forth_vm_init_defaults();
     forth_io_init_defaults();
+}
 
-    // forth_interpret_string("this is a test bye");
-    // forth_interpret_string(": make-inline latest @ dup @ f_inline xor swap ! ; bye");
-
+int main(void) {
+    forth_init_defaults();    
     forth_io_set_input_file("forth_bootstrap.f");
     forth_vm_run();
 
