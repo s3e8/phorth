@@ -164,6 +164,15 @@ int check_stack_overflow(void) {
     return 0;
 }
 
+int forth_vm_check_ds_overflow(void) {
+    // printf("todo: fix stack checking...\n");
+    if((current_ds - 1) < (current_d0 - current_ds_size)) {
+        fprintf(stderr, "Data stack overflow\n");
+        return 1;
+    }
+    return 0;
+}
+
 int check_stack_underflow(void) {
     // printf("todo: fix stack checking...\n");
     if(current_ds >= current_d0) {

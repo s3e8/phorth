@@ -11,8 +11,8 @@
 #define OFFSET(x)   ((void*)(x * sizeof(cell)))
 // #define ERROR(x)    { printf("Error: %s\n", x); goto DIE(); }
 
-// #define DS_PUSH(x)      forth_vm_push_ds((cell)x)
-#define DS_PUSH(x)       if(forth_vm_check_ds_overflow()) NEXT(); (*--current_ds = (cell)(x));
+#define DS_PUSH(x)      forth_vm_push_ds((cell)x)
+// #define DS_PUSH(x)      if(forth_vm_check_ds_overflow()) NEXT(); (*--current_ds = (cell)x);
 #define DS_POP()        forth_vm_pop_ds()
 #define FS_PUSH(x)      forth_vm_push_fs((cell)x)
 #define FS_POP()        forth_vm_pop_fs()
@@ -34,10 +34,10 @@
 #define NOOP()          /* do nothing */
 #define EXIT()          current_ip = forth_vm_pop_rs();
 #define IRETURN()       current_ip = *nestingstack++;
-#define LIT()           forth_vm_push_ds(RS_INTARG());
+#define LIT()           DS_PUSH(RS_INTARG());
 #define LEFT_BRACKET()  state = STATE_IMMEDIATE; 
 #define RIGHT_BRACKET() state = STATE_COMPILE;
-#define LATEST()        forth_vm_push_ds((cell)&latest);
+#define LATEST()        DS_PUSH((cell)&latest);
 #define IMMEDIATE()     latest->flags ^= FLAG_IMMEDIATE;
 #define EMIT()          forth_io_emit((int)forth_vm_pop_ds());
 #define TELL()          forth_io_tell((char*)forth_vm_pop_ds());
@@ -47,20 +47,20 @@
 #define INVERT()        DS_AT(0) = ~DS_AT(0);
 #define SKIP_LINE()     forth_io_skip_line();
 #define SKIP_PARENS()   forth_io_skip_parens();
-#define IWORD()         forth_vm_push_ds((cell)forth_io_get_next_word()); /* should I use linebuf? */
+#define IWORD()         DS_PUSH((cell)forth_io_get_next_word()); /* should I use linebuf? */
 #define DROP()          forth_vm_pop_ds(); /* aka ++current_ds;*/
 #define EQ_ZERO()       DS_AT(0) = DS_AT(0) == 0;
 #define NEQ_ZERO()      DS_AT(0) = DS_AT(0) != 0;
-#define DEPTH()         forth_vm_push_ds((cell)(current_d0 - current_ds));
+#define DEPTH()         DS_PUSH((cell)(current_d0 - current_ds));
 #define BREAKPOINT()    forth_debug_breakpoint();
 #define EXTERNAL()      void (*fn)(void) = (void (*)(void)) *current_ip++; fn();
-#define KEY()           forth_vm_push_ds((cell)forth_io_get_next_char());
+#define KEY()           DS_PUSH((cell)forth_io_get_next_char());
 #define LTE_ZERO()      DS_AT(0) = DS_AT(0) <= 0;
 #define GTE_ZERO()      DS_AT(0) = DS_AT(0) >= 0;
 #define NIP()           DS_AT(1) = DS_AT(0); current_ds++;
-#define GET_T0()        forth_vm_push_ds((cell)current_t0); /* todo: should ts be type cell? */
+#define GET_T0()        DS_PUSH((cell)current_t0); /* todo: should ts be type cell? */
 #define SET_T0()        current_ts = (cell*)forth_vm_pop_ds(); 
-#define GET_F0()        forth_vm_push_ds((cell)current_f0); /* todo: should it be fzero? */
+#define GET_F0()        DS_PUSH((cell)current_f0); /* todo: should it be fzero? */
 #define SET_F0()        current_fs = (float*)forth_vm_pop_ds(); 
 #define DROP2()         current_ds += 2;
 #define NIP2()          DS_AT(2) = DS_AT(0); current_ds += 2;
@@ -131,7 +131,7 @@
 /* todo: rename to fetch_d0? get vs fetch... */
 #define GET_D0() \
     temp = (cell)current_ds; \
-    forth_vm_push_ds(temp); 
+    DS_PUSH(temp); 
 
 #define SET_D0() \
     cell *new_ds = (cell*)forth_vm_pop_ds(); \
@@ -191,20 +191,20 @@
 
 #define OVER() \
     temp = DS_AT(1); \
-    forth_vm_push_ds(temp);
+    DS_PUSH(temp);
 
 #define STRCMP() \
     char* b = (char*)forth_vm_pop_ds(); \
     char* a = (char*)forth_vm_pop_ds(); \
-    forth_vm_push_ds(strcmp(a, b));
+    DS_PUSH(strcmp(a, b));
 
 #define DUP() \
     temp = DS_TOP(); \
-    forth_vm_push_ds(temp);
+    DS_PUSH(temp);
 
 #define COND_DUP() \
     temp = DS_TOP(); \
-    if(temp) forth_vm_push_ds(temp);   
+    if(temp) DS_PUSH(temp);   
 
 #define SWAP() \
     temp = DS_AT(1); \
@@ -257,11 +257,11 @@
 
 #define WORD() \
     char* next_word = forth_io_get_next_word(); \
-    forth_vm_push_ds((cell)next_word);
+    DS_PUSH((cell)next_word);
 
 #define FIND() \
     char* word = (char*)forth_vm_pop_ds(); \
-    forth_vm_push_ds((cell)forth_dictionary_find_word(word));
+    DS_PUSH((cell)forth_dictionary_find_word(word));
 
 #define HIDDEN() \
     word_header_t* word = (word_header_t*)forth_vm_pop_ds(); \
@@ -277,7 +277,7 @@
     } else { \
         code = (cell)forth_dictionary_get_xt(word); \
     } \
-    if(state == STATE_IMMEDIATE) forth_vm_push_ds(code); \
+    if(state == STATE_IMMEDIATE) DS_PUSH(code); \
     else { \
         forth_dictionary_compile((cell)CODE(LIT)); \
         forth_dictionary_compile(code); \
@@ -289,11 +289,11 @@
 
 #define FETCH() \
     cell* address = (cell*)forth_vm_pop_ds(); \
-    forth_vm_push_ds(*address);     
+    DS_PUSH(*address);     
 
 #define CFETCH() \
     char *ptr = (char*)forth_vm_pop_ds(); \
-    forth_vm_push_ds((cell)*ptr);   
+    DS_PUSH((cell)*ptr);   
 
 #define STORE() \
     cell* ptr = (cell*)forth_vm_pop_ds(); \
@@ -324,12 +324,12 @@
 
 #define TO_XT() \
     word_header_t* word = (word_header_t*)forth_vm_pop_ds(); \
-    forth_vm_push_ds((cell)forth_dictionary_get_xt(word));
+    DS_PUSH((cell)forth_dictionary_get_xt(word));
 
 /* todo: to deprecate? */
 #define TO_CFA() \
     word_header_t* word = (word_header_t*)forth_vm_pop_ds(); \
-    forth_vm_push_ds((cell)forth_dictionary_get_cfa(word));
+    DS_PUSH((cell)forth_dictionary_get_cfa(word));
 
 #define INTERPRET() \
     char* wordbuf = forth_io_get_next_word(); \
@@ -369,7 +369,7 @@
                 forth_dictionary_compile((cell) CODE(LIT)); \
                 forth_dictionary_compile((cell) number); \
             } \
-            else forth_vm_push_ds((cell)number); \
+            else DS_PUSH((cell)number); \
         } \
         else { fprintf(stderr, "Error: no such word: %s\n", wordbuf); NEXT(); } \
         NEXT(); \
