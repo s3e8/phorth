@@ -91,6 +91,18 @@
     temp = (cell)RS_POP(); \
     DS_PUSH(temp);   
 
+#define ROT() \
+    cell eax = DS_POP(); \
+    cell ebx = DS_POP(); \
+    cell ecx = DS_POP(); \
+    DS_PUSH(ebx); \
+    DS_PUSH(eax); \
+    DS_PUSH(ecx);
+
+#define OR() \
+    temp = DS_POP(); \
+    DS_AT(0) |= temp;   
+
 /* todo: err msg if not header? */
 #define TO_NAME() \
     word_header_t* word = (word_header_t*)DS_POP(); \

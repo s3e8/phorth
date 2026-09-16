@@ -1,6 +1,6 @@
 #include "forth.h"
 
-#define DEFAULt_WORDBUF_SIZE 128
+#define DEFAULT_WORDBUF_SIZE 128
 #define DEFAULT_LINEBUF_SIZE 2048
 
 static FILE* current_input_stream;
@@ -13,7 +13,7 @@ static int   current_wordbuf_size;
 static int   current_linebuf_size;
 
 static char default_linebuf[DEFAULT_LINEBUF_SIZE];
-static char default_wordbuf[DEFAULt_WORDBUF_SIZE];
+static char default_wordbuf[DEFAULT_WORDBUF_SIZE];
 
 void forth_io_set_input_stream(FILE* input_stream) {
     /* todo: err if input_stream isnt file? */
@@ -24,8 +24,7 @@ void forth_io_set_output_stream(FILE* output_stream) {
     current_output_stream = output_stream;
 }
 
-FILE* forth_io_open_or_create_file(const char* filename, const char* mode)
-{
+FILE* forth_io_open_or_create_file(const char* filename, const char* mode) {
     FILE* fp = fopen(filename, mode);
     if(!fp) {
         fprintf(stderr, "Error opening file: %s\n", filename);
@@ -187,6 +186,7 @@ void forth_io_set_string_input(const char* input) {
         current_linebuf[i] = *position++;
     }
     current_linebuf[i] = '\0';
+    current_linebuf_position = current_linebuf;
 }
 
 void forth_io_read_string(const char* str) {

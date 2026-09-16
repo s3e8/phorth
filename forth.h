@@ -11,6 +11,7 @@
 #include "forth_ops.h"
 
 #define DEFAULT_DICTIONARY_SIZE         10*1024*1024 /* 10mb */
+#define DEFAULT_STRING_SPACE_SIZE       10*1024*1024
 #define DEFAULT_WORD_NAME_MAX_LENGTH    32
 /* todo: default stacksizes */
 
@@ -38,6 +39,9 @@ extern word_header_t*   latest;
 extern void*            dictionary_pointer;
 extern void*            dictionary_base;
 extern cell             dictionary_size;
+extern char*            string_space_pointer;
+extern char*            string_space_base;
+extern int              string_space_size;
 
 /* interpreter */
 extern int state;
@@ -97,6 +101,7 @@ extern void forth_vm_init_defaults(void);
 extern int  forth_vm_run(void);
 extern void forth_vm_push_ns(void);
 extern void forth_vm_push_ds(cell number);
+extern cell forth_vm_pop_dr(void);
 extern void forth_vm_schedule_builtin(void** code); /* todo: make into macro */
 extern void forth_vm_schedule_word(void** code); /* todo: make into macro */
 
