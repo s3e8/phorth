@@ -360,6 +360,8 @@ int forth_vm_run(void) {
         forth_dictionary_defconst("here0",      (cell)dictionary_base);
         forth_dictionary_defconst("consthere",  (cell)string_space_pointer);
         forth_dictionary_defconst("consthere0", (cell)string_space_base);
+        forth_dictionary_defconst("datahere",   (cell)scratch_buffer_pointer);
+        forth_dictionary_defconst("datahere0",  (cell)scratch_buffer_base);
         forth_dictionary_defcode("latest",    CODE(LATEST),       0);
         forth_dictionary_defcode("create",    CODE(CREATE),       0);
         forth_dictionary_defcode("word",      CODE(WORD),         0);

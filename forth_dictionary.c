@@ -7,6 +7,8 @@ cell  dictionary_size; /* todo: change to int */
 char* string_space_pointer; /* putting this here for now cause idk where else to put it */
 char* string_space_base;
 int   string_space_size;
+char* scratch_buffer_pointer;
+char* scratch_buffer_base;
 
 word_header_t* latest = NULL;
 
