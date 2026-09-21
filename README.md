@@ -2,6 +2,7 @@
 WIP forth
 
 ### todo:
+- [ ] revert 'create' to original functionality
 - [ ] print-ds
 - [ ] debug interpreter
 - [ ] general clean-up
@@ -11,3 +12,7 @@ WIP forth
     - [ ] platform has file-local globals for each platform.. for now
 - [ ] raylib bindings
     - [ ] conditional build cfg macro in forth.h
+- [ ] do todos
+- [ ] expert system
+- [ ] include stack
+- [ ] builtin string space and scratch buffer
