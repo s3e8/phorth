@@ -8,8 +8,13 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "forth_ops.h"
+#include "forth_builtins.h"
 
+/* forth libraries */
+#define INCLUDE_LIB_SYS     1
+#define INCLUDE_LIB_RAYLIB  0
+
+/* forth config */
 #define DEFAULT_DICTIONARY_SIZE         10*1024*1024 /* 10mb */
 #define DEFAULT_STRING_SPACE_SIZE       10*1024*1024
 #define DEFAULT_WORD_NAME_MAX_LENGTH    32
@@ -39,9 +44,12 @@ extern word_header_t*   latest;
 extern void*            dictionary_pointer;
 extern void*            dictionary_base;
 extern cell             dictionary_size;
-extern char*            string_space_pointer;
+extern char*            string_space_pointer; /* todo: which data type here? */
 extern char*            string_space_base;
 extern int              string_space_size;
+extern void*            scratch_buffer_pointer;
+extern void*            scratch_buffer_base;
+extern int              scratch_buffer_size;
 
 /* interpreter */
 extern int state;
