@@ -19,9 +19,9 @@
     ' eow ,
 ;
 
-: variable cellsize make-variable ;
-: fvariable floatsize make-variable ;
-: v3variable 3 floatsize *  make-variable ;
+:   variable        cellsize    make-variable ;
+:  fvariable       floatsize    make-variable ;
+: v3variable 3     floatsize *  make-variable ;
 : m3variable 3 3 * floatsize *  make-variable ;
 
 variable consthere

@@ -6,7 +6,7 @@ WIP forth
 - [ ] print-ds
 - [ ] debug interpreter
 - [ ] general clean-up
-= [ ] clean up macros and ops file
+- [ ] clean up macros and ops file
     - [ ] change 'ops' to 'builtin'
 - [ ] platform_xxx + sys_tty
     - [ ] platform has file-local globals for each platform.. for now
