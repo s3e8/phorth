@@ -1,4 +1,4 @@
-/* FORTH_H */
+/* forth.h */
 #ifndef FORTH_H
 #define FORTH_H
 
@@ -11,8 +11,8 @@
 #include "forth_builtins.h"
 
 /* forth libraries */
-#define INCLUDE_LIB_SYS_TTY 1
-#define INCLUDE_LIB_RAYLIB  0
+#define INCLUDE_LIB_SYS_TTY
+// #define INCLUDE_LIB_RAYLIB
 
 /* forth config */
 #define DEFAULT_DICTIONARY_SIZE         10*1024*1024 /* 10mb */
@@ -112,6 +112,10 @@ extern void forth_vm_push_ds(cell number);
 extern cell forth_vm_pop_dr(void);
 extern void forth_vm_schedule_builtin(void** code); /* todo: make into macro */
 extern void forth_vm_schedule_word(void** code); /* todo: make into macro */
+
+/* forth libs */
+extern void forth_include_lib_sys_tty(void);
+extern void forth_cleanup_lib_sys_tty(void);
 
 /* dbg */
 extern void forth_debug_breakpoint(void);

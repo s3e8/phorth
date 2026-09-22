@@ -1,12 +1,18 @@
+/* sys_tty_unix.c */
 #if defined(__unix__) || defined(__APPLE__) /* todo: make into simplified macro? */
 
 #include "sys_tty.h"
+#include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
 
 static struct termios original_termios;
 static int saved = 0;
+
+void sys_hello(void) {
+    printf("hello from sys...\n");
+}
 
 void sys_tty_enable_raw_mode(void) {
     if (!saved) {
