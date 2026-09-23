@@ -2,7 +2,7 @@
 #include "forth.h"
 
 int state = STATE_IMMEDIATE;
-int base  = 10;  /* todo: is this interpreter or vm? */
+cell base  = 10;  /* todo: is this interpreter or vm? */
 
 void* call_code;
 void* lit_code;

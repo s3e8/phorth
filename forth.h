@@ -31,7 +31,8 @@
 #define STATE_IMMEDIATE 0
 #define STATE_COMPILE   1
 
-typedef intptr_t    cell;
+typedef  intptr_t    cell;
+typedef uintptr_t   ucell;  
 typedef void*        xt; 
 typedef struct      word_header {
     cell                flags;
@@ -52,8 +53,8 @@ extern void*            scratch_buffer_base;
 extern int              scratch_buffer_size;
 
 /* interpreter */
-extern int state;
-extern int base;
+extern int  state;
+extern cell base;
 extern void* builtin_immediatebuf[2];/* todo: this is arguably "vm" */
 extern void* word_immediatebuf[3]; /* as is this... */
 extern void* call_code; /* todo: codes not working as global */

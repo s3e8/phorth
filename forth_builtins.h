@@ -75,6 +75,12 @@
 #define SET_TSP()       current_ts = (cell*)forth_vm_pop_ds();
 #define GET_FSP()       DS_PUSH((cell)current_fs);
 #define SET_FSP()       current_fs = (float*)forth_vm_pop_ds();
+#define DIV()     temp = DS_POP(); DS_AT(0) /= temp;
+#define MOD()     temp = DS_POP(); DS_AT(0) %= temp;
+#define DIVMOD()  { cell  a = DS_POP(),        b = DS_POP();        DS_PUSH(b % a); DS_PUSH(b / a); }
+#define UDIVMOD() { ucell a = (ucell)DS_POP(), b = (ucell)DS_POP(); DS_PUSH((cell)(b % a)); DS_PUSH((cell)(b / a)); }
+#define LT_ZERO()   DS_AT(0) = DS_AT(0) < 0;
+#define GT_ZERO()   DS_AT(0) = DS_AT(0) > 0;
 
 /* todo: is push_ns the right name for it? */
 #define EXEC_BUILTIN() \

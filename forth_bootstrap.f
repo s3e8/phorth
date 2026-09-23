@@ -431,7 +431,7 @@ variable latest-defined-vocab
     u.
 ;
 
-\ : . 0 .r space ; \ todo: why does this segfault? 
+: . 0 .r space ; \ todo: why does this segfault? 
 : u. u. space ;
 
 

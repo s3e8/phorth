@@ -318,6 +318,7 @@ int forth_vm_run(void) {
         forth_dictionary_defconst("f_inline",    FLAG_INLINE);
         forth_dictionary_defconst("f_deferred",  FLAG_DEFERRED);
         forth_dictionary_defconst("state",      (cell)&state);
+        forth_dictionary_defconst("base",       (cell)&base);
         forth_dictionary_defconst("cellsize",   (cell)sizeof(cell));
         forth_dictionary_defconst("floatsize",  (cell)sizeof(float));
         forth_dictionary_defcode("bye",     CODE(BYE), 0);
@@ -392,6 +393,12 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("strcpy",  CODE(STRCPY),   0);
         forth_dictionary_defcode("strlen",  CODE(STRLEN),   0);
         /* other */
+        forth_dictionary_defcode("0<", CODE(LT_ZERO), 0);
+        forth_dictionary_defcode("0>", CODE(GT_ZERO), 0);
+        forth_dictionary_defcode("/",     CODE(DIV),     0);
+        forth_dictionary_defcode("mod",   CODE(MOD),     0);
+        forth_dictionary_defcode("/mod",  CODE(DIVMOD),  0);
+        forth_dictionary_defcode("u/mod", CODE(UDIVMOD), 0);
         forth_dictionary_defcode("include", CODE(INCLUDE), 0);
         forth_dictionary_defcode("@",       CODE(FETCH),    0);
         forth_dictionary_defcode("c@",      CODE(CFETCH),   0);
@@ -551,6 +558,13 @@ int forth_vm_run(void) {
         SEMICOLON();
         NEXT();
     }
+
+    OP(DIV):     { DIV();     NEXT(); }
+    OP(MOD):     { MOD();     NEXT(); }
+    OP(DIVMOD):  { DIVMOD();  NEXT(); }
+    OP(UDIVMOD): { UDIVMOD(); NEXT(); }
+    OP(LT_ZERO): { LT_ZERO(); NEXT(); }
+    OP(GT_ZERO): { GT_ZERO(); NEXT(); }
 
     OP(PRINT_DS): { PRINT_DS(); NEXT(); }
     OP(UNSIGNED_LT): { UNSIGNED_LT(); NEXT(); }
