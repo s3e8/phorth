@@ -538,10 +538,8 @@ defer quit
     begin
 	?eof not
     while
-    ." interpretting" cr
 	interpret
     repeat
-    ." simple-quit done" cr
 ;
 
 ' simple-quit is quit
