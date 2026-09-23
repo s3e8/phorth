@@ -44,10 +44,12 @@
     tty-enable-raw-mode
     begin
         tty-clear-screen
+        \ render-screen here?
         tty-read-key
         dup quit-key? not
     while
         tty-handle-key
+        \ or render-screen here?
     repeat
     drop
     tty-disable-raw-mode
