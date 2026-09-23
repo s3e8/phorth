@@ -320,6 +320,121 @@ variable latest-defined-vocab
     drop
 ;
 
+
+: spaces ( n -- )
+    begin
+	dup 0>
+    while
+	    space
+	    1-
+    repeat
+    drop
+;
+
+: decimal immediate 10 base ! ;
+: hex immediate 16 base ! ;
+
+: f. s" %f" format tell ;
+
+: u. ( u -- )
+    base @ u/mod
+    ?dup if
+	recurse
+    then
+
+    dup 10 < if
+	'0'
+    else
+	10 -
+	'A'
+    then
+    +
+    emit
+;
+
+: .ds ( -- )
+    dsp@
+    begin
+	dup s0 @ u<
+    while
+	    dup @ u.
+	    space
+	    cell+
+    repeat
+    drop
+;
+
+: .ts ( -- )
+    tsp@
+    begin
+	dup t0 @ u<
+    while
+	    dup @ u.
+	    space
+	    cell+
+    repeat
+    drop
+;
+
+: .fs ( -- )
+    fsp@
+    begin
+	dup f0 @ u<
+    while
+	    dup f@ f. space
+	    floatsize +
+    repeat
+    drop
+;
+
+
+: uwidth ( u -- width )
+    base @ /
+    ?dup if
+	recurse 1+
+    else
+	1
+    then
+;
+
+: u.r ( u width -- )
+    swap
+    dup
+    uwidth
+    rot
+    swap -
+    spaces
+    u.
+;
+
+: .r
+    swap
+    dup 0< if
+	negate
+	1
+	swap
+	rot
+	1-
+    else
+	0 swap rot
+    then
+    swap
+    dup
+    uwidth
+    rot
+    swap -
+    spaces
+    swap
+    if
+	'-' emit
+    then
+    u.
+;
+
+\ : . 0 .r space ; \ todo: why does this segfault? 
+: u. u. space ;
+
+
 \ vocabulary-aware new version of find
 : find ( string -- word-header )
     dup find ?dup

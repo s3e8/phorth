@@ -76,6 +76,12 @@
 #define GET_FSP()       DS_PUSH((cell)current_fs);
 #define SET_FSP()       current_fs = (float*)forth_vm_pop_ds();
 
+/* todo: is push_ns the right name for it? */
+#define EXEC_BUILTIN() \
+    forth_vm_push_ns(); \
+    builtin_immediatebuf[0] = (void*)DS_POP(); \
+    current_ip = builtin_immediatebuf;
+
 /* todo: rs_intarg naming? */
 #define GT_ZERO_BRANCH() \
     temp = RS_INTARG(); \

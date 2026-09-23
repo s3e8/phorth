@@ -421,6 +421,7 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("-rot",    CODE(MINUS_ROT), 0);
         forth_dictionary_defcode(".s",      CODE(PRINT_DS), 0);
         forth_dictionary_defcode("execute", CODE(EXECUTE), 0);
+        forth_dictionary_defcode("exec-builtin", CODE(EXEC_BUILTIN), 0); /* todo: clean up this execute stuff */
         forth_dictionary_defcode("u<",      CODE(UNSIGNED_LT), 0);
         /* outer? */
         forth_dictionary_defcode("iword",   CODE(IWORD),    0);
@@ -518,6 +519,7 @@ int forth_vm_run(void) {
     OP(LTE): { LTE(); NEXT(); }
     OP(MINUS_ROT): { MINUS_ROT(); NEXT(); }
     OP(EXECUTE): { EXECUTE(); NEXT(); }
+    OP(EXEC_BUILTIN): { EXEC_BUILTIN(); NEXT(); }
 
     /* forth interpreter words */
     OP(LEFT_BRACKET): {
