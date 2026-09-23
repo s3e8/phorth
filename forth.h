@@ -116,6 +116,9 @@ extern void forth_vm_schedule_word(void** code); /* todo: make into macro */
 /* forth libs */
 extern void forth_include_lib_sys_tty(void);
 extern void forth_cleanup_lib_sys_tty(void);
+// extern void forth_lib_sys_tty_enable_raw_mode(void);
+// extern void forth_lib_sys_tty_disable_raw_mode(void);
+// extern void forth_lib_sys_tty_clear_screen(void);
 
 /* dbg */
 extern void forth_debug_breakpoint(void);

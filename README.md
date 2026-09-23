@@ -2,6 +2,7 @@
 WIP forth
 
 ### todo:
+- [ ] include stack
 - [ ] revert 'create' to original functionality
 - [ ] print-ds
 - [ ] debug interpreter

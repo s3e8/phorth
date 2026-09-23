@@ -115,13 +115,13 @@ char* forth_io_get_next_line() {
         fprintf(stderr, "Error: current_linebuf not set\n");
         return NULL;
     }
-    if(current_input_stream == stdin) printf("> ");
+    if(current_input_stream == stdin) printf("outer> ");
 
     char* tmp = fgets(current_linebuf, current_linebuf_size, current_input_stream);
     if (!tmp && feof(current_input_stream)) {
         printf("End of file reached, switching to stdin...\n");
         current_input_stream = stdin;
-        printf("> ");
+        printf("outer> ");
         tmp = fgets(current_linebuf, current_linebuf_size, current_input_stream);
     }
     if(!tmp) return NULL;

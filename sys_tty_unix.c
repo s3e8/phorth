@@ -9,7 +9,7 @@
 
 static struct termios original_termios;
 static int saved = 0;
-
+/* todo: fix ugly namespacing */
 void sys_hello(void) {
     printf("hello from sys...\n");
 }

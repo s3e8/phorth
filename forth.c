@@ -84,21 +84,19 @@ void forth_bootstrap(void) { /* temp: have to call bye to exit */
     forth_interpret_string(": s\" immediate state @ if consthere @ begin key dup '\"' <> while constc, repeat drop 0 constc, ' lit , , constalign else consthere @ begin key dup '\"' <> while over c! 1+ repeat drop 0 over c! drop consthere @ then ; bye");
 }
 
-// void forth_cleanup_and_exit(void) {
-//     sys_tty_disable_raw_mode();
-// }
+void forth_cleanup_and_exit(void) {
+    forth_cleanup_lib_sys_tty();
+}
 
 int main(void) {
-    forth_init_defaults();  
+    forth_init_defaults();
+    forth_interpret_string("bye"); /* init vm */
     forth_io_set_input_file("forth_bootstrap.f");
-    // forth_bootstrap();
-
-    forth_interpret_string("bye");
-    forth_include_lib_sys_tty(); 
+    forth_include_lib_sys_tty();
     forth_vm_run();
 
     /* todo: is atexit just a unix thing? */
-    atexit(forth_cleanup_and_exit());
+    atexit(forth_cleanup_and_exit);
 
     return 0;
 }
