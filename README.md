@@ -2,7 +2,7 @@
 WIP forth
 
 ### todo:
-- [ ] include stack
+- [x] include stack
 - [ ] revert 'create' to original functionality
 - [ ] print-ds
 - [ ] debug interpreter
@@ -15,6 +15,5 @@ WIP forth
     - [ ] conditional build cfg macro in forth.h
 - [ ] do todos
 - [ ] expert system
-- [ ] include stack
 - [ ] builtin string space and scratch buffer
 - [ ] rename core files to forth_core? like forth_lib
