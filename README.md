@@ -11,6 +11,7 @@ WIP forth
     - [ ] change 'ops' to 'builtin'
 - [ ] platform_xxx + sys_tty
     - [ ] platform has file-local globals for each platform.. for now
+    - [ ] just use platform naming convention.. maybe
 - [ ] raylib bindings
     - [ ] conditional build cfg macro in forth.h
 - [ ] do todos
