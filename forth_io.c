@@ -3,14 +3,21 @@
 #define DEFAULT_WORDBUF_SIZE 128
 #define DEFAULT_LINEBUF_SIZE 2048
 
+typedef struct io_state_t {
+    FILE*  input_stream_stack;
+    FILE* output_stream_stack; /* don't think I need output stack... */
+    /* don't need input stack position? */
+
+} io_state_t;
+
 static FILE* current_input_stream;
 static FILE* current_output_stream;
-static int   current_input_stack;
-static char* current_wordbuf;
+static int   current_input_stack_position;
 static char* current_linebuf;
 static char* current_linebuf_position;
-static int   current_wordbuf_size;
 static int   current_linebuf_size;
+static char* current_wordbuf;
+static int   current_wordbuf_size;
 
 static char default_linebuf[DEFAULT_LINEBUF_SIZE];
 static char default_wordbuf[DEFAULT_WORDBUF_SIZE];
