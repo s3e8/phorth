@@ -70,6 +70,7 @@
 #define RS_DROP()         current_rs++;
 #define RSP_GET()           RS_PUSH(current_rs);
 #define RS_DROP2()      current_rs += 2; /* todo: do i need semicolons here? */
+#define INCLUDE()       forth_io_include_file(forth_io_get_next_word()); /* todo: rename from include_file cause ans standard stuff? */
 
 #define LTE() \
     temp = DS_POP(); \

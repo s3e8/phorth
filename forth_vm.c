@@ -385,6 +385,7 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("strcpy",  CODE(STRCPY),   0);
         forth_dictionary_defcode("strlen",  CODE(STRLEN),   0);
         /* other */
+        forth_dictionary_defcode("include", CODE(INCLUDE), 0);
         forth_dictionary_defcode("@",       CODE(FETCH),    0);
         forth_dictionary_defcode("c@",      CODE(CFETCH),   0);
         forth_dictionary_defcode("!",       CODE(STORE),    0);
@@ -474,6 +475,7 @@ int forth_vm_run(void) {
     OP(PARSE_NUMBER):  { PARSE_NUMBER();  NEXT(); }
     OP(PARSE_FNUMBER): { PARSE_FNUMBER(); NEXT(); }
     OP(FCOMMA): { FCOMMA(); NEXT(); }
+    OP(INCLUDE): { INCLUDE(); NEXT(); }
 
     OP(LIT): {
         LIT();

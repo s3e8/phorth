@@ -17,3 +17,4 @@ WIP forth
 - [ ] expert system
 - [ ] include stack
 - [ ] builtin string space and scratch buffer
+- [ ] rename core files to forth_core? like forth_lib

@@ -92,7 +92,8 @@ int main(void) {
     forth_init_defaults();
     forth_interpret_string("bye"); /* init vm */
     // forth_io_set_input_file("forth_bootstrap.f");
-    if(!forth_io_include_file("forth_bootstrap.f")) {
+    /* todo: use "require" instead of include later */
+    if(!forth_io_include_file("forth_bootstrap.f")) { /* todo: no return val perhaps */
         printf("Error: Bootstrap file missing.\n"); 
         return 1; /* todo: error messages and fallback to internal bootstrap sequence */
     }
