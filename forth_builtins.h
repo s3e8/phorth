@@ -72,6 +72,7 @@
 #define RS_DROP2()      current_rs += 2; /* todo: do i need semicolons here? */
 #define INCLUDE()       forth_io_include_file(forth_io_get_next_word()); /* todo: rename from include_file cause ans standard stuff? */
 #define PRINT_DS()      forth_vm_print_ds();
+#define RSP_SET()       current_rs = (void***)DS_POP(); /* todo: naming- rspput? */
 
 #define LTE() \
     temp = DS_POP(); \
@@ -247,11 +248,19 @@
     forth_dictionary_create_word(name, FLAG_HIDDEN); \
     state = STATE_COMPILE;
 
+#define EXECUTE() \
+    RS_PUSH(current_ip); \
+    current_ip = (void**)DS_POP();  
+
 #define SEMICOLON() \
     forth_dictionary_compile((cell)CODE(EXIT)); \
     forth_dictionary_compile((cell)CODE(EOW));  \
     latest->flags &= ~FLAG_HIDDEN; \
-    state = STATE_IMMEDIATE; \
+    state = STATE_IMMEDIATE;
+
+#define UNSIGNED_LT() \
+    temp = DS_POP(); \
+    DS_AT(0) = (unsigned)DS_AT(0) < (unsigned)temp;   
 
 #define ZERO_BRANCH() \
     temp = RS_INTARG(); \

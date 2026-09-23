@@ -413,9 +413,12 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("rdrop",   CODE(RS_DROP), 0);
         forth_dictionary_defcode("2rdrop",  CODE(RS_DROP2), 0);
         forth_dictionary_defcode("rsp@",    CODE(RSP_GET),  0);
+        forth_dictionary_defcode("rsp!",    CODE(RSP_SET), 0);
         forth_dictionary_defcode("rot",     CODE(ROT),  0);
         forth_dictionary_defcode("-rot",    CODE(MINUS_ROT), 0);
         forth_dictionary_defcode(".s",      CODE(PRINT_DS), 0);
+        forth_dictionary_defcode("execute", CODE(EXECUTE), 0);
+        forth_dictionary_defcode("u<",      CODE(UNSIGNED_LT), 0);
         /* outer? */
         forth_dictionary_defcode("iword",   CODE(IWORD),    0);
         forth_dictionary_defcode("iexecute", CODE(IEXECUTE), 0);
@@ -515,6 +518,7 @@ int forth_vm_run(void) {
     OP(RS_DROP2): { RS_DROP2(); NEXT(); }
     OP(LTE): { LTE(); NEXT(); }
     OP(MINUS_ROT): { MINUS_ROT(); NEXT(); }
+    OP(EXECUTE): { EXECUTE(); NEXT(); }
 
     /* forth interpreter words */
     OP(LEFT_BRACKET): {
@@ -548,11 +552,10 @@ int forth_vm_run(void) {
     }
 
     OP(PRINT_DS): { PRINT_DS(); NEXT(); }
+    OP(UNSIGNED_LT): { UNSIGNED_LT(); NEXT(); }
 
     /* forth vm words */
-    OP(NOOP): {
-        NEXT();
-    }
+    OP(NOOP): { NEXT(); }
 
     OP(EXIT): {
         EXIT();
@@ -608,6 +611,8 @@ int forth_vm_run(void) {
         FETCH();   
         NEXT();
     }
+
+    OP(RSP_SET): { RSP_SET(); NEXT(); }
 
     OP(CFETCH): { CFETCH(); NEXT(); }
 

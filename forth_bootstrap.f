@@ -583,10 +583,10 @@ hide copytohere
 
 : i inline ( -- loopvar ) rsp@ cell+ @ ;
 
-: depth
-    s0 @ dsp@ -
-    cell-
-;
+\ : depth
+\     s0 @ dsp@ -
+\     cell-
+\ ;
 
 : fdepth
     f0 @ fsp@ -
@@ -668,5 +668,162 @@ hide copytohere
     cr
 ;
 
+
+
 \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \
+\ include forth_peephole.f
+\ include opt-word \ todo? 
 include forth_lib_tty.f
+
+
+variable compiling-lambda
+0 compiling-lambda !
+
+: :lambda immediate
+    state @ if     \ if compiling
+	' lit ,
+	datahere @ ,
+	here @     \ save old here ptr
+	datahere @ here !    \ save new here for compilation
+    else
+	0 create
+	here @
+	1 compiling-lambda !
+	]
+    then
+;
+
+: ;; immediate
+    state @ if
+	' exit , ' eow ,
+	compiling-lambda @ 0= if
+	    here @ datahere !   \ advance consthere
+	    here !    \ restore old here pointer
+	else
+	    [compile] [
+	then
+	0 compiling-lambda !
+    then
+;
+
+: times immediate
+    word find
+    dup 0= if
+	." times: no such word" cr
+	drop exit
+    then
+
+    dup ?builtin if
+	here @
+	' >t ,
+	over >cfa @ ,
+	' t> ,
+	' 1- ,
+	' dup , ' 0>branch ,
+	here @ - ,
+	' drop ,
+    else
+	here @
+	' >t ,
+	over >cfa
+	' call , ,
+	' t> ,
+	' 1- ,
+	' dup , ' 0>branch ,
+	here @ - ,
+	' drop ,
+    then
+    drop
+;
+
+: exception-marker
+    rdrop 0
+;
+
+: catch
+    dsp@ cell+ >r
+    ' exception-marker >r
+    execute
+;
+
+defer breakpoint
+
+: throw ( n -- )
+    ?dup if
+	rsp@                         ( n rsp )
+	begin
+	    dup r0 @ cell- u<
+	while
+		dup @
+		' exception-marker = if
+		    cell+
+		    rsp!
+		    dup dup dup
+		    r>
+		    cell-
+		    swap over
+		    !
+		    dsp! exit
+		then
+		cell+
+	repeat
+
+	drop
+	case
+	    -1 of ." aborted" cr endof
+	    
+	    ." uncaught throw " dup . cr
+	endcase
+	breakpoint
+    then
+;
+
+: lookup-word-from-ip
+    latest @              ( codeaddr latest )
+    begin
+	?dup
+    while
+	    2dup swap     ( codeaddr latest latest codeaddr )
+	    u< if
+		nip
+		exit
+	    then
+	    cell+ @
+    repeat
+    drop 0
+;
+
+\ : print-stack-trace
+\     rsp@
+\     begin
+\ 	dup r0 @ cell- <>
+\     while
+\ 	    dup @
+\ 	    case
+\ 		' exception-marker of ." catch ( dsp=" cell+ dup @ u. ." ) " cr endof
+
+\ 		dup
+\ 		lookup-word-from-ip
+		
+\ 		id. cr
+\ 	    endcase
+\ 	    cell+
+\     repeat
+\     drop
+\     cr
+\ ;
+
+\ : prompt-display-data
+\     current-vocab @ vocab-name
+\     fdepth floatsize /
+\     tdepth cell /
+\     depth cell / 3 -
+\ ;
+
+\ : format-prompt
+\     prompt-display-data s" [ds:%d ts:%d fs:%d %s]> " format
+\ ;
+
+\ : format-debugger-prompt
+\     prompt-display-data s" [ds:%d ts:%d fs:%d %s] DEBUG> " format
+\ ;
