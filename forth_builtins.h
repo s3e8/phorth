@@ -71,6 +71,7 @@
 #define RSP_GET()           RS_PUSH(current_rs);
 #define RS_DROP2()      current_rs += 2; /* todo: do i need semicolons here? */
 #define INCLUDE()       forth_io_include_file(forth_io_get_next_word()); /* todo: rename from include_file cause ans standard stuff? */
+#define PRINT_DS()      forth_vm_print_ds();
 
 #define LTE() \
     temp = DS_POP(); \
@@ -142,11 +143,11 @@
 
 /* todo: do I even need temp here? */
 /* todo: rename to fetch_d0? get vs fetch... */
-#define GET_D0() \
+#define GET_DSP() \
     temp = (cell)current_ds; \
     DS_PUSH(temp); 
 
-#define SET_D0() \
+#define SET_DSP() \
     cell *new_ds = (cell*)forth_vm_pop_ds(); \
     current_ds = new_ds;
 

@@ -268,6 +268,13 @@ void forth_vm_print_rs(void) {
     printf("\n");
 }
 
+void forth_vm_print_ds(void) {
+    printf("<%ld> ", (long)(current_d0 - current_ds));
+    for(cell* p = current_d0 - 1; p >= current_ds; p--)
+        printf("%ld ", (long)*p);
+    printf("\n");
+}
+
 void test_external(void) {
     printf("externals work?\n");
 }
@@ -397,8 +404,8 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("tsp@",    CODE(GET_T0),   0);
         forth_dictionary_defcode("fsp!",    CODE(SET_F0),   0);
         forth_dictionary_defcode("fsp@",    CODE(GET_F0),   0);
-        forth_dictionary_defcode("dsp@",    CODE(GET_D0),   0); /* todo: rename to fetch_d0? */
-        forth_dictionary_defcode("dsp!",    CODE(SET_D0),   0);
+        forth_dictionary_defcode("dsp@",    CODE(GET_DSP),   0); /* todo: rename to fetch_d0? */
+        forth_dictionary_defcode("dsp!",    CODE(SET_DSP),   0);
         forth_dictionary_defcode("current-wordbuf", CODE(CURRENT_WORDBUF), 0); /* todo: rm.. this was dumb */
         forth_dictionary_defcode(">name",   CODE(TO_NAME),  0);
         forth_dictionary_defcode(">r",  CODE(TO_RS), 0);
@@ -408,6 +415,7 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("rsp@",    CODE(RSP_GET),  0);
         forth_dictionary_defcode("rot",     CODE(ROT),  0);
         forth_dictionary_defcode("-rot",    CODE(MINUS_ROT), 0);
+        forth_dictionary_defcode(".s",      CODE(PRINT_DS), 0);
         /* outer? */
         forth_dictionary_defcode("iword",   CODE(IWORD),    0);
         forth_dictionary_defcode("iexecute", CODE(IEXECUTE), 0);
@@ -495,8 +503,8 @@ int forth_vm_run(void) {
     OP(SET_T0): { SET_T0(); NEXT(); }
     OP(GET_F0): { GET_F0(); NEXT(); }
     OP(SET_F0): { SET_F0(); NEXT(); }
-    OP(GET_D0): { GET_D0(); NEXT(); }
-    OP(SET_D0): { SET_D0(); NEXT(); }
+    OP(GET_DSP): { GET_DSP(); NEXT(); }
+    OP(SET_DSP): { SET_DSP(); NEXT(); }
     OP(LT): { LT(); NEXT(); }
     OP(GT): { GT(); NEXT(); }
     OP(IS_EOF): { IS_EOF(); NEXT(); }
@@ -538,6 +546,8 @@ int forth_vm_run(void) {
         SEMICOLON();
         NEXT();
     }
+
+    OP(PRINT_DS): { PRINT_DS(); NEXT(); }
 
     /* forth vm words */
     OP(NOOP): {
@@ -696,9 +706,9 @@ int forth_vm_run(void) {
     OP(BREAKPOINT): { BREAKPOINT(); NEXT(); }
 }
 
-void forth_vm_print_ds() {
-    printf("<ds> ");
-    for(cell* p = current_d0 - 1; p >= current_ds; p--)
-        printf("%ld ", (long)*p);
-    printf("\n");
-}
+// void forth_vm_print_ds() {
+//     printf("<ds> ");
+//     for(cell* p = current_d0 - 1; p >= current_ds; p--)
+//         printf("%ld ", (long)*p);
+//     printf("\n");
+// }
