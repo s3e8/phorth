@@ -1,7 +1,8 @@
 #include "forth.h"
 
-#define DEFAULT_WORDBUF_SIZE 128
-#define DEFAULT_LINEBUF_SIZE 2048
+#define DEFAULT_INPUT_STACK_SIZE 32
+#define DEFAULT_WORD_BUFFER_SIZE 128
+#define DEFAULT_LINE_BUFFER_SIZE 2048
 
 static FILE** input_stack;
 static int    input_stack_size;
@@ -15,8 +16,9 @@ static char* current_linebuf;
 static char* current_linebuf_position;
 static int   current_linebuf_size;
 
-static char default_linebuf[DEFAULT_LINEBUF_SIZE];
-static char default_wordbuf[DEFAULT_WORDBUF_SIZE];
+static FILE* default_input_stack[DEFAULT_INPUT_STACK_SIZE];
+static char  default_line_buffer[DEFAULT_LINE_BUFFER_SIZE];
+static char  default_word_buffer[DEFAULT_WORD_BUFFER_SIZE];
 
 void forth_io_set_input_stream(FILE* input_stream) {
     /* todo: err if input_stream isnt file? */
@@ -89,8 +91,8 @@ void forth_io_init_defaults(void) {
     setvbuf(stderr, NULL, _IONBF, 0);
     forth_io_set_input_stream(stdin);
     forth_io_set_output_stream(stdout);
-    forth_io_set_wordbuf(default_wordbuf, sizeof(default_wordbuf));
-    forth_io_set_linebuf(default_linebuf, sizeof(default_linebuf));
+    forth_io_set_wordbuf(default_word_buffer, sizeof(default_word_buffer));
+    forth_io_set_linebuf(default_line_buffer, sizeof(default_line_buffer));
 }
 
 /* io debug */
