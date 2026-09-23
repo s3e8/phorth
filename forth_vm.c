@@ -408,13 +408,16 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("dsp!",    CODE(SET_DSP),   0);
         forth_dictionary_defcode("current-wordbuf", CODE(CURRENT_WORDBUF), 0); /* todo: rm.. this was dumb */
         forth_dictionary_defcode(">name",   CODE(TO_NAME),  0);
-        forth_dictionary_defcode(">r",  CODE(TO_RS), 0);
-        forth_dictionary_defcode("r>",  CODE(FROM_RS), 0);
+        forth_dictionary_defcode(">r",      CODE(TO_RS), 0);
+        forth_dictionary_defcode("r>",      CODE(FROM_RS), 0);
         forth_dictionary_defcode("rdrop",   CODE(RS_DROP), 0);
         forth_dictionary_defcode("2rdrop",  CODE(RS_DROP2), 0);
         forth_dictionary_defcode("rsp@",    CODE(RSP_GET),  0);
         forth_dictionary_defcode("rsp!",    CODE(RSP_SET), 0);
-        forth_dictionary_defcode("rot",     CODE(ROT),  0);
+        forth_dictionary_defcode(">t",      CODE(TO_TS), 0);
+        forth_dictionary_defcode("t>",      CODE(FROM_TS), 0);
+        forth_dictionary_defcode("0>branch", CODE(GT_ZERO_BRANCH), 0); /* todo: naming is funny.. not sure I like.. */
+        forth_dictionary_defcode("rot",     CODE(ROT), 0); 
         forth_dictionary_defcode("-rot",    CODE(MINUS_ROT), 0);
         forth_dictionary_defcode(".s",      CODE(PRINT_DS), 0);
         forth_dictionary_defcode("execute", CODE(EXECUTE), 0);
@@ -553,6 +556,8 @@ int forth_vm_run(void) {
 
     OP(PRINT_DS): { PRINT_DS(); NEXT(); }
     OP(UNSIGNED_LT): { UNSIGNED_LT(); NEXT(); }
+    OP(FROM_TS): { FROM_TS(); NEXT(); }
+    OP(TO_TS): { TO_TS(); NEXT(); }
 
     /* forth vm words */
     OP(NOOP): { NEXT(); }
@@ -627,6 +632,7 @@ int forth_vm_run(void) {
     OP(SUB1):       { SUB1();       NEXT(); }
     OP(TO_XT):      { TO_XT();      NEXT(); }
     OP(TO_CFA):     { TO_CFA();     NEXT(); }
+    OP(GT_ZERO_BRANCH): { GT_ZERO_BRANCH(); NEXT(); }
 
     OP(ADD1): {
         ADD1();

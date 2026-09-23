@@ -58,10 +58,6 @@
 #define LTE_ZERO()      DS_AT(0) = DS_AT(0) <= 0;
 #define GTE_ZERO()      DS_AT(0) = DS_AT(0) >= 0;
 #define NIP()           DS_AT(1) = DS_AT(0); current_ds++;
-#define GET_T0()        DS_PUSH((cell)current_t0); /* todo: should ts be type cell? */
-#define SET_T0()        current_ts = (cell*)forth_vm_pop_ds(); 
-#define GET_F0()        DS_PUSH((cell)current_f0); /* todo: should it be fzero? */
-#define SET_F0()        current_fs = (float*)forth_vm_pop_ds(); 
 #define DROP2()         current_ds += 2;
 #define NIP2()          DS_AT(2) = DS_AT(0); current_ds += 2;
 #define FLIT()          FS_PUSH(RS_FLOAT_ARG()); current_ip++;
@@ -73,6 +69,23 @@
 #define INCLUDE()       forth_io_include_file(forth_io_get_next_word()); /* todo: rename from include_file cause ans standard stuff? */
 #define PRINT_DS()      forth_vm_print_ds();
 #define RSP_SET()       current_rs = (void***)DS_POP(); /* todo: naming- rspput? */
+#define FROM_TS()       DS_PUSH(*current_ts++);
+#define TO_TS()          *--current_ts = DS_POP();
+#define GET_TSP()   DS_PUSH((cell)current_ts);
+#define SET_TSP()   current_ts = (cell*)forth_vm_pop_ds();
+#define GET_FSP()   DS_PUSH((cell)current_fs);
+#define SET_FSP()   current_fs = (float*)forth_vm_pop_ds();
+#define GET_T0()        DS_PUSH((cell)current_t0); /* todo: should ts be type cell? */
+#define SET_T0()        current_ts = (cell*)forth_vm_pop_ds(); 
+#define GET_F0()        DS_PUSH((cell)current_f0); /* todo: should it be fzero? */
+#define SET_F0()        current_fs = (float*)forth_vm_pop_ds(); 
+
+
+/* todo: rs_intarg naming? */
+#define GT_ZERO_BRANCH() \
+    temp = RS_INTARG(); \
+    cell a = DS_POP(); \
+    if(a > 0) current_ip += (temp / sizeof(void*)) - 1;
 
 #define LTE() \
     temp = DS_POP(); \

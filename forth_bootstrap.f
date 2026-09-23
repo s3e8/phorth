@@ -827,3 +827,5 @@ defer breakpoint
 \ : format-debugger-prompt
 \     prompt-display-data s" [ds:%d ts:%d fs:%d %s] DEBUG> " format
 \ ;
+
+\ todo: new ans create
