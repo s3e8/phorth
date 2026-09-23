@@ -4,8 +4,8 @@
 #define DEFAULT_WORD_BUFFER_SIZE 128
 #define DEFAULT_LINE_BUFFER_SIZE 2048
 
-typedef struct input_t {
-    FILE* stream;
+typedef struct input_t { /* todo: separate if we bootstrap from forth instead? */
+    FILE* stream;        /* ---   though this would mean exposing the globals */
     char* buffer;
     char* position;
     /* buffer size? */
