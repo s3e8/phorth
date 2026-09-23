@@ -70,9 +70,10 @@ extern int  forth_interpreter_parse_number(const char* wordbuf, int* result);
 extern int  forth_interpreter_interpret(void); /* todo: not in use yet */
 extern int  forth_interpreter_interpret_string(const char* str);
 
-/* forth io */
+/* forth io */ /* todo: clean up api */
 extern void  forth_io_init_defaults(void);
-extern void  forth_io_set_input_file(const char* filename);
+extern int   forth_io_include_file(const char* filename);
+extern void  forth_io_set_input_file(const char* filename); /* todo: rm */
 extern char* forth_io_get_current_wordbuf(void);
 extern int   forth_io_is_eof(void);
 extern char* forth_io_get_next_word(void);  /* WORD */

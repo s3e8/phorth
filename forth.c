@@ -91,7 +91,11 @@ void forth_cleanup_and_exit(void) {
 int main(void) {
     forth_init_defaults();
     forth_interpret_string("bye"); /* init vm */
-    forth_io_set_input_file("forth_bootstrap.f");
+    // forth_io_set_input_file("forth_bootstrap.f");
+    if(!forth_io_include_file("forth_bootstrap.f")) {
+        printf("Error: Bootstrap file missing.\n"); 
+        return 1; /* todo: error messages and fallback to internal bootstrap sequence */
+    }
     forth_include_lib_sys_tty();
     forth_vm_run();
 
