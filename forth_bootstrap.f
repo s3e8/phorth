@@ -1,22 +1,19 @@
 : make-inline
-    latest @ dup
-    @ f_inline xor
+    latest @
+    dup    @ f_inline xor
     swap !
 ;
-
 : inline  immediate make-inline ;
 : cell    inline cellsize   ;
 : cells   inline cellsize * ;
 : aligned cellsize 1- + cellsize 1- invert and ;
-: align   here @ aligned here ! ;
-: allot   here @ swap here +! align ;
+: align   here @ aligned here  ! ;
+: allot   here @ swap    here +! align ;
+
 : make-variable
     allot
-    create make-inline
-    ' lit ,
-    ,
-    ' exit ,
-    ' eow ,
+    word create make-inline
+    ' lit , , ' exit , ' eow ,
 ;
 
 :   variable        cellsize    make-variable ;
@@ -50,8 +47,7 @@ fsp!
 
 : if immediate
     ' 0branch ,
-    here @ 
-    0 ,
+    here @ 0 ,
 ;
 
 : then immediate
@@ -62,8 +58,7 @@ fsp!
 
 : else immediate
     ' branch ,
-    here @
-    0 ,
+    here @ 0 ,
     swap
     dup
     here @ swap -
@@ -107,13 +102,14 @@ fsp!
     swap !
 ;
 
+\ todo: use >xt instead ;
 : [compile] immediate
     word find
     dup @ f_builtin and
     if
-	>cfa @ ,
+	    >cfa @ ,
     else
-	' call , >cfa ,
+	    ' call , >cfa ,
     then
 ;
 

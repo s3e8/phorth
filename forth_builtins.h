@@ -265,9 +265,12 @@
     void* fn = RS_ARG(); \
     current_ip = fn;
 
+// #define CREATE() \
+//     char* next_word = forth_io_get_next_word(); \
+//     forth_dictionary_create_word(next_word, 0);
+
 #define CREATE() \
-    char* next_word = forth_io_get_next_word(); \
-    forth_dictionary_create_word(next_word, 0);
+    forth_dictionary_create_word((const char*)DS_POP(), 0);
 
 #define WORD() \
     char* next_word = forth_io_get_next_word(); \
