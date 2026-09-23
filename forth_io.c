@@ -3,12 +3,10 @@
 #define DEFAULT_WORDBUF_SIZE 128
 #define DEFAULT_LINEBUF_SIZE 2048
 
-typedef struct io_state_t {
-    FILE*  input_stream_stack;
-    FILE* output_stream_stack; /* don't think I need output stack... */
-    /* don't need input stack position? */
-
-} io_state_t;
+static FILE** input_stack;
+static int    input_stack_size;
+static char*  wordbuf;
+static int    wordbuf_size;
 
 static FILE* current_input_stream;
 static FILE* current_output_stream;
@@ -16,8 +14,6 @@ static int   current_input_stack_position;
 static char* current_linebuf;
 static char* current_linebuf_position;
 static int   current_linebuf_size;
-static char* current_wordbuf;
-static int   current_wordbuf_size;
 
 static char default_linebuf[DEFAULT_LINEBUF_SIZE];
 static char default_wordbuf[DEFAULT_WORDBUF_SIZE];
@@ -50,8 +46,8 @@ void forth_io_set_input_file(const char* filename) {
 }
 
 void forth_io_set_wordbuf(char* wordbuf, int size) {
-    current_wordbuf      = wordbuf;
-    current_wordbuf_size = size;
+    wordbuf      = wordbuf;
+    wordbuf_size = size;
 }
 
 void forth_io_set_linebuf(char* linebuf, int size) {
@@ -99,11 +95,11 @@ void forth_io_init_defaults(void) {
 
 /* io debug */
 void forth_io_print_current_word(void) {
-    printf("current_wordbuf: %s\n", current_wordbuf);
+    printf("wordbuf: %s\n", wordbuf);
 }
 
 char* forth_io_get_current_wordbuf(void) {
-    return current_wordbuf;
+    return wordbuf;
 }
 
 void forth_io_print_state(void) {
@@ -141,9 +137,9 @@ char* forth_io_get_next_line() {
 /* Parse next word from a string, updating a position pointer */
 char* forth_io_get_next_word()
 {
-    char*  tmp       = current_wordbuf;
+    char*  tmp       = wordbuf;
     char*  position  = current_linebuf_position;
-    int    size      = current_wordbuf_size;
+    int    size      = wordbuf_size;
     size_t count     = 0;
 
     // printf("getting next word...\n");
@@ -173,7 +169,7 @@ char* forth_io_get_next_word()
 
     // printf("word retrieved.\n");
 
-    return current_wordbuf;
+    return wordbuf;
 }
 
 int forth_io_get_char() {
@@ -201,7 +197,7 @@ void forth_io_read_string(const char* str) {
 
     while(*current_linebuf_position) {
         forth_io_get_next_word();
-        printf("Got word: '%s'\n", current_wordbuf);
+        printf("Got word: '%s'\n", wordbuf);
     }
 }
 
