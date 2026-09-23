@@ -67,8 +67,8 @@
 #define FLIT()          FS_PUSH(RS_FLOAT_ARG()); current_ip++;
 #define IS_EOF()        DS_PUSH((cell)forth_io_is_eof()); /* todo: at_eof? */
 #define CURRENT_WORDBUF() DS_PUSH((cell)forth_io_get_current_wordbuf()); /* todo: use temp? */
-#define RS_DROP()         current_rs++;
-#define RSP_GET()           RS_PUSH(current_rs);
+#define RS_DROP()       current_rs++;
+#define RSP_GET()       DS_PUSH((cell)current_rs);
 #define RS_DROP2()      current_rs += 2; /* todo: do i need semicolons here? */
 #define INCLUDE()       forth_io_include_file(forth_io_get_next_word()); /* todo: rename from include_file cause ans standard stuff? */
 #define PRINT_DS()      forth_vm_print_ds();
@@ -249,6 +249,7 @@
 
 #define SEMICOLON() \
     forth_dictionary_compile((cell)CODE(EXIT)); \
+    forth_dictionary_compile((cell)CODE(EOW));  \
     latest->flags &= ~FLAG_HIDDEN; \
     state = STATE_IMMEDIATE; \
 

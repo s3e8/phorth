@@ -536,16 +536,16 @@ defer quit
 
 : simple-quit
     begin
-	?eof not
+	    ?eof not
     while
-	interpret
+	    interpret
     repeat
 ;
 
 ' simple-quit is quit
 
 ( redefine to inline )
-: cell inline cellsize ;
+: cell  inline cellsize   ;
 : cells inline cellsize * ;
 
 \ new version of colon to support deferred words-aware create
@@ -555,56 +555,118 @@ defer quit
     ]
 ;
 
-\ depth . cr
-\ : :
-\     create
-\     ." AFTER-CREATE " bp
-\     latest @ hidden
-\     ." AFTER-HIDDEN " bp
-\     ]
-\ ;
+hide copytohere
+\ hide perform-inline
 
-\ hide copytohere
-\ \ hide perform-inline
+\ todo: why define here? ;
+: cell+ inline cellsize + ;
+: cell- inline cellsize - ;
 
-\ : cell+ inline cellsize + ;
-\ : cell- inline cellsize - ;
-
-\ : do immediate
-\     ' >r , ' >r ,
-\     [compile] begin ;
+: do immediate
+    ' >r , ' >r ,
+    [compile] begin 
+;
 
 
-\ : loop immediate
-\     ' r> , ' r> ,
-\     ' 1+ ,     \ add loop var
-\     ' 2dup , ' >r , ' >r ,
-\     ' = ,
-\     [compile] until
-\     ' rdrop , ' rdrop ,
-\ ;
+: loop immediate
+    ' r> , ' r> ,
+    ' 1+ ,     \ add loop var
+    ' 2dup , ' >r , ' >r ,
+    ' = ,
+    [compile] until
+    ' rdrop , ' rdrop ,
+;
+
+: unloop immediate
+    ' 2rdrop ,
+;
+
+: i inline ( -- loopvar ) rsp@ cell+ @ ;
+
+: depth
+    s0 @ dsp@ -
+    cell-
+;
+
+: fdepth
+    f0 @ fsp@ -
+;
+
+: tdepth
+    t0 @ tsp@ -
+;
+
+: ? @ . ;
 
 
-\ : unloop immediate
-\     ' 2rdrop ,
-\ ;
+: within
+    -rot over
+    <= if
+	> if true else false then
+    else
+	2drop false then
+;
 
-\ : i inline ( -- loopvar ) rsp@ cell+ @ ;
+: constant
+    word create
+    ' lit ,
+    ,
+    ' exit ,
+;
 
-\ : depth
-\     s0 @ dsp@ -
-\     cell-
-\ ;
+: fconstant
+    word create
+    ' flit ,
+    f,
+    ' exit ,
+;
 
-\ : fdepth
-\     f0 @ fsp@ -
-\ ;
+: value
+    word create
+    ' lit ,
+    ,
+    ' exit ,
+    ' eow ,
+;
 
-\ : tdepth
-\     t0 @ tsp@ -
-\ ;
+: to immediate
+    word find
+    >cfa
+    cell+
+    state @ if
+	' lit ,
+	,
+	' ! ,
+    else
+	!
+    then
+;
 
-\ : ? @ . ;
+: :noname
+    0 create
+    here @
+    ] 
+;
+
+: ['] immediate
+    ' lit ,
+;
+
+: id. cell+ cell+ tell ;
+
+: words
+    latest @
+    begin
+	?dup
+    while
+	    dup ?hidden not if
+		dup id.
+		space
+	    then
+	    cell+ @
+    repeat
+    cr
+;
 
 \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \
 include forth_lib_tty.f

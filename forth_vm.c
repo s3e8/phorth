@@ -305,9 +305,9 @@ int forth_vm_run(void) {
         /* core -- inner interpreter */
         forth_dictionary_defcode("interpret", CODE(INTERPRET), 0);
         forth_dictionary_defcode("ireturn", CODE(IRETURN), 0);
-        forth_dictionary_defcode("branch",  CODE(BRANCH),  0);
-        forth_dictionary_defcode("call",    CODE(CALL),    0);
-        forth_dictionary_defcode("lit",     CODE(LIT),     0);
+        forth_dictionary_defcode("branch",  CODE(BRANCH),  FLAG_HASARG);
+        forth_dictionary_defcode("call",    CODE(CALL),    FLAG_HASARG);
+        forth_dictionary_defcode("lit",     CODE(LIT),     FLAG_HASARG);
         forth_dictionary_defcode("exit",    CODE(EXIT),    0);
         forth_dictionary_defcode("eow",     CODE(EOW),     0);
         /* interpreter */
@@ -422,7 +422,7 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("number",  CODE(PARSE_NUMBER), 0);
         forth_dictionary_defcode("fnumber",  CODE(PARSE_FNUMBER), 0);
         forth_dictionary_defcode("f,",      CODE(FCOMMA),   0);
-        forth_dictionary_defcode("flit",    CODE(FLIT), 0);
+        forth_dictionary_defcode("flit",    CODE(FLIT), FLAG_HASARG);
         /* end defcodes */
 
         forth_dictionary_defextern("test-external", test_external, 0);
