@@ -71,10 +71,10 @@
 #define RSP_SET()       current_rs = (void***)DS_POP(); /* todo: naming- rspput? */
 #define FROM_TS()       DS_PUSH(*current_ts++);
 #define TO_TS()          *--current_ts = DS_POP();
-#define GET_TSP()   DS_PUSH((cell)current_ts);
-#define SET_TSP()   current_ts = (cell*)forth_vm_pop_ds();
-#define GET_FSP()   DS_PUSH((cell)current_fs);
-#define SET_FSP()   current_fs = (float*)forth_vm_pop_ds();
+#define GET_TSP()       DS_PUSH((cell)current_ts);
+#define SET_TSP()       current_ts = (cell*)forth_vm_pop_ds();
+#define GET_FSP()       DS_PUSH((cell)current_fs);
+#define SET_FSP()       current_fs = (float*)forth_vm_pop_ds();
 #define GET_T0()        DS_PUSH((cell)current_t0); /* todo: should ts be type cell? */
 #define SET_T0()        current_ts = (cell*)forth_vm_pop_ds(); 
 #define GET_F0()        DS_PUSH((cell)current_f0); /* todo: should it be fzero? */

@@ -400,10 +400,10 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("+!",      CODE(MEMADD),   0);
         forth_dictionary_defcode("bp",      CODE(BREAKPOINT), 0);
         forth_dictionary_defcode("external", CODE(EXTERNAL), FLAG_HASARG);
-        forth_dictionary_defcode("tsp!",    CODE(SET_T0),   0);
-        forth_dictionary_defcode("tsp@",    CODE(GET_T0),   0);
-        forth_dictionary_defcode("fsp!",    CODE(SET_F0),   0);
-        forth_dictionary_defcode("fsp@",    CODE(GET_F0),   0);
+        forth_dictionary_defcode("tsp!",    CODE(SET_TSP),   0);
+        forth_dictionary_defcode("tsp@",    CODE(GET_TSP),   0);
+        forth_dictionary_defcode("fsp!",    CODE(SET_FSP),   0);
+        forth_dictionary_defcode("fsp@",    CODE(GET_FSP),   0);
         forth_dictionary_defcode("dsp@",    CODE(GET_DSP),   0); /* todo: rename to fetch_d0? */
         forth_dictionary_defcode("dsp!",    CODE(SET_DSP),   0);
         forth_dictionary_defcode("current-wordbuf", CODE(CURRENT_WORDBUF), 0); /* todo: rm.. this was dumb */
@@ -558,6 +558,10 @@ int forth_vm_run(void) {
     OP(UNSIGNED_LT): { UNSIGNED_LT(); NEXT(); }
     OP(FROM_TS): { FROM_TS(); NEXT(); }
     OP(TO_TS): { TO_TS(); NEXT(); }
+    OP(GET_TSP): { GET_TSP(); NEXT(); }
+    OP(SET_TSP): { SET_TSP(); NEXT(); }
+    OP(GET_FSP): { GET_FSP(); NEXT(); }
+    OP(SET_FSP): { SET_FSP(); NEXT(); }
 
     /* forth vm words */
     OP(NOOP): { NEXT(); }
