@@ -322,7 +322,7 @@ int forth_vm_run(void) {
         forth_dictionary_defconst("floatsize",  (cell)sizeof(float));
         forth_dictionary_defcode("bye",     CODE(BYE), 0);
         forth_dictionary_defcode("[", CODE(LEFT_BRACKET),   FLAG_IMMEDIATE );
-        forth_dictionary_defcode("]", CODE(RIGHT_BRACKET),  FLAG_IMMEDIATE );
+        forth_dictionary_defcode("]", CODE(RIGHT_BRACKET),  0);
         forth_dictionary_defcode(":", CODE(COLON),          0);
         forth_dictionary_defcode(";", CODE(SEMICOLON),      FLAG_IMMEDIATE );
         /* vm */
