@@ -505,10 +505,6 @@ int forth_vm_run(void) {
     OP(LTE_ZERO): { LTE_ZERO(); NEXT(); }
     OP(GTE_ZERO): { GTE_ZERO(); NEXT(); }
     OP(NIP): { NIP(); NEXT(); }
-    OP(GET_T0): { GET_T0(); NEXT(); }
-    OP(SET_T0): { SET_T0(); NEXT(); }
-    OP(GET_F0): { GET_F0(); NEXT(); }
-    OP(SET_F0): { SET_F0(); NEXT(); }
     OP(GET_DSP): { GET_DSP(); NEXT(); }
     OP(SET_DSP): { SET_DSP(); NEXT(); }
     OP(LT): { LT(); NEXT(); }
