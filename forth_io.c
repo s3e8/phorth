@@ -4,21 +4,32 @@
 #define DEFAULT_WORD_BUFFER_SIZE 128
 #define DEFAULT_LINE_BUFFER_SIZE 2048
 
-static FILE** input_stack;
-static int    input_stack_size;
-static char*  wordbuf;
+typedef struct input_t {
+    FILE* stream;
+    char* buffer;
+    int   buffer_position;
+    /* todo: buffer size? */
+} input_t;
+
+static input_t* input_stack_pointer;
+static input_t* input_stack_base;
+static int     input_stack_size;
+static char*  wordbuf; /* todo: rename to long-form words */
 static int    wordbuf_size;
 
 static FILE* current_input_stream;
 static FILE* current_output_stream;
-static int   current_input_stack_position;
-static char* current_linebuf;
-static char* current_linebuf_position;
-static int   current_linebuf_size;
+static char* current_line_buffer;
+static char* current_line_buffer_position;
+static int   current_line_buffer_size;
 
-static FILE* default_input_stack[DEFAULT_INPUT_STACK_SIZE];
-static char  default_line_buffer[DEFAULT_LINE_BUFFER_SIZE];
-static char  default_word_buffer[DEFAULT_WORD_BUFFER_SIZE];
+static input_t default_input_stack[DEFAULT_INPUT_STACK_SIZE];
+static char    default_line_buffer[DEFAULT_LINE_BUFFER_SIZE];
+static char    default_word_buffer[DEFAULT_WORD_BUFFER_SIZE];
+
+void forth_vm_push_input_stack(FILE* stream) {
+    *input_stack++ = current_input;
+}
 
 void forth_io_set_input_stream(FILE* input_stream) {
     /* todo: err if input_stream isnt file? */
@@ -53,9 +64,9 @@ void forth_io_set_wordbuf(char* wordbuf, int size) {
 }
 
 void forth_io_set_linebuf(char* linebuf, int size) {
-    current_linebuf          = linebuf;
-    current_linebuf_position = current_linebuf;
-    current_linebuf_size     = size;
+    current_line_buffer          = linebuf;
+    current_line_buffer_position = current_line_buffer;
+    current_line_buffer_size     = size;
 }
 
 /* todo: don't need both of these.. can set i/o in forth */
@@ -106,32 +117,32 @@ char* forth_io_get_current_wordbuf(void) {
 
 void forth_io_print_state(void) {
     forth_io_print_current_word();
-    printf("current_linebuf: %s\n",     current_linebuf);
-    printf("current_linebuf_pos: %s\n", current_linebuf_position);
+    printf("current_linebuf: %s\n",     current_line_buffer);
+    printf("current_linebuf_pos: %s\n", current_line_buffer_position);
 }
 
 int forth_io_is_eof(void) {
-    return (*current_linebuf_position == '\0') && feof(current_input_stream);
+    return (*current_line_buffer_position == '\0') && feof(current_input_stream);
 }
 
 /* input stuff */
 char* forth_io_get_next_line() {
-    if(!current_linebuf) {
-        fprintf(stderr, "Error: current_linebuf not set\n");
+    if(!current_line_buffer) {
+        fprintf(stderr, "Error: current_line_buffer not set\n");
         return NULL;
     }
     if(current_input_stream == stdin) printf("outer> ");
 
-    char* tmp = fgets(current_linebuf, current_linebuf_size, current_input_stream);
+    char* tmp = fgets(current_line_buffer, current_line_buffer_size, current_input_stream);
     if (!tmp && feof(current_input_stream)) {
         printf("End of file reached, switching to stdin...\n");
         current_input_stream = stdin;
         printf("outer> ");
-        tmp = fgets(current_linebuf, current_linebuf_size, current_input_stream);
+        tmp = fgets(current_line_buffer, current_line_buffer_size, current_input_stream);
     }
     if(!tmp) return NULL;
 
-    current_linebuf_position = tmp;
+    current_line_buffer_position = tmp;
 
     return tmp;
 }
@@ -140,7 +151,7 @@ char* forth_io_get_next_line() {
 char* forth_io_get_next_word()
 {
     char*  tmp       = wordbuf;
-    char*  position  = current_linebuf_position;
+    char*  position  = current_line_buffer_position;
     int    size      = wordbuf_size;
     size_t count     = 0;
 
@@ -153,7 +164,7 @@ char* forth_io_get_next_word()
     /* if line is empty, check for new line */
     if(*position == '\0') {
         if(!forth_io_get_next_line()) return NULL;
-        position = current_linebuf_position;
+        position = current_line_buffer_position;
         // printf("tmp: %s\n", tmp);
         // printf("pos: %s\n", pos);
         goto skip_whitespace;
@@ -167,7 +178,7 @@ char* forth_io_get_next_word()
     *tmp = '\0';
 
     if(*position) position++; 
-    current_linebuf_position = position;
+    current_line_buffer_position = position;
 
     // printf("word retrieved.\n");
 
@@ -179,7 +190,7 @@ int forth_io_get_char() {
 }
 
 void forth_io_set_string_input(const char* input) {
-        if(strlen(input) >= current_linebuf_size) { /* todo: > or >= */
+        if(strlen(input) >= current_line_buffer_size) { /* todo: > or >= */
         printf("Error: Input string must be shorter than linebuf.\n");
         return;
     }
@@ -187,17 +198,17 @@ void forth_io_set_string_input(const char* input) {
     const char* position = input;
     int i;
 
-    for (i = 0; i < current_linebuf_size - 1 && *position; i++) {
-        current_linebuf[i] = *position++;
+    for (i = 0; i < current_line_buffer_size - 1 && *position; i++) {
+        current_line_buffer[i] = *position++;
     }
-    current_linebuf[i] = '\0';
-    current_linebuf_position = current_linebuf;
+    current_line_buffer[i] = '\0';
+    current_line_buffer_position = current_line_buffer;
 }
 
 void forth_io_read_string(const char* str) {
     forth_io_set_string_input(str);
 
-    while(*current_linebuf_position) {
+    while(*current_line_buffer_position) {
         forth_io_get_next_word();
         printf("Got word: '%s'\n", wordbuf);
     }
@@ -221,16 +232,16 @@ void forth_io_dot(cell value) {
    revisit if non-ASCII input matters later 
 */
 int forth_io_get_next_char(void) { /* todo: read_key vs get_char? */
-    if(*current_linebuf_position == '\0') {
+    if(*current_line_buffer_position == '\0') {
         if(!forth_io_get_next_line()) return -1;
     }
-    return *current_linebuf_position++;
+    return *current_line_buffer_position++;
 }
 
 
 /* other ops */
 void forth_io_skip_line(void) {
-    while(*current_linebuf_position) current_linebuf_position++;
+    while(*current_line_buffer_position) current_line_buffer_position++;
 }
 
 void forth_io_skip_parens(void) {
