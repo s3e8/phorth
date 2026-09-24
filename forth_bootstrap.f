@@ -970,8 +970,8 @@ defer breakpoint
 
 welcome
 hide welcome
-.s
 quit
 
-\ todo: new ans create
+\ todo: new ans create?
 \ todo: add reset word to rebuild forth
+\ todo: remove format prompt.. use in debug only or on command
