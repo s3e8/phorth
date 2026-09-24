@@ -81,6 +81,9 @@
 #define LT_ZERO()   DS_AT(0) = DS_AT(0) < 0;
 #define GT_ZERO()   DS_AT(0) = DS_AT(0) > 0;
 #define FORMAT()    DS_PUSH((cell)forth_io_format((const char*)DS_POP())); /* todo: parens documentation */
+#define IS_EOL()        DS_PUSH((cell)forth_io_is_eol());
+#define PROMPT()        forth_io_prompt((const char*)DS_POP());
+#define RESET_INPUT()   forth_io_reset_input_stack();
 
 /* todo: is push_ns the right name for it? */
 #define EXEC_BUILTIN() \

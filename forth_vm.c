@@ -434,6 +434,9 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("f@", CODE(F_FETCH), 0);
         forth_dictionary_defcode("f!", CODE(F_STORE), 0);
         forth_dictionary_defcode("format",  CODE(FORMAT),  0);
+        forth_dictionary_defcode("?eol",        CODE(IS_EOL),      0);
+        forth_dictionary_defcode("prompt",      CODE(PROMPT),      0);
+        forth_dictionary_defcode("reset-input", CODE(RESET_INPUT), 0);
         /* outer? */
         forth_dictionary_defcode("iword",   CODE(IWORD),    0);
         forth_dictionary_defcode("iexecute", CODE(IEXECUTE), 0);
@@ -581,6 +584,9 @@ int forth_vm_run(void) {
     OP(SET_FSP): { SET_FSP(); NEXT(); }
     OP(F_FETCH): { F_FETCH(); NEXT(); }
     OP(F_STORE): { F_STORE(); NEXT(); }
+    OP(IS_EOL):      { IS_EOL();      NEXT(); }
+    OP(PROMPT):      { PROMPT();      NEXT(); }
+    OP(RESET_INPUT): { RESET_INPUT(); NEXT(); }
 
     /* forth vm words */
     OP(NOOP): { NEXT(); }

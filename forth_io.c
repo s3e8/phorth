@@ -157,6 +157,27 @@ int forth_io_is_eof(void) {
     return (*current_line_buffer_position == '\0') && feof(current_input_stream);
 }
 
+int forth_io_is_eol(void) {
+    while(*current_line_buffer_position && isspace(*current_line_buffer_position))
+        current_line_buffer_position++;
+    return *current_line_buffer_position == '\0';
+}
+
+/* print prompt, read one line from the current stream into the line buffer */
+void forth_io_prompt(const char* prompt) {
+    fputs(prompt, current_output_stream);
+    char* line = fgets(current_line_buffer, current_line_buffer_size, current_input_stream);
+    if(!line) current_line_buffer[0] = '\0';
+    current_line_buffer_position = current_line_buffer;
+}
+
+/* drop every included file and return to the base input (stdin) */
+void forth_io_reset_input_stack(void) {
+    while(forth_io_pop_input_stack());
+    current_line_buffer[0] = '\0';
+    current_line_buffer_position = current_line_buffer;
+}
+
 /* input stuff */
 // char* forth_io_get_next_line() {
 //     if(!current_line_buffer) {
