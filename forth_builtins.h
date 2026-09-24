@@ -7,19 +7,18 @@
 #define NEXT() goto **current_ip++
 #define   OP(name)    op_##name
 #define CODE(name)  &&op_##name /* todo: rename to LABEL? */
-// #define EXTERNAL(fn) { fn; CODE(EXTERNAL) } /* todo: this (for "third-party" builtins defined after initialization)*/
 #define OFFSET(x)   ((void*)(x * sizeof(cell)))
 // #define ERROR(x)    { printf("Error: %s\n", x); goto DIE(); }
 
-#define DS_PUSH(x)      forth_vm_push_ds((cell)x)
+#define DS_PUSH(x)      forth_vm_push_ds((cell)(x))
 // #define DS_PUSH(x)      if(forth_vm_check_ds_overflow()) NEXT(); (*--current_ds = (cell)x);
 #define DS_POP()        forth_vm_pop_ds()
-#define FS_PUSH(x)      forth_vm_push_fs((float)x)
+#define FS_PUSH(x)      forth_vm_push_fs((float)(x))
 #define FS_POP()        forth_vm_pop_fs()
-#define RS_PUSH(x)      forth_vm_push_rs((void**)x);
+#define RS_PUSH(x)      forth_vm_push_rs((void**)(x));
 #define RS_POP()        forth_vm_pop_rs();
 #define RS_ARG()        (*current_ip++)
-#define RS_INTARG()     ((cell)(*current_ip++))
+#define RS_INTARG()     ((cell)*current_ip++)
 #define RS_FLOAT_ARG()  (*(float*)current_ip) /* todo: feels like a bad name */
 
 #define DS_TOP()      (*current_ds)
@@ -291,7 +290,7 @@
 
 #define UNSIGNED_LT() \
     temp = DS_POP(); \
-    DS_AT(0) = (unsigned)DS_AT(0) < (unsigned)temp;   
+    DS_AT(0) = (ucell)DS_AT(0) < (ucell)temp;   
 
 #define ZERO_BRANCH() \
     temp = RS_INTARG(); \

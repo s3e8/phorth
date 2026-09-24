@@ -84,6 +84,9 @@ void forth_bootstrap(void) { /* temp: have to call bye to exit */
     forth_interpret_string(": s\" immediate state @ if consthere @ begin key dup '\"' <> while constc, repeat drop 0 constc, ' lit , , constalign else consthere @ begin key dup '\"' <> while over c! 1+ repeat drop 0 over c! drop consthere @ then ; bye");
 }
 
+void forth_bootstrap_and_exit(void) {}
+void forth_bootstrap_and_run(void) {}
+
 void forth_cleanup_and_exit(void) {
     forth_cleanup_lib_sys_tty();
 }
