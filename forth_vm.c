@@ -303,6 +303,7 @@ int forth_vm_run(void) {
     if(!forth_initialized) {
         // printf("initializing forth...\n");
 
+        /* init builtins first, then consts s*/
         /* core -- inner interpreter */
         forth_dictionary_defcode("interpret", CODE(INTERPRET), 0);
         forth_dictionary_defcode("ireturn", CODE(IRETURN), 0);
@@ -312,16 +313,6 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("exit",    CODE(EXIT),    0);
         forth_dictionary_defcode("eow",     CODE(EOW),     0);
         /* interpreter */
-        forth_dictionary_defconst("f_builtin",   FLAG_BUILTIN);
-        forth_dictionary_defconst("f_hasarg",    FLAG_HASARG);
-        forth_dictionary_defconst("f_immediate", FLAG_IMMEDIATE);
-        forth_dictionary_defconst("f_hidden",    FLAG_HIDDEN);
-        forth_dictionary_defconst("f_inline",    FLAG_INLINE);
-        forth_dictionary_defconst("f_deferred",  FLAG_DEFERRED);
-        forth_dictionary_defconst("state",      (cell)&state);
-        forth_dictionary_defconst("base",       (cell)&base);
-        forth_dictionary_defconst("cellsize",   (cell)sizeof(cell));
-        forth_dictionary_defconst("floatsize",  (cell)sizeof(float));
         forth_dictionary_defcode("bye",     CODE(BYE), 0);
         forth_dictionary_defcode("[", CODE(LEFT_BRACKET),   FLAG_IMMEDIATE );
         forth_dictionary_defcode("]", CODE(RIGHT_BRACKET),  0);
@@ -394,8 +385,6 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("strcpy",  CODE(STRCPY),   0);
         forth_dictionary_defcode("strlen",  CODE(STRLEN),   0);
         /* other */
-        forth_dictionary_defcode("0<", CODE(LT_ZERO), 0);
-        forth_dictionary_defcode("0>", CODE(GT_ZERO), 0);
         forth_dictionary_defcode("/",     CODE(DIV),     0);
         forth_dictionary_defcode("mod",   CODE(MOD),     0);
         forth_dictionary_defcode("/mod",  CODE(DIVMOD),  0);
@@ -447,6 +436,17 @@ int forth_vm_run(void) {
         /* end defcodes */
 
         forth_dictionary_defextern("test-external", test_external, 0);
+
+                forth_dictionary_defconst("f_builtin",   FLAG_BUILTIN);
+        forth_dictionary_defconst("f_hasarg",    FLAG_HASARG);
+        forth_dictionary_defconst("f_immediate", FLAG_IMMEDIATE);
+        forth_dictionary_defconst("f_hidden",    FLAG_HIDDEN);
+        forth_dictionary_defconst("f_inline",    FLAG_INLINE);
+        forth_dictionary_defconst("f_deferred",  FLAG_DEFERRED);
+        forth_dictionary_defconst("state",      (cell)&state);
+        forth_dictionary_defconst("base",       (cell)&base);
+        forth_dictionary_defconst("cellsize",   (cell)sizeof(cell));
+        forth_dictionary_defconst("floatsize",  (cell)sizeof(float));
 
         /* convenience codes -- kind of a hack tbh */
         // call_code = forth_dictionary_get_xt_by_name("call");
