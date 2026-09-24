@@ -303,7 +303,50 @@ void forth_io_skip_parens(void) {
     fprintf(stderr, "Error: unterminated comment\n");
 }
 
+/* todo: does this belong here? */
+const char* forth_io_format(const char* format_string) {
+    static char outbuf[256];
+    char        conversion_spec[16];                 /* one "%...X" piece, e.g. "%5d" or "%.2f" */
+    size_t      outlen = 0;
+    const char* cursor        = format_string;
 
+    while(*cursor && outlen < sizeof(outbuf) - 1) {
+        /* plain character: copy through */
+        if(*cursor != '%') {
+            outbuf[outlen++] = *cursor++;
+            continue;
+        }
+
+        /* find the end of this conversion spec (skip flags/width/precision) */
+        const char* spec_start = cursor++;
+        while(*cursor && !strchr("dsef%", *cursor)) cursor++;
+        if(!*cursor) break;                          /* unterminated spec */
+
+        size_t spec_length = cursor - spec_start + 1;
+        if(spec_length >= sizeof(conversion_spec)) break;
+        memcpy(conversion_spec, spec_start, spec_length);
+        conversion_spec[spec_length] = '\0';
+
+        /* format one argument, popped from the matching stack */
+        char   conversion_type = *cursor++;
+        char*  write_pos       = outbuf + outlen;
+        size_t space_left      = sizeof(outbuf) - outlen;
+
+        switch(conversion_type) {
+            case '%': outbuf[outlen++] = '%'; break;
+            case 'd': outlen += snprintf(write_pos, space_left, conversion_spec, (int)forth_vm_pop_ds());    break;
+            case 's': outlen += snprintf(write_pos, space_left, conversion_spec, (char*)forth_vm_pop_ds());  break;
+            case 'e':
+            case 'f': outlen += snprintf(write_pos, space_left, conversion_spec, (double)forth_vm_pop_fs()); break;
+        }
+
+        /* snprintf returns the untruncated length; clamp */
+        if(outlen >= sizeof(outbuf)) outlen = sizeof(outbuf) - 1;
+    }
+
+    outbuf[outlen] = '\0';
+    return outbuf;
+}
 
 void forth_io_test_all(void) {
     forth_io_read_string("this is a test");

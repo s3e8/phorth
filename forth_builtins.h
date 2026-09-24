@@ -14,7 +14,7 @@
 #define DS_PUSH(x)      forth_vm_push_ds((cell)x)
 // #define DS_PUSH(x)      if(forth_vm_check_ds_overflow()) NEXT(); (*--current_ds = (cell)x);
 #define DS_POP()        forth_vm_pop_ds()
-#define FS_PUSH(x)      forth_vm_push_fs((cell)x)
+#define FS_PUSH(x)      forth_vm_push_fs((float)x)
 #define FS_POP()        forth_vm_pop_fs()
 #define RS_PUSH(x)      forth_vm_push_rs((void**)x);
 #define RS_POP()        forth_vm_pop_rs();
@@ -81,6 +81,7 @@
 #define UDIVMOD() { ucell a = (ucell)DS_POP(), b = (ucell)DS_POP(); DS_PUSH((cell)(b % a)); DS_PUSH((cell)(b / a)); }
 #define LT_ZERO()   DS_AT(0) = DS_AT(0) < 0;
 #define GT_ZERO()   DS_AT(0) = DS_AT(0) > 0;
+#define FORMAT()    DS_PUSH((cell)forth_io_format((const char*)DS_POP())); /* todo: parens documentation */
 
 /* todo: is push_ns the right name for it? */
 #define EXEC_BUILTIN() \
@@ -168,13 +169,23 @@
     temp = (cell)current_ds; \
     DS_PUSH(temp); 
 
+#define F_FETCH() \
+    float* ptr = (float*)DS_POP(); \
+    FS_PUSH(*ptr);  
+
+/* todo: rename to fs store? */
+#define F_STORE() \
+    float* ptr = (float*)DS_POP(); \
+    float val = FS_POP(); \
+    *ptr = val;
+
 #define SET_DSP() \
-    cell *new_ds = (cell*)forth_vm_pop_ds(); \
+    cell* new_ds = (cell*)forth_vm_pop_ds(); \
     current_ds = new_ds;
 
 #define STRCPY() \
-    char *dest = (char*)DS_POP(); \
-    char *src = (char*)DS_POP(); \
+    char* dest = (char*)DS_POP(); \
+    char* src = (char*)DS_POP(); \
     DS_PUSH(strcpy(dest, src));
 
 #define STRLEN() \

@@ -197,11 +197,12 @@ cell forth_vm_pop_ds(void) {
     return *current_ds++;
 }
 
-cell forth_vm_push_fs(cell value) {
+void forth_vm_push_fs(float value) {
+    /* todo: check overflow */
     *--current_fs = value;
 }
 
-cell forth_vm_pop_fs(void) {
+float forth_vm_pop_fs(void) {
     /* todo: check fs underflow */
     return *current_fs++;
 }
@@ -430,6 +431,9 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("execute", CODE(EXECUTE), 0);
         forth_dictionary_defcode("exec-builtin", CODE(EXEC_BUILTIN), 0); /* todo: clean up this execute stuff */
         forth_dictionary_defcode("u<",      CODE(UNSIGNED_LT), 0);
+        forth_dictionary_defcode("f@", CODE(F_FETCH), 0);
+        forth_dictionary_defcode("f!", CODE(F_STORE), 0);
+        forth_dictionary_defcode("format",  CODE(FORMAT),  0);
         /* outer? */
         forth_dictionary_defcode("iword",   CODE(IWORD),    0);
         forth_dictionary_defcode("iexecute", CODE(IEXECUTE), 0);
@@ -565,6 +569,7 @@ int forth_vm_run(void) {
     OP(UDIVMOD): { UDIVMOD(); NEXT(); }
     OP(LT_ZERO): { LT_ZERO(); NEXT(); }
     OP(GT_ZERO): { GT_ZERO(); NEXT(); }
+    OP(FORMAT): { FORMAT(); NEXT(); }
 
     OP(PRINT_DS): { PRINT_DS(); NEXT(); }
     OP(UNSIGNED_LT): { UNSIGNED_LT(); NEXT(); }
@@ -574,6 +579,8 @@ int forth_vm_run(void) {
     OP(SET_TSP): { SET_TSP(); NEXT(); }
     OP(GET_FSP): { GET_FSP(); NEXT(); }
     OP(SET_FSP): { SET_FSP(); NEXT(); }
+    OP(F_FETCH): { F_FETCH(); NEXT(); }
+    OP(F_STORE): { F_STORE(); NEXT(); }
 
     /* forth vm words */
     OP(NOOP): { NEXT(); }
