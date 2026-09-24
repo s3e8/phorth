@@ -908,39 +908,68 @@ defer breakpoint
     drop 0
 ;
 
-\ : print-stack-trace
-\     rsp@
-\     begin
-\ 	dup r0 @ cell- <>
-\     while
-\ 	    dup @
-\ 	    case
-\ 		' exception-marker of ." catch ( dsp=" cell+ dup @ u. ." ) " cr endof
+: print-stack-trace
+    rsp@
+    begin
+	dup r0 @ cell- <>
+    while
+	    dup @
+	    case
+		' exception-marker of ." catch ( dsp=" cell+ dup @ u. ." ) " cr endof
 
-\ 		dup
-\ 		lookup-word-from-ip
+		dup
+		lookup-word-from-ip
 		
-\ 		id. cr
-\ 	    endcase
-\ 	    cell+
-\     repeat
-\     drop
-\     cr
-\ ;
+		id. cr
+	    endcase
+	    cell+
+    repeat
+    drop
+    cr
+;
 
-\ : prompt-display-data
-\     current-vocab @ vocab-name
-\     fdepth floatsize /
-\     tdepth cell /
-\     depth cell / 3 -
-\ ;
+: prompt-display-data
+    current-vocab @ vocab-name
+    fdepth floatsize /
+    tdepth cell /
+    depth cell 3 - \ todo: this uses the c-defined, cells-based depth.. revisit? 
+;
 
-\ : format-prompt
-\     prompt-display-data s" [ds:%d ts:%d fs:%d %s]> " format
-\ ;
+: format-prompt
+    prompt-display-data s" [ds:%d ts:%d fs:%d %s]> " format
+;
 
-\ : format-debugger-prompt
-\     prompt-display-data s" [ds:%d ts:%d fs:%d %s] DEBUG> " format
-\ ;
+: format-debugger-prompt
+    prompt-display-data s" [ds:%d ts:%d fs:%d %s] DEBUG> " format
+;
+
+: bytes-used       here @ here0 - ;
+: const-bytes-used consthere @ consthere0 @ - ;
+: data-bytes-used  datahere @ datahere0 @ - ;
+
+: welcome
+    ." WELCOME TO FORTH:" cr
+    ."   Const space used: " const-bytes-used . cr
+    ."    Data space used: " data-bytes-used . cr
+    ."         Space used: " bytes-used . cr
+;
+
+: final-quit
+    reset-input
+    begin
+	format-prompt prompt
+	?eof not
+    while
+	    begin ?eol not while ' interpret catch drop repeat
+	    cr
+    repeat
+    die
+;
+
+' final-quit is quit
+
+welcome
+hide welcome
+quit
 
 \ todo: new ans create
