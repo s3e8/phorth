@@ -163,12 +163,22 @@ int forth_io_is_eol(void) {
     return *current_line_buffer_position == '\0';
 }
 
-/* print prompt, read one line from the current stream into the line buffer */
-void forth_io_prompt(const char* prompt) {
-    fputs(prompt, current_output_stream);
-    char* line = fgets(current_line_buffer, current_line_buffer_size, current_input_stream);
-    if(!line) current_line_buffer[0] = '\0';
-    current_line_buffer_position = current_line_buffer;
+/* print prompt are read one line from the current stream into the line buffer */
+void forth_io_prompt(const char* prompt_text) {
+    for(;;) {
+        if(current_input_stream == stdin) fputs(prompt_text, current_output_stream);
+        char* line = fgets(current_line_buffer, current_line_buffer_size, current_input_stream);
+        if(line) {
+            current_line_buffer_position = current_line_buffer;
+            return;
+        }
+        if(!forth_io_pop_input_stack()) {              /* real eof on stdin */
+            current_line_buffer[0] = '\0';
+            current_line_buffer_position = current_line_buffer;
+            return;
+        }
+        if(*current_line_buffer_position) return;     /* parent still has words on its line */
+    }
 }
 
 /* drop every included file and return to the base input (stdin) */

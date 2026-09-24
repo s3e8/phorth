@@ -763,9 +763,10 @@ hide copytohere
     ] 
 ;
 
-: ['] immediate
-    ' lit ,
-;
+\ : ['] immediate
+\     ' lit ,
+\ ;
+: ['] immediate [compile] ' ;
 
 : id. cell+ cell+ tell ;
 
@@ -969,7 +970,6 @@ hide welcome
 
 
 include forth_lib_tty.f
-include forth_test.f
 
 quit
 
