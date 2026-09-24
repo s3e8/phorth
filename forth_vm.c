@@ -424,7 +424,7 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("rsp!",    CODE(RSP_SET), 0);
         forth_dictionary_defcode(">t",      CODE(TO_TS), 0);
         forth_dictionary_defcode("t>",      CODE(FROM_TS), 0);
-        forth_dictionary_defcode("0>branch", CODE(GT_ZERO_BRANCH), 0); /* todo: naming is funny.. not sure I like.. */
+        forth_dictionary_defcode("0>branch", CODE(GT_ZERO_BRANCH), FLAG_HASARG); /* todo: naming is funny.. not sure I like.. */
         forth_dictionary_defcode("rot",     CODE(ROT), 0); 
         forth_dictionary_defcode("-rot",    CODE(MINUS_ROT), 0);
         forth_dictionary_defcode(".s",      CODE(PRINT_DS), 0);

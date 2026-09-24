@@ -110,15 +110,21 @@ void forth_dictionary_defconst(const char* name, cell value) {
     void* code[] = { 
         forth_dictionary_get_xt_by_name("lit"), 
         (void*)value, 
-        forth_dictionary_get_xt_by_name("exit") 
+        forth_dictionary_get_xt_by_name("exit"),
+        forth_dictionary_get_xt_by_name("eow")
     };
-    forth_dictionary_defword(name, code, 3, FLAG_INLINE);
+    forth_dictionary_defword(name, code, 4, FLAG_INLINE);
 }
 
 typedef float aliasingfloat __attribute__((__may_alias__));
 void deffconst(const char* name, cell value) {
-    void* code[] = { forth_dictionary_get_xt_by_name("flit"), (aliasingfloat*)value, forth_dictionary_get_xt_by_name("exit") }; 
-    forth_dictionary_defword(name, code, 3, FLAG_INLINE);
+    void* code[] = { 
+        forth_dictionary_get_xt_by_name("flit"), 
+        (aliasingfloat*)value, 
+        forth_dictionary_get_xt_by_name("exit"),
+        forth_dictionary_get_xt_by_name("eow")
+    }; 
+    forth_dictionary_defword(name, code, 4, FLAG_INLINE);
 }
 
 void forth_dictionary_defextern(const char* name, void (*fn)(void), cell flags) {
