@@ -353,8 +353,8 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("<>",      CODE(NOT_EQUAL),    0);
         forth_dictionary_defcode("0=",      CODE(EQ_ZERO),      0);
         forth_dictionary_defcode("0<>",     CODE(NEQ_ZERO),     0);
-        forth_dictionary_defcode("0<",      CODE(LTE_ZERO),     0);
-        forth_dictionary_defcode("0>",      CODE(GTE_ZERO),     0);
+        forth_dictionary_defcode("0<",      CODE(LT_ZERO),      0);
+        forth_dictionary_defcode("0>",      CODE(GT_ZERO),      0);
         /* dictionary */
         forth_dictionary_defconst("here",       (cell)&dictionary_pointer);
         forth_dictionary_defconst("here0",      (cell)dictionary_base);

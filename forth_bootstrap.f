@@ -785,7 +785,6 @@ hide copytohere
 
 \ include forth_peephole.f
 \ include opt-word \ todo? 
-include forth_lib_tty.f
 
 
 variable compiling-lambda
@@ -967,6 +966,11 @@ defer breakpoint
 
 welcome
 hide welcome
+
+
+include forth_lib_tty.f
+include forth_test.f
+
 quit
 
 \ todo: new ans (create)?
