@@ -157,10 +157,23 @@ int forth_io_is_eof(void) {
     return (*current_line_buffer_position == '\0') && feof(current_input_stream);
 }
 
+// int forth_io_is_eol(void) {
+//     while(*current_line_buffer_position && isspace(*current_line_buffer_position))
+//         current_line_buffer_position++;
+//     return *current_line_buffer_position == '\0';
+// }
 int forth_io_is_eol(void) {
-    while(*current_line_buffer_position && isspace(*current_line_buffer_position))
-        current_line_buffer_position++;
-    return *current_line_buffer_position == '\0';
+    for(;;) {
+        while(*current_line_buffer_position && isspace(*current_line_buffer_position))
+            current_line_buffer_position++;
+        if(*current_line_buffer_position) return 0;
+        if(input_stack_pointer == input_stack_base) return 1;      /* end of a typed line */
+
+        if(fgets(current_line_buffer, current_line_buffer_size, current_input_stream))
+            current_line_buffer_position = current_line_buffer;    /* next line of the file */
+        else
+            forth_io_pop_input_stack();                            /* file done, back to parent */
+    }
 }
 
 /* print prompt are read one line from the current stream into the line buffer */
