@@ -932,7 +932,7 @@ defer breakpoint
     current-vocab @ vocab-name
     fdepth floatsize /
     tdepth cell /
-    depth cell 3 - \ todo: this uses the c-defined, cells-based depth.. revisit? 
+    depth 3 - \ todo: this uses the c-defined, cells-based depth.. revisit? 
 ;
 
 : format-prompt
