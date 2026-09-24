@@ -970,6 +970,8 @@ defer breakpoint
 
 welcome
 hide welcome
+.s
 quit
 
 \ todo: new ans create
+\ todo: add reset word to rebuild forth
