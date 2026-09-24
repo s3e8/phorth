@@ -18,3 +18,4 @@ WIP forth
 - [ ] expert system
 - [ ] builtin string space and scratch buffer
 - [ ] rename core files to forth_core? like forth_lib
+- [ ] step through debugger?

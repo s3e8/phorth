@@ -783,9 +783,6 @@ hide copytohere
     cr
 ;
 
-
-
-\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \
 \ include forth_peephole.f
 \ include opt-word \ todo? 
 include forth_lib_tty.f
