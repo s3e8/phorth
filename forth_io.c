@@ -162,6 +162,7 @@ int forth_io_is_eof(void) {
 //         current_line_buffer_position++;
 //     return *current_line_buffer_position == '\0';
 // }
+/* todo: simplify this? */
 int forth_io_is_eol(void) {
     for(;;) {
         while(*current_line_buffer_position && isspace(*current_line_buffer_position))
