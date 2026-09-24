@@ -319,10 +319,6 @@ int forth_vm_run(void) {
         forth_dictionary_defcode(":", CODE(COLON),          0);
         forth_dictionary_defcode(";", CODE(SEMICOLON),      FLAG_IMMEDIATE );
         /* vm */
-        forth_dictionary_defconst("s0", (cell)&current_d0); /* todo: change to current_s0? */
-        forth_dictionary_defconst("r0", (cell)&current_r0);
-        forth_dictionary_defconst("f0", (cell)&current_f0);
-        forth_dictionary_defconst("t0", (cell)&current_t0);
         forth_dictionary_defcode("die",     CODE(DIE),          0);
         forth_dictionary_defcode("0branch", CODE(ZERO_BRANCH),  FLAG_HASARG  ); /* todo: these are  definitely interpreter opcodes */
         forth_dictionary_defcode("1branch", CODE(IF_BRANCH),    FLAG_HASARG  );
@@ -356,12 +352,6 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("0<",      CODE(LT_ZERO),      0);
         forth_dictionary_defcode("0>",      CODE(GT_ZERO),      0);
         /* dictionary */
-        forth_dictionary_defconst("here",       (cell)&dictionary_pointer);
-        forth_dictionary_defconst("here0",      (cell)dictionary_base);
-        forth_dictionary_defconst("consthere",  (cell)string_space_pointer);
-        forth_dictionary_defconst("consthere0", (cell)string_space_base);
-        forth_dictionary_defconst("datahere",   (cell)scratch_buffer_pointer);
-        forth_dictionary_defconst("datahere0",  (cell)scratch_buffer_base);
         forth_dictionary_defcode("latest",    CODE(LATEST),       0);
         forth_dictionary_defcode("(create)",    CODE(CREATE),       0);
         forth_dictionary_defcode("word",      CODE(WORD),         0);
@@ -437,7 +427,7 @@ int forth_vm_run(void) {
 
         forth_dictionary_defextern("test-external", test_external, 0);
 
-                forth_dictionary_defconst("f_builtin",   FLAG_BUILTIN);
+        forth_dictionary_defconst("f_builtin",   FLAG_BUILTIN);
         forth_dictionary_defconst("f_hasarg",    FLAG_HASARG);
         forth_dictionary_defconst("f_immediate", FLAG_IMMEDIATE);
         forth_dictionary_defconst("f_hidden",    FLAG_HIDDEN);
@@ -447,6 +437,16 @@ int forth_vm_run(void) {
         forth_dictionary_defconst("base",       (cell)&base);
         forth_dictionary_defconst("cellsize",   (cell)sizeof(cell));
         forth_dictionary_defconst("floatsize",  (cell)sizeof(float));
+        forth_dictionary_defconst("s0", (cell)&current_d0); /* todo: change to current_s0? */
+        forth_dictionary_defconst("r0", (cell)&current_r0);
+        forth_dictionary_defconst("f0", (cell)&current_f0);
+        forth_dictionary_defconst("t0", (cell)&current_t0);
+        forth_dictionary_defconst("here",       (cell)&dictionary_pointer);
+        forth_dictionary_defconst("here0",      (cell)dictionary_base);
+        forth_dictionary_defconst("consthere",  (cell)string_space_pointer);
+        forth_dictionary_defconst("consthere0", (cell)string_space_base);
+        forth_dictionary_defconst("datahere",   (cell)scratch_buffer_pointer);
+        forth_dictionary_defconst("datahere0",  (cell)scratch_buffer_base);
 
         /* convenience codes -- kind of a hack tbh */
         // call_code = forth_dictionary_get_xt_by_name("call");
