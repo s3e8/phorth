@@ -12,7 +12,7 @@
 
 : make-variable
     allot
-    word create make-inline
+    word (create) make-inline
     ' lit , , ' exit , ' eow ,
 ;
 
@@ -612,7 +612,7 @@ find-first-builtin
 ;
 
 : defer immediate
-    word create \ todo: make sure word and create are correct definitions
+    word (create) \ todo: make sure word and (create) are correct definitions
     latest @ @ f_deferred xor latest @ !
     ' jump ,
     0 ,
@@ -630,12 +630,12 @@ find-first-builtin
 ;
 
 \ todo: is this the same as the reference?
-: create ( wordname )
+: (create) ( wordname )
     dup find ?dup                ( wordname previousdef )
     if                           \ if previous definition was found
 	    dup @ f_deferred and 
         if                       \ and it was deferred
-            over create          \ create new word  ( wordname dictentry )
+            over (create)          \ (create) new word  ( wordname dictentry )
             >cfa cell+           ( wordname callptr )
             latest @ >cfa        ( wordname callptr newwordimpl )
             swap !
@@ -644,7 +644,7 @@ find-first-builtin
 	    then
 	    drop
     then    
-    create
+    (create)
 ;
 
 defer quit
@@ -663,9 +663,9 @@ defer quit
 : cell  inline cellsize   ;
 : cells inline cellsize * ;
 
-\ new version of colon to support deferred words-aware create
+\ new version of colon to support deferred words-aware (create)
 : :
-    word create
+    word (create)
     latest @ hidden
     ]
 ;
@@ -723,21 +723,21 @@ hide copytohere
 ;
 
 : constant
-    word create
+    word (create)
     ' lit ,
     ,
     ' exit ,
 ;
 
 : fconstant
-    word create
+    word (create)
     ' flit ,
     f,
     ' exit ,
 ;
 
 : value
-    word create
+    word (create)
     ' lit ,
     ,
     ' exit ,
@@ -758,7 +758,7 @@ hide copytohere
 ;
 
 : :noname
-    0 create
+    0 (create)
     here @
     ] 
 ;
@@ -798,7 +798,7 @@ variable compiling-lambda
 	here @     \ save old here ptr
 	datahere @ here !    \ save new here for compilation
     else
-	0 create
+	0 (create)
 	here @
 	1 compiling-lambda !
 	]
@@ -969,6 +969,6 @@ welcome
 hide welcome
 quit
 
-\ todo: new ans create?
+\ todo: new ans (create)?
 \ todo: add reset word to rebuild forth
 \ todo: remove format prompt.. use in debug only or on command

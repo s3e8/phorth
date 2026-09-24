@@ -363,7 +363,7 @@ int forth_vm_run(void) {
         forth_dictionary_defconst("datahere",   (cell)scratch_buffer_pointer);
         forth_dictionary_defconst("datahere0",  (cell)scratch_buffer_base);
         forth_dictionary_defcode("latest",    CODE(LATEST),       0);
-        forth_dictionary_defcode("create",    CODE(CREATE),       0);
+        forth_dictionary_defcode("(create)",    CODE(CREATE),       0);
         forth_dictionary_defcode("word",      CODE(WORD),         0);
         forth_dictionary_defcode("find",      CODE(FIND),         0);
         forth_dictionary_defcode(",",         CODE(COMMA),        0);
