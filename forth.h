@@ -73,6 +73,7 @@ extern int  forth_interpreter_interpret_string(const char* str);
 
 /* forth io */ /* todo: clean up api */
 extern void  forth_io_init_defaults(void);
+extern void forth_io_define_words(void);
 extern int   forth_io_include_file(const char* filename);
 extern void  forth_io_set_input_file(const char* filename); /* todo: rm */
 extern char* forth_io_get_current_wordbuf(void);
@@ -82,14 +83,15 @@ extern char* forth_io_get_next_word(void);  /* WORD */
 extern int   forth_io_get_next_char(void);
 extern void  forth_io_set_string_input(const char* input);
 extern void  forth_io_read_string(const char* str);
-extern void forth_io_prompt(const char* prompt);
-extern void forth_io_reset_input_stack(void);
+extern void  forth_io_prompt(const char* prompt);
 /* other forth io ops */
 extern void forth_io_emit(int ch);
 extern void forth_io_tell(const char* str);
 extern void forth_io_dot(cell value); /* todo: rename to print_cells? */
 extern void forth_io_skip_line(void);
 extern void forth_io_skip_parens(void);
+extern int   forth_io_refill(void);
+extern FILE* forth_io_open_file(const char* name);
 extern const char* forth_io_format(const char* format_str);
 /* io dbg */
 extern void forth_io_print_current_word(void);

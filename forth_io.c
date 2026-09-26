@@ -27,6 +27,14 @@ static input_t default_input_stack[DEFAULT_INPUT_STACK_SIZE];
 static char    default_word_buffer[DEFAULT_WORD_BUFFER_SIZE];
 static char    default_line_buffers[DEFAULT_INPUT_STACK_SIZE][DEFAULT_LINE_BUFFER_SIZE];
 
+void forth_io_define_words(void) {
+    forth_dictionary_defconst("input-stream",      (cell)&current_input_stream);
+    forth_dictionary_defconst("input-buffer",      (cell)&current_line_buffer);
+    forth_dictionary_defconst("input-pos",         (cell)&current_line_buffer_position);
+    forth_dictionary_defconst("input-buffer-size", (cell)DEFAULT_LINE_BUFFER_SIZE);
+    forth_dictionary_defconst("<stdin>",           (cell)stdin);
+}
+
 void forth_io_push_input_stack(FILE* stream) {
     if(input_stack_pointer - input_stack_base >= input_stack_size - 1) {
         fprintf(stderr, "Input stack overflow\n");
@@ -157,24 +165,10 @@ int forth_io_is_eof(void) {
     return (*current_line_buffer_position == '\0') && feof(current_input_stream);
 }
 
-// int forth_io_is_eol(void) {
-//     while(*current_line_buffer_position && isspace(*current_line_buffer_position))
-//         current_line_buffer_position++;
-//     return *current_line_buffer_position == '\0';
-// }
-/* todo: simplify this? */
 int forth_io_is_eol(void) {
-    for(;;) {
-        while(*current_line_buffer_position && isspace(*current_line_buffer_position))
-            current_line_buffer_position++;
-        if(*current_line_buffer_position) return 0;
-        if(input_stack_pointer == input_stack_base) return 1;      /* end of a typed line */
-
-        if(fgets(current_line_buffer, current_line_buffer_size, current_input_stream))
-            current_line_buffer_position = current_line_buffer;    /* next line of the file */
-        else
-            forth_io_pop_input_stack();                            /* file done, back to parent */
-    }
+    while(*current_line_buffer_position && isspace(*current_line_buffer_position))
+        current_line_buffer_position++;
+    return *current_line_buffer_position == '\0';
 }
 
 /* print prompt are read one line from the current stream into the line buffer */
@@ -195,51 +189,11 @@ void forth_io_prompt(const char* prompt_text) {
     }
 }
 
-/* drop every included file and return to the base input (stdin) */
-void forth_io_reset_input_stack(void) {
-    while(forth_io_pop_input_stack());
-    current_line_buffer[0] = '\0';
-    current_line_buffer_position = current_line_buffer;
-}
-
-/* input stuff */
-// char* forth_io_get_next_line() {
-//     if(!current_line_buffer) {
-//         fprintf(stderr, "Error: current_line_buffer not set\n");
-//         return NULL;
-//     }
-//     if(current_input_stream == stdin) printf("outer> ");
-
-//     char* tmp = fgets(current_line_buffer, current_line_buffer_size, current_input_stream);
-//     if (!tmp && feof(current_input_stream)) {
-//         printf("End of file reached, switching to stdin...\n");
-//         current_input_stream = stdin;
-//         printf("outer> ");
-//         tmp = fgets(current_line_buffer, current_line_buffer_size, current_input_stream);
-//     }
-//     if(!tmp) return NULL;
-
-//     current_line_buffer_position = tmp;
-
-//     return tmp;
-// }
-
 char* forth_io_get_next_line(void) {
-    if(!current_line_buffer) {
-        fprintf(stderr, "Error: current_line_buffer not set\n");
-        return NULL;
-    }
-    for(;;) {
-        if(current_input_stream == stdin) printf("outer> ");
-        char* tmp = fgets(current_line_buffer, current_line_buffer_size, current_input_stream);
-        if(tmp) {
-            current_line_buffer_position = tmp;
-            return tmp;
-        }
-        if(!forth_io_pop_input_stack()) return NULL;   /* EOF at level 0 */
-        if(*current_line_buffer_position)              /* parent still has words on its line */
-            return current_line_buffer_position;
-    }
+    char* line = fgets(current_line_buffer, current_line_buffer_size, current_input_stream);
+    if(!line) current_line_buffer[0] = '\0';
+    current_line_buffer_position = current_line_buffer;
+    return line;
 }
 
 /* Parse next word from a string, updating a position pointer */
@@ -283,6 +237,19 @@ char* forth_io_get_next_word()
 int forth_io_get_char() {
     return fgetc(current_input_stream);
 }
+
+/* read the next line of the current stream into the current buffer.
+   returns NULL at EOF (buffer left empty). nesting is handled in forth. */
+char* forth_io_get_next_line(void) {
+    char* line = fgets(current_line_buffer, current_line_buffer_size, current_input_stream);
+    if(!line) current_line_buffer[0] = '\0';
+    current_line_buffer_position = current_line_buffer;
+    return line;
+}
+
+int   forth_io_refill(void)                 { return forth_io_get_next_line() != NULL; }
+FILE* forth_io_open_file(const char* name)  { return fopen(name, "r"); }
+int   forth_io_input_is_stdin(void)         { return current_input_stream == stdin; }
 
 void forth_io_set_string_input(const char* input) {
         if(strlen(input) >= current_line_buffer_size) { /* todo: > or >= */

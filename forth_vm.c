@@ -505,6 +505,7 @@ int forth_vm_run(void) {
     OP(PARSE_FNUMBER): { PARSE_FNUMBER(); NEXT(); }
     OP(FCOMMA): { FCOMMA(); NEXT(); }
     OP(INCLUDE): { INCLUDE(); NEXT(); }
+    
 
     OP(LIT): {
         LIT();
@@ -586,7 +587,10 @@ int forth_vm_run(void) {
     OP(F_STORE): { F_STORE(); NEXT(); }
     OP(IS_EOL):      { IS_EOL();      NEXT(); }
     OP(PROMPT):      { PROMPT();      NEXT(); }
-    OP(RESET_INPUT): { RESET_INPUT(); NEXT(); }
+    OP(REFILL): { REFILL(); NEXT(); }
+    OP(OPEN_FILE): { OPEN_FILE(); NEXT(); } /* todo: error in c or f? */
+    OP(CLOSE_FILE): { CLOSE_FILE(); NEXT(); }
+
 
     /* forth vm words */
     OP(NOOP): { NEXT(); }

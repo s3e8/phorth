@@ -83,7 +83,10 @@
 #define FORMAT()    DS_PUSH((cell)forth_io_format((const char*)DS_POP())); /* todo: parens documentation */
 #define IS_EOL()        DS_PUSH((cell)forth_io_is_eol());
 #define PROMPT()        forth_io_prompt((const char*)DS_POP());
-#define RESET_INPUT()   forth_io_reset_input_stack();
+#define REFILL()        DS_PUSH((cell)forth_io_refill());
+#define OPEN_FILE()     DS_AT(0) = (cell)forth_io_open_file((const char*)DS_AT(0));
+#define CLOSE_FILE()    fclose((FILE*)DS_POP());
+
 
 /* todo: is push_ns the right name for it? */
 #define EXEC_BUILTIN() \
@@ -395,7 +398,10 @@
 
 #define INTERPRET() \
     char* wordbuf = forth_io_get_next_word(); \
-    if(!wordbuf) return 1; \
+    if(!wordbuf) { \
+        if(current_input_stream == stdin) return 1; \
+        NEXT(); \
+    } \
     word_header_t* word = forth_dictionary_find_word(wordbuf); \
     if(word) { \
         void* code = forth_dictionary_get_xt(word); \
