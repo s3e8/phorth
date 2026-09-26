@@ -399,7 +399,7 @@
 #define INTERPRET() \
     char* wordbuf = forth_io_get_next_word(); \
     if(!wordbuf) { \
-        if(current_input_stream == stdin) return 1; \
+        if(forth_io_is_stdin()) return 1; \
         NEXT(); \
     } \
     word_header_t* word = forth_dictionary_find_word(wordbuf); \

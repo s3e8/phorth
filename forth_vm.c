@@ -415,7 +415,9 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("format",  CODE(FORMAT),  0);
         forth_dictionary_defcode("?eol",        CODE(IS_EOL),      0);
         forth_dictionary_defcode("prompt",      CODE(PROMPT),      0);
-        forth_dictionary_defcode("reset-input", CODE(RESET_INPUT), 0);
+        forth_dictionary_defcode("refill", CODE(REFILL), 0);
+        forth_dictionary_defcode("open-file", CODE(OPEN_FILE), 0);
+        forth_dictionary_defcode("close-file", CODE(CLOSE_FILE), 0);
         /* outer? */
         forth_dictionary_defcode("iword",   CODE(IWORD),    0);
         forth_dictionary_defcode("iexecute", CODE(IEXECUTE), 0);

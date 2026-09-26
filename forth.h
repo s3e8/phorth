@@ -91,6 +91,7 @@ extern void forth_io_dot(cell value); /* todo: rename to print_cells? */
 extern void forth_io_skip_line(void);
 extern void forth_io_skip_parens(void);
 extern int   forth_io_refill(void);
+extern int forth_io_input_is_stdin(void);
 extern FILE* forth_io_open_file(const char* name);
 extern const char* forth_io_format(const char* format_str);
 /* io dbg */

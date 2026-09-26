@@ -189,6 +189,8 @@ void forth_io_prompt(const char* prompt_text) {
     }
 }
 
+/* read the next line of the current stream into the current buffer.
+   returns NULL at EOF (buffer left empty). nesting is handled in forth. */
 char* forth_io_get_next_line(void) {
     char* line = fgets(current_line_buffer, current_line_buffer_size, current_input_stream);
     if(!line) current_line_buffer[0] = '\0';
@@ -240,12 +242,12 @@ int forth_io_get_char() {
 
 /* read the next line of the current stream into the current buffer.
    returns NULL at EOF (buffer left empty). nesting is handled in forth. */
-char* forth_io_get_next_line(void) {
-    char* line = fgets(current_line_buffer, current_line_buffer_size, current_input_stream);
-    if(!line) current_line_buffer[0] = '\0';
-    current_line_buffer_position = current_line_buffer;
-    return line;
-}
+// char* forth_io_get_next_line(void) {
+//     char* line = fgets(current_line_buffer, current_line_buffer_size, current_input_stream);
+//     if(!line) current_line_buffer[0] = '\0';
+//     current_line_buffer_position = current_line_buffer;
+//     return line;
+// }
 
 int   forth_io_refill(void)                 { return forth_io_get_next_line() != NULL; }
 FILE* forth_io_open_file(const char* name)  { return fopen(name, "r"); }
