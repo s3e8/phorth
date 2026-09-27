@@ -14,18 +14,31 @@ typedef struct input_t { /* todo: separate if we bootstrap from forth instead? *
 static input_t* input_stack_pointer;
 static input_t* input_stack_base;
 static int      input_stack_size;
-static char*  wordbuf; /* todo: rename to long-form words */
-static int    wordbuf_size;
 
-static FILE* current_input_stream;
-static FILE* current_output_stream;
-static char* current_line_buffer;
-static char* current_line_buffer_position;
-static int   current_line_buffer_size;
+static FILE*    current_input_stream;
+static FILE*    current_output_stream;
+static char*    current_line_buffer;
+static char*    current_line_buffer_position;
+static int      current_line_buffer_size;
+static char*    wordbuf; /* todo: rename to long-form words */
+static int      wordbuf_size;
 
-static input_t default_input_stack[DEFAULT_INPUT_STACK_SIZE];
-static char    default_word_buffer[DEFAULT_WORD_BUFFER_SIZE];
-static char    default_line_buffers[DEFAULT_INPUT_STACK_SIZE][DEFAULT_LINE_BUFFER_SIZE];
+static input_t  default_input_stack[DEFAULT_INPUT_STACK_SIZE];
+static char     default_word_buffer[DEFAULT_WORD_BUFFER_SIZE];
+static char     default_line_buffers[DEFAULT_INPUT_STACK_SIZE][DEFAULT_LINE_BUFFER_SIZE];
+
+void forth_io_init_defaults(void) {
+    setvbuf(stdout, NULL, _IONBF, 0); /* todo: should I still be doing this? */
+    setvbuf(stderr, NULL, _IONBF, 0);
+    input_stack_size    = DEFAULT_INPUT_STACK_SIZE;
+    input_stack_base    = default_input_stack;
+    input_stack_pointer = input_stack_base;
+    default_line_buffers[0][0] = '\0';
+    forth_io_set_input_stream(stdin);
+    forth_io_set_output_stream(stdout);
+    forth_io_set_wordbuf(default_word_buffer, sizeof(default_word_buffer));
+    forth_io_set_linebuf(default_line_buffers[0], DEFAULT_LINE_BUFFER_SIZE); /* todo: use var or macro */
+}
 
 void forth_io_define_words(void) {
     forth_dictionary_defconst("input-stream",      (cell)&current_input_stream);
@@ -131,19 +144,6 @@ int forth_io_include_file(const char* filename) {
     if(!fp) return 0;
     forth_io_push_input_stack(fp);
     return 1;
-}
-
-void forth_io_init_defaults(void) {
-    setvbuf(stdout, NULL, _IONBF, 0);
-    setvbuf(stderr, NULL, _IONBF, 0);
-    input_stack_size    = DEFAULT_INPUT_STACK_SIZE;
-    input_stack_base    = default_input_stack;
-    input_stack_pointer = input_stack_base;
-    default_line_buffers[0][0] = '\0';
-    forth_io_set_input_stream(stdin);
-    forth_io_set_output_stream(stdout);
-    forth_io_set_wordbuf(default_word_buffer, sizeof(default_word_buffer));
-    forth_io_set_linebuf(default_line_buffers[0], DEFAULT_LINE_BUFFER_SIZE); /* todo: use var or macro */
 }
 
 /* io debug */
@@ -360,8 +360,4 @@ const char* forth_io_format(const char* format_string) {
 
     outbuf[outlen] = '\0';
     return outbuf;
-}
-
-void forth_io_test_all(void) {
-    forth_io_read_string("this is a test");
 }

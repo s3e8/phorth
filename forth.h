@@ -71,41 +71,35 @@ extern int  forth_interpreter_parse_number(const char* wordbuf, int* result);
 extern int  forth_interpreter_interpret(void); /* todo: not in use yet */
 extern int  forth_interpreter_interpret_string(const char* str);
 
-/* forth io */ /* todo: clean up api */
-extern void  forth_io_init_defaults(void);
-extern void forth_io_define_words(void);
-extern int   forth_io_include_file(const char* filename);
-extern void  forth_io_set_input_file(const char* filename); /* todo: rm */
-extern char* forth_io_get_current_wordbuf(void);
-extern int   forth_io_is_eof(void);
-extern int   forth_io_is_eol(void);
-extern char* forth_io_get_next_word(void);  /* WORD */
-extern int   forth_io_get_next_char(void);
-extern void  forth_io_set_string_input(const char* input);
-extern void  forth_io_read_string(const char* str);
-extern void  forth_io_prompt(const char* prompt);
-/* other forth io ops */
-extern void forth_io_emit(int ch);
-extern void forth_io_tell(const char* str);
-extern void forth_io_dot(cell value); /* todo: rename to print_cells? */
-extern void forth_io_skip_line(void);
-extern void forth_io_skip_parens(void);
-extern int   forth_io_refill(void);
-extern int forth_io_input_is_stdin(void);
-extern FILE* forth_io_open_file(const char* name);
-extern const char* forth_io_format(const char* format_str);
-/* io dbg */
-extern void forth_io_print_current_word(void);
+/* FORTH IO */  /* todo: clean up api */
+extern void         forth_io_init_defaults(void);
+extern void         forth_io_define_words(void);
+extern FILE*        forth_io_open_file(const char* name);
+extern void         forth_io_set_string_input(const char* input);
+extern void         forth_io_read_string(const char* str);
+extern int          forth_io_include_file(const char* filename);
+extern void         forth_io_set_input_file(const char* filename); /* todo: rm */
+extern char*        forth_io_get_current_wordbuf(void);
+extern int          forth_io_is_eof(void);
+extern int          forth_io_is_eol(void);
+extern char*        forth_io_get_next_word(void);  /* WORD */
+extern int          forth_io_get_next_char(void);
+extern void         forth_io_prompt(const char* prompt);
+extern void         forth_io_emit(int ch); /* other forth io builtins vvv */
+extern void         forth_io_tell(const char* str);
+extern void         forth_io_dot(cell value); /* todo: rename to print_cells? */
+extern void         forth_io_skip_line(void);
+extern void         forth_io_skip_parens(void);
+extern int          forth_io_refill(void);
+extern const char*  forth_io_format(const char* format_str);
+extern int          forth_io_input_is_stdin(void);       /* forth io helpers */
+extern void         forth_io_print_current_word(void);  /* forth io dbg */
 
-/* forth dictionary */
-/* init */
+/* FORTH DICTIONARY */ /* todo: defvar, defword */
 extern void             forth_dictionary_init_defaults(void);
-/* for defining builtins, etc */
 extern void             forth_dictionary_defcode(const char* name, void* code, cell flags);
 extern void             forth_dictionary_defconst(const char* name, cell value);
 extern void             forth_dictionary_defextern(const char* name, void (*fn)(void), cell flags);
-/* defvar  */
-/* defword */
 extern word_header_t*   forth_dictionary_find_word(const char* name);                       /* FIND   */
 extern word_header_t*   forth_dictionary_create_word(const char* name, cell flags);         /* CREATE */
 extern void             forth_dictionary_compile(cell value);                               /* COMMA  */
@@ -116,15 +110,15 @@ extern const char*      forth_dictionary_get_name_by_xt(void* xt);
 extern const char*      forth_dictionary_get_name_by_header(word_header_t* word);
 
 /* forth vm */
-extern void forth_vm_init_defaults(void);
-extern int  forth_vm_run(void);
-extern void forth_vm_push_ns(void);
-extern void forth_vm_push_ds(cell number);
-extern cell forth_vm_pop_ds(void);
-extern void forth_vm_push_fs(float value);
+extern void  forth_vm_init_defaults(void);
+extern int   forth_vm_run(void);
+extern void  forth_vm_push_ns(void);
+extern void  forth_vm_push_ds(cell number);
+extern cell  forth_vm_pop_ds(void);
+extern void  forth_vm_push_fs(float value);
 extern float forth_vm_pop_fs(void); 
-extern void forth_vm_schedule_builtin(void** code); /* todo: make into macro */
-extern void forth_vm_schedule_word(void** code); /* todo: make into macro */
+extern void  forth_vm_schedule_builtin(void** code); /* todo: make into macro */
+extern void  forth_vm_schedule_word(void** code); /* todo: make into macro */
 
 /* forth libs */
 extern void forth_include_lib_sys_tty(void);
@@ -133,7 +127,7 @@ extern void forth_cleanup_lib_sys_tty(void);
 // extern void forth_lib_sys_tty_disable_raw_mode(void);
 // extern void forth_lib_sys_tty_clear_screen(void);
 
-/* dbg */
+/* debug */
 extern void forth_debug_breakpoint(void);
 // extern void forth_vm_dbg_print_state(void);
 extern void forth_vm_print_ds(void);
@@ -143,9 +137,6 @@ extern void forth_vm_print_rs(void);
 // extern void forth_vm_dbg_print_ns(void);
 // extern void forth_dictionary_dbg_print_state(state);
 extern void forth_interpreter_debug_state(void);
-
-/* tests */
-void forth_io_test_all(void);
 
 extern void test_external(void);
 
