@@ -81,7 +81,8 @@
 #define FORMAT()    DS_PUSH((cell)forth_io_format((const char*)DS_POP())); /* todo: parens documentation */
 #define IS_EOL()        DS_PUSH((cell)forth_io_is_eol());
 #define REFILL()        DS_PUSH((cell)forth_io_refill());
-#define OPEN_FILE()     DS_AT(0) = (cell)forth_io_open_file((const char*)DS_AT(0));
+// #define OPEN_FILE()     DS_AT(0) = (cell)forth_io_open_file((const char*)DS_AT(0));
+#define OPEN_FILE()  { const char* mode = (const char*)DS_POP(); DS_AT(0) = (cell)forth_io_open_file((const char*)DS_AT(0), mode); }
 #define CLOSE_FILE()    fclose((FILE*)DS_POP()); /* todo: create io builtin */
 
 
