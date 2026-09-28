@@ -11,9 +11,6 @@ typedef struct input_t { /* todo: separate if we bootstrap from forth instead? *
     /* buffer size? */
 } input_t;
 
-static input_t* input_stack_pointer;
-static input_t* input_stack_base;
-static int      input_stack_size;
 static input_t  input_stack[DEFAULT_INPUT_STACK_SIZE];
 static char     input_buffers[DEFAULT_INPUT_STACK_SIZE][DEFAULT_INPUT_BUFFER_SIZE];
 static char* current_input_buffer; /* todo: rename to input_buffer*/
@@ -28,7 +25,6 @@ static int  wordbuf_size;
 static const char* prompt_text = "outer>";
 
 void forth_io_define_words(void) {
-    forth_dictionary_defconst("input-stack-pointer",   (cell)&input_stack_pointer);
     forth_dictionary_defconst("input-stack",           (cell)input_stack); /* whats the */
     forth_dictionary_defconst("input-buffers",         (cell)input_buffers);
     forth_dictionary_defconst("input-stack-max-depth", (cell)DEFAULT_INPUT_STACK_SIZE);
