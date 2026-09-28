@@ -28,7 +28,8 @@ static int  wordbuf_size;
 static const char* prompt_text = "outer>";
 
 void forth_io_define_words(void) {
-    forth_dictionary_defconst("input-stack",           (cell)input_stack);
+    forth_dictionary_defconst("input-stack-pointer",   (cell)&input_stack_pointer);
+    forth_dictionary_defconst("input-stack",           (cell)input_stack); /* whats the */
     forth_dictionary_defconst("input-buffers",         (cell)input_buffers);
     forth_dictionary_defconst("input-stack-max-depth", (cell)DEFAULT_INPUT_STACK_SIZE);
     forth_dictionary_defconst("input-stream",          (cell)&current_input_stream); /* todo: rename to input? */
@@ -109,6 +110,7 @@ int forth_io_is_eol(void) {
     read the next line of the current stream into the current buffer.
     returns NULL at EOF (buffer left empty). nesting is handled in forth. */
 char* forth_io_get_next_line(void) {
+    if(current_input_stream == stdin && prompt_text) fputs(prompt_text, current_output_stream);
     char* line = fgets(current_input_buffer, current_input_buffer_size, current_input_stream);
     if(!line) current_input_buffer[0] = '\0';
     current_input_buffer_position = current_input_buffer;
@@ -259,10 +261,11 @@ void forth_io_init_defaults(void) {
     input_stack_size    = DEFAULT_INPUT_STACK_SIZE;
     input_stack_base    = input_stack; /* todo: is this growing up or down? */
     input_stack_pointer = input_stack_base;
-    // default_line_buffers[0][0] = '\0';
+    input_buffers[0][0] = '\0';
+    wordbuf_size = DEFAULT_WORD_BUFFER_SIZE;
     forth_io_set_input_stream(stdin);
     forth_io_set_output_stream(stdout);
-    // forth_io_set_wordbuf(word_buffer, sizeof(word_buffer));
+    forth_io_set_wordbuf(wordbuf, wordbuf_size);
     forth_io_set_input_buffers(input_buffers[0], DEFAULT_INPUT_BUFFER_SIZE); /* todo: use var or macro */
 }
 

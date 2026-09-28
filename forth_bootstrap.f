@@ -951,11 +951,48 @@ defer breakpoint
     ."         Space used: " bytes-used . cr
 ;
 
+\ : final-quit
+\     reset-input
+\     begin
+\ 	format-prompt prompt
+\ 	?eof not
+\     while
+\ 	    begin ?eol not while ' interpret catch drop repeat
+\ 	    cr
+\     repeat
+\     die
+\ ;
+
+: >input-stack ( x -- )  input-stack-pointer @ !  cell input-stack-pointer +! ;
+: input-stack> ( -- x )  cell negate input-stack-pointer +!  input-stack-pointer @ @ ;
+: input-depth  ( -- n )  input-stack-pointer @ input-stack -  3 cells / ;
+
+: save-input    ( -- )  input-stream @ >input-stack  input-buffer @ >input-stack  input-buffer-pos @ >input-stack ;
+: restore-input ( -- )  input-stack> input-buffer-pos !  input-stack> input-buffer !  input-stack> input-stream ! ;
+
+: next-input-buffer ( -- addr )  input-buffers  input-depth 1+  input-buffer-size * + ;
+
+: included ( c-addr -- )
+    input-depth 1+ input-stack-max-depth = if drop ." too many includes" cr exit then
+    open-file ?dup 0= if ." no such file" cr exit then
+    next-input-buffer swap       ( buffer fp )
+    save-input
+    input-stream !
+    dup input-buffer !  dup input-buffer-pos !  0 swap c!
+    begin refill while
+	begin ?eol not while interpret repeat
+    repeat
+    input-stream @ close-file
+    restore-input
+;
+
+: include ( "name" -- )  word included ;
+
 : final-quit
-    reset-input
+    <stdin> input-stream !
+    0 input-buffer @ c!  input-buffer @ input-buffer-pos !
     begin
-	format-prompt prompt
-	?eof not
+	format-prompt prompt-text ! refill
     while
 	    begin ?eol not while ' interpret catch drop repeat
 	    cr
