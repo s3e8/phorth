@@ -994,16 +994,14 @@ defer breakpoint
 
 
 
-variable log-saved-output
-: log-on   ( -- )  s" log.txt" a/o open-file  output-stream @ log-saved-output !  output-stream ! ;
-: log-off  ( -- )  output-stream @ close-file  log-saved-output @ output-stream ! ;
-
-: log<< ( "rest of line" -- )
-    log-on
+: redirect-input-buffer ( fp "rest of line" -- )
+    output-stream @ >r  output-stream !
     begin ?eol not while interpret repeat
-    log-off 
-;
+    r> output-stream ! ;
 
+: log<<    ( "rest of line" -- )  s" log.txt" a/o open-file dup redirect-input-buffer close-file ;
+: stderr<< ( "rest of line" -- )  <stderr> redirect-input-buffer ;
+: stdout<< ( "rest of line" -- )  <stdout> redirect-input-buffer ;
 
 welcome
 hide welcome
