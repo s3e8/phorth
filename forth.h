@@ -75,7 +75,9 @@ extern int  forth_interpreter_interpret_string(const char* str);
 /* FORTH IO */  /* todo: clean up api */
 extern void         forth_io_init_defaults(void);
 extern void         forth_io_define_words(void);
-extern FILE*        forth_io_open_file(const char* name);
+extern FILE*        forth_io_open_file(const char* name, const char* mode);
+extern void         forth_io_set_input_stream(FILE* stream);
+extern void         forth_io_set_output_stream(FILE* stream);
 /* todo: forth_io_close_file */
 // extern void         forth_io_set_input_file(const char* filename); /* todo: rm? */
 extern void         forth_io_set_input_string(const char* input);

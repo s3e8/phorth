@@ -203,10 +203,6 @@
     then
 ;
 
-: r/o  s" r" ;
-: w/o  s" w" ;
-: r/w  s" r+" ;
-
 : pick 1+ cellsize * dsp@ + @ ;
 
 : make-const-str ( str -- conststr )
@@ -927,11 +923,14 @@ defer breakpoint
 : const-bytes-used consthere @ consthere0 @ - ;
 : data-bytes-used  datahere @ datahere0 @ - ;
 
+: usage
+    ."         space used: " bytes-used       . cr
+    ."   const space used: " const-bytes-used . cr
+    ."    data space used: " data-bytes-used  . cr
+;
 : welcome
-    ." WELCOME TO FORTH:" cr
-    ."   Const space used: " const-bytes-used . cr
-    ."    Data space used: " data-bytes-used . cr
-    ."         Space used: " bytes-used . cr
+    ." Hello" cr
+    usage
 ;
 
 \ : final-quit
@@ -946,6 +945,14 @@ defer breakpoint
 \     die
 \ ;
 
+: r/o  s" r" ;
+: w/o  s" w" ;
+: r/w  s" r+" ;
+
+: with-output ( fp xt -- )  output-stream @ >r  swap output-stream !  execute  r> output-stream ! ;
+: greet ." hi from file" cr ;
+s" out.txt" w/o open-file dup ' greet with-output close-file
+
 : >input-stack ( x -- )  input-stack-pointer @ !  cell input-stack-pointer +! ;
 : input-stack> ( -- x )  cell negate input-stack-pointer +!  input-stack-pointer @ @ ;
 : input-depth  ( -- n )  input-stack-pointer @ input-stack -  3 cells / ;
@@ -957,7 +964,7 @@ defer breakpoint
 
 : included ( c-addr -- )
     input-depth 1+ input-stack-max-depth = if drop ." too many includes" cr exit then
-    open-file ?dup 0= if ." no such file" cr exit then
+    r/o open-file ?dup 0= if ." no such file" cr exit then
     next-input-buffer swap       ( buffer fp )
     save-input
     input-stream !

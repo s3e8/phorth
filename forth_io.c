@@ -47,23 +47,19 @@ void forth_io_set_output_stream(FILE* output_stream) {
     current_output_stream = output_stream;
 }
 
+/* todo: i dont think we need this.. */
 void forth_io_set_input_buffers(char* linebuf, int size) {
     current_input_buffer          = linebuf;
     current_input_buffer_position = current_input_buffer;
     current_input_buffer_size     = size;
 }
 
-FILE* forth_io_open_file(const char* filename) {
-    return fopen(filename, "r");
-}
-
-FILE* forth_io_open_or_create_file(const char* filename, const char* mode) {
+FILE* forth_io_open_file(const char* filename, const char* mode) {
     FILE* fp = fopen(filename, mode);
     if(!fp) {
-        fprintf(stderr, "Error opening file: %s\n", filename);
+        fprintf(stderr, "Unable to open file: %s\n", filename);
         return NULL;
     }
-    setvbuf(fp, NULL, _IONBF, 0);  // disable input buffering, we have our own
 
     return fp;
 }
