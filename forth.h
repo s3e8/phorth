@@ -8,7 +8,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "forth_builtins.h"
+#include "forth_core_builtins.h"
 
 /* forth libraries */
 #define INCLUDE_LIB_SYS_TTY

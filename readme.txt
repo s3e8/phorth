@@ -19,3 +19,5 @@ WIP forth
 - [ ] builtin string space and scratch buffer
 - [ ] rename core files to forth_core? like forth_lib
 - [ ] step through debugger?
+- [ ] look-up-word-from-ip .. make in C too
+- [ ] clean up builtin macros
