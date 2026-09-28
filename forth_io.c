@@ -24,9 +24,10 @@ static FILE* current_output_stream;
 static const char* prompt_text = "outer>";
 
 void forth_io_define_words(void) {
-    forth_dictionary_defconst("<stdin>",               (cell)stdin); /* todo: stdout?*/
-    forth_dictionary_defconst("prompt-text",           (cell)&prompt_text);
-    forth_dictionary_defconst("output-stream",         (cell)&current_output_stream);
+    forth_dictionary_defconst("<stdin>",               (cell)stdin); /* todo: rm brackets? */
+    forth_dictionary_defconst("<stdout>",              (cell)stdout);
+    forth_dictionary_defconst("<stderr>",              (cell)stderr);
+    forth_dictionary_defconst("output-stream",         (cell)&current_output_stream);    
 
     forth_dictionary_defconst("input-stack",           (cell)input_stack); /* whats the */
     forth_dictionary_defconst("input-buffers",         (cell)input_buffers);
@@ -36,6 +37,8 @@ void forth_io_define_words(void) {
     forth_dictionary_defconst("input-buffer",          (cell)&current_input_buffer); /* todo: rename to line? */
     forth_dictionary_defconst("input-buffer-pos",      (cell)&current_input_buffer_position);
     forth_dictionary_defconst("input-buffer-size",     (cell)DEFAULT_INPUT_BUFFER_SIZE); /* todo: rename to line-size? */
+
+    forth_dictionary_defconst("prompt-text",           (cell)&prompt_text);
 }
 
 void forth_io_set_input_stream(FILE* input_stream) {

@@ -584,7 +584,7 @@ find-first-builtin
 		    f,
 		then
 	    else
-		." no such word" cr
+		." Error: In INTERPRET: No such word. (todo: print word)" cr
 	    then
 	then
     then
@@ -948,10 +948,9 @@ defer breakpoint
 : r/o  s" r" ;
 : w/o  s" w" ;
 : r/w  s" r+" ;
+: a/o  s" a" ; \ append only
 
-: with-output ( fp xt -- )  output-stream @ >r  swap output-stream !  execute  r> output-stream ! ;
-: greet ." hi from file" cr ;
-s" out.txt" w/o open-file dup ' greet with-output close-file
+: with-output  ( fp xt -- ) output-stream @ >r  swap output-stream ! catch r> output-stream ! throw ;                 
 
 : >input-stack ( x -- )  input-stack-pointer @ !  cell input-stack-pointer +! ;
 : input-stack> ( -- x )  cell negate input-stack-pointer +!  input-stack-pointer @ @ ;
@@ -991,6 +990,20 @@ s" out.txt" w/o open-file dup ' greet with-output close-file
 ;
 
 ' final-quit is quit
+
+
+
+
+variable log-saved-output
+: log-on   ( -- )  s" log.txt" a/o open-file  output-stream @ log-saved-output !  output-stream ! ;
+: log-off  ( -- )  output-stream @ close-file  log-saved-output @ output-stream ! ;
+
+: log<< ( "rest of line" -- )
+    log-on
+    begin ?eol not while interpret repeat
+    log-off 
+;
+
 
 welcome
 hide welcome
