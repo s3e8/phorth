@@ -61,11 +61,9 @@
 #define NIP2()          DS_AT(2) = DS_AT(0); current_ds += 2;
 #define FLIT()          FS_PUSH(RS_FLOAT_ARG()); current_ip++;
 #define IS_EOF()        DS_PUSH((cell)forth_io_is_eof()); /* todo: at_eof? */
-#define CURRENT_WORDBUF() DS_PUSH((cell)forth_io_get_current_wordbuf()); /* todo: use temp? */
 #define RS_DROP()       current_rs++;
 #define RSP_GET()       DS_PUSH((cell)current_rs);
 #define RS_DROP2()      current_rs += 2; /* todo: do i need semicolons here? */
-#define INCLUDE()       forth_io_include_file(forth_io_get_next_word()); /* todo: rename from include_file cause ans standard stuff? */
 #define PRINT_DS()      forth_vm_print_ds();
 #define RSP_SET()       current_rs = (void***)DS_POP(); /* todo: naming- rspput? */
 #define FROM_TS()       DS_PUSH(*current_ts++);
@@ -82,10 +80,9 @@
 #define GT_ZERO()   DS_AT(0) = DS_AT(0) > 0;
 #define FORMAT()    DS_PUSH((cell)forth_io_format((const char*)DS_POP())); /* todo: parens documentation */
 #define IS_EOL()        DS_PUSH((cell)forth_io_is_eol());
-#define PROMPT()        forth_io_prompt((const char*)DS_POP());
 #define REFILL()        DS_PUSH((cell)forth_io_refill());
 #define OPEN_FILE()     DS_AT(0) = (cell)forth_io_open_file((const char*)DS_AT(0));
-#define CLOSE_FILE()    fclose((FILE*)DS_POP());
+#define CLOSE_FILE()    fclose((FILE*)DS_POP()); /* todo: create io builtin */
 
 
 /* todo: is push_ns the right name for it? */
@@ -399,7 +396,7 @@
 #define INTERPRET() \
     char* wordbuf = forth_io_get_next_word(); \
     if(!wordbuf) { \
-        if(forth_io_is_stdin()) return 1; \
+        if(forth_io_input_is_stdin()) return 1; \
         NEXT(); \
     } \
     word_header_t* word = forth_dictionary_find_word(wordbuf); \
