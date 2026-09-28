@@ -203,6 +203,10 @@
     then
 ;
 
+: r/o  s" r" ;
+: w/o  s" w" ;
+: r/w  s" r+" ;
+
 : pick 1+ cellsize * dsp@ + @ ;
 
 : make-const-str ( str -- conststr )
