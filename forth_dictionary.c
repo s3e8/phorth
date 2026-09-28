@@ -3,10 +3,12 @@
 
 void* dictionary_pointer;
 void* dictionary_base;
-cell  dictionary_size; /* todo: change to int */
+cell  dictionary_size; /* todo: change to int? */
+
 char* string_space_pointer; /* putting this here for now cause idk where else to put it */
 char* string_space_base;
 int   string_space_size;
+
 void* scratch_buffer_pointer;
 void* scratch_buffer_base;
 int   scratch_buffer_size;
@@ -14,13 +16,17 @@ int   scratch_buffer_size;
 word_header_t* latest = NULL;
 
 void forth_dictionary_init_defaults() {
-    dictionary_size     = DEFAULT_DICTIONARY_SIZE;
-    dictionary_base     = malloc(dictionary_size);
-    dictionary_pointer  = dictionary_base;
-    string_space_size    = DEFAULT_STRING_SPACE_SIZE;
-    string_space_base    = malloc(string_space_size);
-    string_space_pointer = string_space_base;
-    
+    dictionary_size        = DEFAULT_DICTIONARY_SIZE;
+    dictionary_base        = malloc(dictionary_size);
+    dictionary_pointer     = dictionary_base;
+
+    string_space_size      = DEFAULT_STRING_SPACE_SIZE;
+    string_space_base      = malloc(string_space_size);
+    string_space_pointer   = string_space_base;
+
+    scratch_buffer_size    = DEFAULT_SCRATCH_BUFFER_SIZE;
+    scratch_buffer_base    = malloc(scratch_buffer_size);
+    scratch_buffer_pointer = scratch_buffer_base;
 }
 
 word_header_t* forth_dictionary_create_word(const char* name, cell flags) {

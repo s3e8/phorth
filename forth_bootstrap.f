@@ -21,27 +21,6 @@
 : v3variable 3     floatsize *  make-variable ;
 : m3variable 3 3 * floatsize *  make-variable ;
 
-variable consthere
-variable consthere0
-
-4096 cellsize * allot
-dup consthere !
-consthere0 !
-
-variable datahere
-variable datahere0
-4096 cellsize * allot
-dup datahere !
-datahere0 !
-
-1024 cellsize * allot
-dup t0 !
-tsp!
-
-1024 floatsize * allot
-dup f0 !
-fsp!
-
 \ : null-debugger-vector ;
 \ ' null-debugger-vector debugger-vector !
 

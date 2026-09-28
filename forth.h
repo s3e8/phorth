@@ -17,6 +17,7 @@
 /* forth config */
 #define DEFAULT_DICTIONARY_SIZE         10*1024*1024 /* 10mb */
 #define DEFAULT_STRING_SPACE_SIZE       10*1024*1024
+#define DEFAULT_SCRATCH_BUFFER_SIZE     (4096 * sizeof(cell))
 #define DEFAULT_WORD_NAME_MAX_LENGTH    32
 /* todo: default stacksizes */
 
