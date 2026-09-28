@@ -1,7 +1,7 @@
 #include "forth.h"
 
 #define DEFAULT_INPUT_STACK_SIZE 32 /* aka MAX_DEPTH */
-#define DEFAULT_WORD_BUFFER_SIZE 128 /* todo: rename to config_word_Buffer_size */
+#define DEFAULT_WORD_BUFFER_SIZE 128 /* todo: rename to config_word_Buffer_size */ /* ( todo: remove "default" from name) */
 #define DEFAULT_INPUT_BUFFER_SIZE 2048
 
 typedef struct input_t { /* todo: separate if we bootstrap from forth instead? */
@@ -11,16 +11,15 @@ typedef struct input_t { /* todo: separate if we bootstrap from forth instead? *
     /* buffer size? */
 } input_t;
 
-static input_t  input_stack[DEFAULT_INPUT_STACK_SIZE];
-static char     input_buffers[DEFAULT_INPUT_STACK_SIZE][DEFAULT_INPUT_BUFFER_SIZE];
+static char          wordbuf[DEFAULT_WORD_BUFFER_SIZE]; /* todo: rename to long-form words */
+static input_t       input_stack[DEFAULT_INPUT_STACK_SIZE];
+static char          input_buffers[DEFAULT_INPUT_STACK_SIZE][DEFAULT_INPUT_BUFFER_SIZE];
+static input_t*      input_stack_pointer = input_stack; /* todo: should this grow up or down? */
 static char* current_input_buffer; /* todo: rename to input_buffer*/
 static char* current_input_buffer_position;
 static int   current_input_buffer_size; /*todo: do we need? */
 static FILE* current_input_stream;
 static FILE* current_output_stream;
-
-static char wordbuf[DEFAULT_WORD_BUFFER_SIZE]; /* todo: rename to long-form words */
-static int  wordbuf_size;
 
 static const char* prompt_text = "outer>";
 
@@ -117,7 +116,7 @@ char* forth_io_get_next_line(void) {
 char* forth_io_get_next_word() {
     char*  tmp       = wordbuf;
     char*  position  = current_input_buffer_position;
-    int    size      = wordbuf_size;
+    int    size      = sizeof(wordbuf);
     size_t count     = 0;
 
     // printf("getting next word...\n");
@@ -254,14 +253,11 @@ const char* forth_io_format(const char* format_string) {
 void forth_io_init_defaults(void) {
     setvbuf(stdout, NULL, _IONBF, 0); /* todo: should I still be doing this? */
     setvbuf(stderr, NULL, _IONBF, 0);
-    input_stack_size    = DEFAULT_INPUT_STACK_SIZE;
-    input_stack_base    = input_stack; /* todo: is this growing up or down? */
-    input_stack_pointer = input_stack_base;
+    input_stack_pointer = input_stack;
     input_buffers[0][0] = '\0';
-    wordbuf_size = DEFAULT_WORD_BUFFER_SIZE;
     forth_io_set_input_stream(stdin);
     forth_io_set_output_stream(stdout);
-    forth_io_set_wordbuf(wordbuf, wordbuf_size);
+    // forth_io_set_wordbuf(wordbuf, wordbuf_size);
     forth_io_set_input_buffers(input_buffers[0], DEFAULT_INPUT_BUFFER_SIZE); /* todo: use var or macro */
 }
 
