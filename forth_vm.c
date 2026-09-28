@@ -1,760 +1,450 @@
+/* forth_ops.h */
+#ifndef FORTH_OPS_H
+#define FORTH_OPS_H
 
-#include "forth.h"
+/* ops helpers */
+/* todo: macro that inserts goto CODE(DEBUG) maybe.. not sure what best practices are here */
+#define NEXT() goto **current_ip++
+#define   OP(name)    op_##name
+#define CODE(name)  &&op_##name /* todo: rename to LABEL? */
+#define OFFSET(x)   ((void*)(x * sizeof(cell)))
+// #define ERROR(x)    { printf("Error: %s\n", x); goto DIE(); }
 
-/* todo:
-    -- semantics: overflow vs underflow when downward growing stack..
-    -- return interpret/vm_run function with 0 or 1 for err value..
-    -- clean up execute opcodes with scheduling functions?
-    -- thread names?
+#define DS_PUSH(x)      forth_vm_push_ds((cell)(x))
+// #define DS_PUSH(x)      if(forth_vm_check_ds_overflow()) NEXT(); (*--current_ds = (cell)x);
+#define DS_POP()        forth_vm_pop_ds()
+#define FS_PUSH(x)      forth_vm_push_fs((float)(x))
+#define FS_POP()        forth_vm_pop_fs()
+#define RS_PUSH(x)      forth_vm_push_rs((void**)(x));
+#define RS_POP()        forth_vm_pop_rs();
+#define RS_ARG()        (*current_ip++)
+#define RS_INTARG()     ((cell)*current_ip++)
+#define RS_FLOAT_ARG()  (*(float*)current_ip) /* todo: feels like a bad name */
+
+#define DS_TOP()      (*current_ds)
+#define FS_TOP()      (*current_fs)
+#define DS_AT(x)      (*(current_ds+(x)))
+#define FS_AT(x)      (*(current_fs+(x)))
+
+/* ops */ /* todo: should I add _CODE suffix for clarity? */
+#define DIE()           return 0;
+#define BYE()           goto OP(DIE);
+#define EOW()           /* do nothing */
+#define NOOP()          /* do nothing */
+#define EXIT()          current_ip = forth_vm_pop_rs();
+#define IRETURN()       current_ip = *nestingstack++;
+#define LIT()           DS_PUSH(RS_INTARG());
+#define LEFT_BRACKET()  state = STATE_IMMEDIATE; 
+#define RIGHT_BRACKET() state = STATE_COMPILE;
+#define LATEST()        DS_PUSH((cell)&latest);
+#define IMMEDIATE()     latest->flags ^= FLAG_IMMEDIATE;
+#define EMIT()          forth_io_emit((int)forth_vm_pop_ds());
+#define TELL()          forth_io_tell((char*)forth_vm_pop_ds());
+#define DOT()           forth_io_dot(forth_vm_pop_ds());
+#define SUB1()          DS_AT(0) -= 1;
+#define ADD1()          DS_AT(0) += 1;
+#define INVERT()        DS_AT(0) = ~DS_AT(0);
+#define SKIP_LINE()     forth_io_skip_line();
+#define SKIP_PARENS()   forth_io_skip_parens();
+#define IWORD()         DS_PUSH((cell)forth_io_get_next_word()); /* should I use linebuf? */
+#define DROP()          forth_vm_pop_ds(); /* aka ++current_ds;*/
+#define EQ_ZERO()       DS_AT(0) = DS_AT(0) == 0;
+#define NEQ_ZERO()      DS_AT(0) = DS_AT(0) != 0;
+#define DEPTH()         DS_PUSH((cell)(current_d0 - current_ds));
+#define BREAKPOINT()    forth_debug_breakpoint();
+#define EXTERNAL()      void (*fn)(void) = (void (*)(void)) *current_ip++; fn();
+#define KEY()           DS_PUSH((cell)forth_io_get_next_char());
+#define LTE_ZERO()      DS_AT(0) = DS_AT(0) <= 0;
+#define GTE_ZERO()      DS_AT(0) = DS_AT(0) >= 0;
+#define NIP()           DS_AT(1) = DS_AT(0); current_ds++;
+#define DROP2()         current_ds += 2;
+#define NIP2()          DS_AT(2) = DS_AT(0); current_ds += 2;
+#define FLIT()          FS_PUSH(RS_FLOAT_ARG()); current_ip++;
+#define IS_EOF()        DS_PUSH((cell)forth_io_is_eof()); /* todo: at_eof? */
+#define RS_DROP()       current_rs++;
+#define RSP_GET()       DS_PUSH((cell)current_rs);
+#define RS_DROP2()      current_rs += 2; /* todo: do i need semicolons here? */
+#define PRINT_DS()      forth_vm_print_ds();
+#define RSP_SET()       current_rs = (void***)DS_POP(); /* todo: naming- rspput? */
+#define FROM_TS()       DS_PUSH(*current_ts++);
+#define TO_TS()          *--current_ts = DS_POP();
+#define GET_TSP()       DS_PUSH((cell)current_ts);
+#define SET_TSP()       current_ts = (cell*)forth_vm_pop_ds();
+#define GET_FSP()       DS_PUSH((cell)current_fs);
+#define SET_FSP()       current_fs = (float*)forth_vm_pop_ds();
+#define DIV()     temp = DS_POP(); DS_AT(0) /= temp;
+#define MOD()     temp = DS_POP(); DS_AT(0) %= temp;
+#define DIVMOD()  { cell  a = DS_POP(),        b = DS_POP();        DS_PUSH(b % a); DS_PUSH(b / a); }
+#define UDIVMOD() { ucell a = (ucell)DS_POP(), b = (ucell)DS_POP(); DS_PUSH((cell)(b % a)); DS_PUSH((cell)(b / a)); }
+#define LT_ZERO()   DS_AT(0) = DS_AT(0) < 0;
+#define GT_ZERO()   DS_AT(0) = DS_AT(0) > 0;
+#define FORMAT()    DS_PUSH((cell)forth_io_format((const char*)DS_POP())); /* todo: parens documentation */
+#define IS_EOL()        DS_PUSH((cell)forth_io_is_eol());
+#define REFILL()        DS_PUSH((cell)forth_io_refill());
+#define OPEN_FILE()     DS_AT(0) = (cell)forth_io_open_file((const char*)DS_AT(0));
+#define CLOSE_FILE()    fclose((FILE*)DS_POP()); /* todo: create io builtin */
+
+
+/* todo: is push_ns the right name for it? */
+#define EXEC_BUILTIN() \
+    forth_vm_push_ns(); \
+    builtin_immediatebuf[0] = (void*)DS_POP(); \
+    current_ip = builtin_immediatebuf;
+
+/* todo: rs_intarg naming? */
+#define GT_ZERO_BRANCH() \
+    temp = RS_INTARG(); \
+    cell a = DS_POP(); \
+    if(a > 0) current_ip += (temp / sizeof(void*)) - 1;
+
+#define LTE() \
+    temp = DS_POP(); \
+    DS_AT(0) = DS_AT(0) <= temp;
+
+#define MINUS_ROT() \
+    cell eax = DS_POP(); \
+    cell ebx = DS_POP(); \
+    cell ecx = DS_POP(); \
+    DS_PUSH(eax); \
+    DS_PUSH(ecx); \
+    DS_PUSH(ebx);
+
+#define TO_RS() \
+    temp = DS_POP(); \
+    RS_PUSH(temp);
+
+#define FROM_RS() \
+    temp = (cell)RS_POP(); \
+    DS_PUSH(temp);   
+
+#define ROT() \
+    cell eax = DS_POP(); \
+    cell ebx = DS_POP(); \
+    cell ecx = DS_POP(); \
+    DS_PUSH(ebx); \
+    DS_PUSH(eax); \
+    DS_PUSH(ecx);
+
+#define OR() \
+    temp = DS_POP(); \
+    DS_AT(0) |= temp;   
+
+/* todo: err msg if not header? */
+#define TO_NAME() \
+    word_header_t* word = (word_header_t*)DS_POP(); \
+    DS_PUSH((cell)forth_dictionary_get_name_by_header(word));
+
+// #define IEXECUTE()
+//     word_header_t* entry = (word_header_t*)DS_POP();
+//     void** code = cfa(entry);
+//     *--nestingstack = ip;
+//     if(entry->flags & FLAG_BUILTIN) {
+//       builtin_immediatebuf[0] = *code;
+//       ip = builtin_immediatebuf;
+//     } else {
+//       word_immediatebuf[1] = (void*)code;
+//       ip = word_immediatebuf;
+//     }
+
+#define IEXECUTE() \
+    word_header_t* word = (word_header_t*)DS_POP(); \
+    void* code = forth_dictionary_get_xt(word); \
+    *--nestingstack = current_ip; \
+    if(word->flags & FLAG_BUILTIN) { \
+        builtin_immediatebuf[0] = code; \
+        current_ip = builtin_immediatebuf; \
+    } else { \
+        word_immediatebuf[1] = code; \
+        current_ip = word_immediatebuf; \
+    }
+
+/* todo: ... */
+#define DUP2() \
+    temp = DS_AT(1); \
+    DS_PUSH(temp); \
+    temp = DS_AT(1); \
+    DS_PUSH(temp);
+
+/* todo: do I even need temp here? */
+/* todo: rename to fetch_d0? get vs fetch... */
+#define GET_DSP() \
+    temp = (cell)current_ds; \
+    DS_PUSH(temp); 
+
+#define F_FETCH() \
+    float* ptr = (float*)DS_POP(); \
+    FS_PUSH(*ptr);  
+
+/* todo: rename to fs store? */
+#define F_STORE() \
+    float* ptr = (float*)DS_POP(); \
+    float val = FS_POP(); \
+    *ptr = val;
+
+#define SET_DSP() \
+    cell* new_ds = (cell*)forth_vm_pop_ds(); \
+    current_ds = new_ds;
+
+#define STRCPY() \
+    char* dest = (char*)DS_POP(); \
+    char* src = (char*)DS_POP(); \
+    DS_PUSH(strcpy(dest, src));
+
+#define STRLEN() \
+    char* str = (char*)DS_POP(); \
+    DS_PUSH(strlen(str));
+
+#define LT() \
+    temp = forth_vm_pop_ds(); \
+    DS_AT(0) = DS_AT(0) < temp;
+
+#define GT() \
+    temp = forth_vm_pop_ds(); \
+    DS_AT(0) = DS_AT(0) > temp;
+
+#define PARSE_NUMBER() \
+    char* endptr = NULL; \
+    char* str = (char*)DS_POP(); \
+    cell val = (cell)strtol(str, &endptr, base); \
+    if(*endptr!='\0') { DS_PUSH(0); } /* todo: why do i need brackets here? */ \
+    else { \
+        DS_PUSH(val); \
+        DS_PUSH(1); /* success flag */ \
+    }
+
+#define PARSE_FNUMBER() \
+    char* endptr = NULL; \
+    char* str = (char*)DS_POP(); \
+    float val = strtof(str, &endptr); \
+    if(*endptr!='\0') { \
+      DS_PUSH(0); \
+    } else { \
+        FS_PUSH(val); \
+        DS_PUSH(1); \
+    }
+
+#define FCOMMA() \
+    float val = FS_POP(); \
+    *(float*)dictionary_pointer = val; \
+    dictionary_pointer += sizeof(cell);  
+
+/* : <> = 0= ; */
+#define NOT_EQUAL() \
+    temp = forth_vm_pop_ds(); \
+    DS_AT(0) = DS_AT(0) != temp;
+
+#define AND() \
+    temp = forth_vm_pop_ds(); \
+    DS_AT(0) &= temp; 
+
+#define OVER() \
+    temp = DS_AT(1); \
+    DS_PUSH(temp);
+
+#define STRCMP() \
+    char* b = (char*)forth_vm_pop_ds(); \
+    char* a = (char*)forth_vm_pop_ds(); \
+    DS_PUSH(strcmp(a, b));
+
+#define DUP() \
+    temp = DS_TOP(); \
+    DS_PUSH(temp);
+
+#define COND_DUP() \
+    temp = DS_TOP(); \
+    if(temp) DS_PUSH(temp);   
+
+#define SWAP() \
+    temp = DS_AT(1); \
+    DS_AT(1) = DS_AT(0); \
+    DS_AT(0) = temp; 
+
+#define XOR() \
+    temp = forth_vm_pop_ds(); \
+    DS_AT(0) ^= temp;
+
+#define BRANCH() \
+    temp = RS_INTARG(); \
+    current_ip += (temp / sizeof(void*)) - 1;
+
+#define EQ() \
+    temp = forth_vm_pop_ds(); \
+    DS_AT(0) = DS_AT(0) == temp;
+
+#define CALL() \
+    void* fn = RS_ARG(); \
+    forth_vm_push_rs(current_ip); \
+    current_ip = fn;
+
+#define COLON() \
+    char* name = forth_io_get_next_word(); \
+    forth_dictionary_create_word(name, FLAG_HIDDEN); \
+    state = STATE_COMPILE;
+
+#define EXECUTE() \
+    RS_PUSH(current_ip); \
+    current_ip = (void**)DS_POP();  
+
+#define SEMICOLON() \
+    forth_dictionary_compile((cell)CODE(EXIT)); \
+    forth_dictionary_compile((cell)CODE(EOW));  \
+    latest->flags &= ~FLAG_HIDDEN; \
+    state = STATE_IMMEDIATE;
+
+#define UNSIGNED_LT() \
+    temp = DS_POP(); \
+    DS_AT(0) = (ucell)DS_AT(0) < (ucell)temp;   
+
+#define ZERO_BRANCH() \
+    temp = RS_INTARG(); \
+    if(!forth_vm_pop_ds()) current_ip += (temp / sizeof(void*)) - 1;
+
+/* todo: make sure the naming for branch bytecodes is correct */
+#define IF_BRANCH() \
+    temp = RS_INTARG(); \
+    if(forth_vm_pop_ds()) current_ip += (temp / sizeof(void*)) - 1;
+
+#define JUMP() \
+    void* fn = RS_ARG(); \
+    current_ip = fn;
+
+/* 
+    #define CREATE() \
+        char* next_word = forth_io_get_next_word(); \
+        forth_dictionary_create_word(next_word, 0);
 */
 
-// #define DEFAULT_MAX_THREADS             5 /* unnecessary cause threadstack will be linked list */
-#define DEFAULT_RETURNSTACK_SIZE        512
-#define DEFAULT_NESTINGSTACK_MAX_DEPTH  512
-#define DEFAULT_DATASTACK_SIZE          1024
-#define DEFAULT_TEMPSTACK_SIZE          1024
-#define DEFAULT_FLOATSTACK_SIZE         1024
+#define CREATE() \
+    forth_dictionary_create_word((const char*)DS_POP(), 0);
 
-static int forth_initialized = 0;
+#define WORD() \
+    char* next_word = forth_io_get_next_word(); \
+    DS_PUSH((cell)next_word);
 
-static void**  current_ip; /* ip points to subroutines (array of xt/void*) */
-static void*** current_rs; /* array of subroutines */
-static void*** current_r0;
-static cell*   current_ds; /* data stack */
-static cell*   current_d0;
-static cell*   current_ts; /* temp stack */
-static cell*   current_t0;
-static float*  current_fs; /* float stack */
-static float*  current_f0;
-static int     current_rs_size;
-static int     current_ns_size;
-static int     current_ds_size;
-static int     current_ts_size;
-static int     current_fs_size;
+#define FIND() \
+    char* word = (char*)forth_vm_pop_ds(); \
+    DS_PUSH((cell)forth_dictionary_find_word(word));
 
-static void** default_returnstack[DEFAULT_RETURNSTACK_SIZE];
-static void** default_nestingstack[DEFAULT_NESTINGSTACK_MAX_DEPTH];
-static cell   default_datastack[DEFAULT_DATASTACK_SIZE];
-static cell   default_tempstack[DEFAULT_TEMPSTACK_SIZE];
-static float  default_floatstack[DEFAULT_FLOATSTACK_SIZE];
+#define HIDDEN() \
+    word_header_t* word = (word_header_t*)forth_vm_pop_ds(); \
+    word->flags ^= FLAG_HIDDEN;
 
-/* todo: rename this stuff to fit everything else */
-void**  nestingstack_space[DEFAULT_NESTINGSTACK_MAX_DEPTH];
-void*** nestingstack = nestingstack_space + DEFAULT_NESTINGSTACK_MAX_DEPTH;
-
-void* builtin_immediatebuf[2];
-void*    word_immediatebuf[3];
-
-typedef struct forth_vm_s {
-    void**      instruction_pointer;
-    void***     returnstack;
-    void***     returnstack_base;
-    // void***     current_ns;
-    // void***     nestingstack_base;
-    cell*   datastack;
-    cell*   datastack_base;
-    cell*   tempstack;
-    cell*   tempstack_base;
-    float*  floatstack;
-    float*  floatstack_base;
-
-    // char*               thread_name;
-    cell                killed;
-    struct forth_vm_s*  next;
-} forth_vm_t;
-
-forth_vm_t* current_thread = NULL;
-// char* current_thread_name  = NULL;
-
-void forth_vm_print_state(void) {
-    
-}
-
-forth_vm_t* forth_vm_init_thread(
-    void**     ip, /* entrypoint */
-    void***    r0, 
-    // void***    n0, /* todo: do we need nesting stack here? */
-    cell*  d0, 
-    cell*  t0,
-    float* f0
-) {
-    forth_vm_t* new = malloc(sizeof(forth_vm_t));
-    new->killed = 0;
-    new->instruction_pointer = ip;
-    new->returnstack_base    = r0;
-    // new->nestingstack_base   = n0;
-    new->datastack_base      = d0;
-    new->tempstack_base      = t0;
-    new->floatstack_base     = f0;
-    new->returnstack    = new->returnstack_base;
-    // new->current_ns   = new->nestingstack_base;
-    new->datastack      = new->datastack_base;
-    new->tempstack      = new->tempstack_base;
-    new->floatstack     = new->floatstack_base;
-
-    if(!current_thread) {
-        current_thread = new;
-        current_ip = new->instruction_pointer;
-        current_rs = new->returnstack;
-        current_r0 = new->returnstack_base;
-        // current_ns = new->current_ns;
-        // nestingstack = new->nestingstack_base;
-        current_ds = new->datastack;
-        current_d0 = new->datastack_base;
-        current_ts = new->tempstack;
-        current_t0 = new->tempstack_base;
-        current_fs = new->floatstack;
-        current_f0 = new->floatstack_base;
-        new->next = new; /* todo: ??? */
-    } else {
-        new->next = current_thread->next;
-        current_thread->next = new;
-    }
-    /* todo: make new thread current? */
-    // current_thread = new;
-    
-    return new;
-}
-
-forth_vm_t* forth_vm_create_thread(
-    void**  entrypoint,
-    int rs_size,
-    // int ns_size,
-    int ds_size,
-    int ts_size,
-    int fs_size
-) {
-    return forth_vm_init_thread(
-        entrypoint,
-        (void***)    malloc(rs_size * sizeof(void**)),
-        // (void***)    malloc(ns_size * sizeof(void**)),
-        (cell*)  malloc(ds_size * sizeof(cell)),
-        (cell*)  malloc(ts_size * sizeof(cell)),
-        (float*) malloc(fs_size * sizeof(float))
-    );
-}
-
-forth_vm_t* forth_vm_kill_thread(forth_vm_t* thread) {
-    return NULL;
-}
-
-void forth_vm_init_defaults(void) {
-    current_rs_size = DEFAULT_RETURNSTACK_SIZE;
-    // current_ns_size = DEFAULT_NESTINGSTACK_MAX_DEPTH;
-    current_ds_size = DEFAULT_DATASTACK_SIZE;
-    current_ts_size = DEFAULT_TEMPSTACK_SIZE;
-    current_fs_size = DEFAULT_FLOATSTACK_SIZE;
-    current_r0 = default_returnstack  + current_rs_size;
-    // nestingstack = default_nestingstack + current_ns_size;
-    current_d0 = default_datastack    + current_ds_size;
-    current_t0 = default_tempstack    + current_ts_size;
-    current_f0 = default_floatstack   + current_fs_size;
-    current_rs = current_r0;
-    current_ds = current_d0;
-    current_ts = current_t0;
-    current_fs = current_f0;
-}
-
-int check_stack_overflow(void) {
-    // printf("todo: fix stack checking...\n");
-    if((current_ds - 1) < (current_d0 - current_ds_size)) {
-        fprintf(stderr, "Data stack overflow\n");
-        return 1;
-    }
-    return 0;
-}
-
-int forth_vm_check_ds_overflow(void) {
-    // printf("todo: fix stack checking...\n");
-    if((current_ds - 1) < (current_d0 - current_ds_size)) {
-        fprintf(stderr, "Data stack overflow\n");
-        return 1;
-    }
-    return 0;
-}
-
-int check_stack_underflow(void) {
-    // printf("todo: fix stack checking...\n");
-    if(current_ds >= current_d0) {
-        fprintf(stderr, "Data stack underflow\n");
-        // forth_io_print_current_word();
-        return 1;
-    }
-    return 0;
-}
-
-void forth_vm_push_ds(cell value) {
-    // printf("pushing '%d'...\n", (int)value);
-    // printf("current_ds ptr = %p\n", (void*)current_ds);
-    if(check_stack_overflow()) return;
-    *--current_ds = value;
-}
-
-/* todo: change to int? */
-cell forth_vm_pop_ds(void) {
-    // printf("current_ds ptr = %p\n", (void*)current_ds);
-    if(check_stack_underflow()) return 0;
-    return *current_ds++;
-}
-
-void forth_vm_push_fs(float value) {
-    /* todo: check overflow */
-    *--current_fs = value;
-}
-
-float forth_vm_pop_fs(void) {
-    /* todo: check fs underflow */
-    return *current_fs++;
-}
-
-void forth_vm_push_rs(void** code) {
-    if(current_rs - 1 < current_r0 - current_rs_size) {
-        fprintf(stderr, "Return stack underflow\n");
-        return;
-    }
-    // printf("pushing '%p' to return stack...\n", code);
-    // if(check_stack_overflow()) return;
-    *--current_rs = code;
-}
-
-xt forth_vm_pop_rs(void) {
-    if(current_rs >= current_r0) {
-        fprintf(stderr, "Return stack underflow\n");
-        return NULL;
-    }
-    return *current_rs++;
-}
-
-void forth_vm_push_ns(void) {
-    // if(current_ns - 1 < nestingstack - current_ns_size) {
-    //     fprintf(stderr, "Return stack underflow\n");
-    //     return;
-    // }
-    // printf("pushing '%p' to return stack...\n", code);
-    // printf("pushing '%p' to nesting stack...\n", current_ip);
-    *--nestingstack = current_ip;
-}
-
-xt forth_vm_pop_ns(void) {
-    // if(current_ns >= nestingstack) {
-    //     fprintf(stderr, "Return stack underflow\n");
-    //     return NULL;
-    // }
-    return *nestingstack++;
-}
-
-void forth_vm_schedule_builtin(void** code) {
-    // printf("pushed current rs to nestingstack\n");
-    printf("scheduling builtin...\n");
-    builtin_immediatebuf[0] = *code;
-    current_ip = builtin_immediatebuf;
-    printf("done\n");
-}
-
-void forth_vm_schedule_word(void** code) {
-    // printf("pushed current rs to nestingstack\n");
-    word_immediatebuf[1] = (void*)code;
-    current_ip = word_immediatebuf;
-}
-
-void breakpoint() {
-    printf("this is a breakpoint\n");
-    return;
-}
-
-void forth_vm_print_rs(void) {
-    printf("<rs> ");
-    for(void*** p = current_r0 - 1; p >= current_rs; p--)
-        printf("%p ", *p);
-    printf("\n");
-}
-
-void forth_vm_print_ds(void) {
-    printf("<%ld> ", (long)(current_d0 - current_ds));
-    for(cell* p = current_d0 - 1; p >= current_ds; p--)
-        printf("%ld ", (long)*p);
-    printf("\n");
-}
-
-void test_external(void) {
-    printf("externals work?\n");
-}
-
-/* execution engine -- todo: rename to...? */
-int forth_vm_run(void) {
-    register cell temp; /* i think this is an actual thing in figforth -- a register called temp. */
-    /* todo: w register? 
-    */
-    /* todo: remove as globals??? kinda clunky here...
-        no cleaner way to do this if we want to name these as globals 
-        (necessary in order to relocate "interpret" into the interpreter module,
-         which may not be necessary)
-    */
-    builtin_immediatebuf[0] = NULL;
-    builtin_immediatebuf[1] = CODE(IRETURN);
-       word_immediatebuf[0] = CODE(CALL);
-       word_immediatebuf[1] = NULL;
-       word_immediatebuf[2] = CODE(IRETURN);
-
-    // forth_io_read_string("this is a test");
-
-    // return 0;
-
-    if(!forth_initialized) {
-        // printf("initializing forth...\n");
-
-        /* init builtins first, then consts s*/
-        /* core -- inner interpreter */
-        forth_dictionary_defcode("interpret", CODE(INTERPRET), 0);
-        forth_dictionary_defcode("ireturn", CODE(IRETURN), 0);
-        forth_dictionary_defcode("branch",  CODE(BRANCH),  FLAG_HASARG);
-        forth_dictionary_defcode("call",    CODE(CALL),    FLAG_HASARG);
-        forth_dictionary_defcode("lit",     CODE(LIT),     FLAG_HASARG);
-        forth_dictionary_defcode("exit",    CODE(EXIT),    0);
-        forth_dictionary_defcode("eow",     CODE(EOW),     0);
-        /* interpreter */
-        forth_dictionary_defcode("bye",     CODE(BYE), 0);
-        forth_dictionary_defcode("[", CODE(LEFT_BRACKET),   FLAG_IMMEDIATE );
-        forth_dictionary_defcode("]", CODE(RIGHT_BRACKET),  0);
-        forth_dictionary_defcode(":", CODE(COLON),          0);
-        forth_dictionary_defcode(";", CODE(SEMICOLON),      FLAG_IMMEDIATE );
-        /* vm */
-        forth_dictionary_defcode("die",     CODE(DIE),          0);
-        forth_dictionary_defcode("0branch", CODE(ZERO_BRANCH),  FLAG_HASARG  ); /* todo: these are  definitely interpreter opcodes */
-        forth_dictionary_defcode("1branch", CODE(IF_BRANCH),    FLAG_HASARG  );
-        forth_dictionary_defcode("jump",    CODE(JUMP),         FLAG_HASARG  );
-        forth_dictionary_defcode("+",       CODE(ADD),          0);
-        forth_dictionary_defcode("-",       CODE(SUB),          0);
-        forth_dictionary_defcode("*",       CODE(MULTIPLY),     0);
-        forth_dictionary_defcode("depth",   CODE(DEPTH),        0);
-        forth_dictionary_defcode("dup",     CODE(DUP),          0);
-        forth_dictionary_defcode("2dup",    CODE(DUP2),         0); /* todo: DUP2 ok for name?*/
-        forth_dictionary_defcode("?dup",    CODE(COND_DUP),     0);
-        forth_dictionary_defcode("drop",    CODE(DROP),         0);
-        forth_dictionary_defcode("2drop",   CODE(DROP2),        0);
-        forth_dictionary_defcode("swap",    CODE(SWAP),         0);
-        forth_dictionary_defcode("over",    CODE(OVER),         0);
-        forth_dictionary_defcode("nip",     CODE(NIP),          0);
-        forth_dictionary_defcode("2nip",    CODE(NIP2),         0);
-        forth_dictionary_defcode("xor",     CODE(XOR),          0);
-        forth_dictionary_defcode("and",     CODE(AND),          0);
-        forth_dictionary_defcode("or",      CODE(OR), 0);
-        forth_dictionary_defcode("1-",      CODE(SUB1),         0);
-        forth_dictionary_defcode("1+",      CODE(ADD1),         0);
-        forth_dictionary_defcode("invert",  CODE(INVERT),       0);
-        forth_dictionary_defcode("=",       CODE(EQ),           0);
-        forth_dictionary_defcode("<", CODE(LT), 0);
-        forth_dictionary_defcode(">", CODE(GT), 0);
-        forth_dictionary_defcode("<=",  CODE(LTE), 0);
-        forth_dictionary_defcode("<>",      CODE(NOT_EQUAL),    0);
-        forth_dictionary_defcode("0=",      CODE(EQ_ZERO),      0);
-        forth_dictionary_defcode("0<>",     CODE(NEQ_ZERO),     0);
-        forth_dictionary_defcode("0<",      CODE(LT_ZERO),      0);
-        forth_dictionary_defcode("0>",      CODE(GT_ZERO),      0);
-        /* dictionary */
-        forth_dictionary_defcode("latest",    CODE(LATEST),       0);
-        forth_dictionary_defcode("(create)",    CODE(CREATE),       0);
-        forth_dictionary_defcode("word",      CODE(WORD),         0);
-        forth_dictionary_defcode("find",      CODE(FIND),         0);
-        forth_dictionary_defcode(",",         CODE(COMMA),        0);
-        forth_dictionary_defcode("'",         CODE(TICK),         FLAG_IMMEDIATE);
-        forth_dictionary_defcode("immediate", CODE(IMMEDIATE),    FLAG_IMMEDIATE);
-        forth_dictionary_defcode("hidden",    CODE(HIDDEN),       0);
-        forth_dictionary_defcode(">xt",       CODE(TO_XT),        0);
-        forth_dictionary_defcode(">cfa",      CODE(TO_CFA),       0);
-        /* io */
-        forth_dictionary_defcode("emit",    CODE(EMIT),     0);
-        forth_dictionary_defcode("tell",    CODE(TELL),     0);
-        forth_dictionary_defcode(".",       CODE(DOT),      0);
-        forth_dictionary_defcode("\\",       CODE(SKIP_LINE), FLAG_IMMEDIATE);
-        forth_dictionary_defcode("(",       CODE(SKIP_PARENS),  FLAG_IMMEDIATE);
-        forth_dictionary_defcode("key",     CODE(KEY),      0);
-        forth_dictionary_defcode("?eof", CODE(IS_EOF),      0);
-        /* strings */
-        forth_dictionary_defcode("strcmp", CODE(STRCMP), 0);
-        forth_dictionary_defcode("strcpy",  CODE(STRCPY),   0);
-        forth_dictionary_defcode("strlen",  CODE(STRLEN),   0);
-        /* other */
-        forth_dictionary_defcode("/",     CODE(DIV),     0);
-        forth_dictionary_defcode("mod",   CODE(MOD),     0);
-        forth_dictionary_defcode("/mod",  CODE(DIVMOD),  0);
-        forth_dictionary_defcode("u/mod", CODE(UDIVMOD), 0);
-        forth_dictionary_defcode("include", CODE(INCLUDE), 0);
-        forth_dictionary_defcode("@",       CODE(FETCH),    0);
-        forth_dictionary_defcode("c@",      CODE(CFETCH),   0);
-        forth_dictionary_defcode("!",       CODE(STORE),    0);
-        forth_dictionary_defcode("c!",      CODE(CSTORE),   0);
-        forth_dictionary_defcode("+!",      CODE(MEMADD),   0);
-        forth_dictionary_defcode("bp",      CODE(BREAKPOINT), 0);
-        forth_dictionary_defcode("external", CODE(EXTERNAL), FLAG_HASARG);
-        forth_dictionary_defcode("tsp!",    CODE(SET_TSP),   0);
-        forth_dictionary_defcode("tsp@",    CODE(GET_TSP),   0);
-        forth_dictionary_defcode("fsp!",    CODE(SET_FSP),   0);
-        forth_dictionary_defcode("fsp@",    CODE(GET_FSP),   0);
-        forth_dictionary_defcode("dsp@",    CODE(GET_DSP),   0); /* todo: rename to fetch_d0? */
-        forth_dictionary_defcode("dsp!",    CODE(SET_DSP),   0);
-        forth_dictionary_defcode("current-wordbuf", CODE(CURRENT_WORDBUF), 0); /* todo: rm.. this was dumb */
-        forth_dictionary_defcode(">name",   CODE(TO_NAME),  0);
-        forth_dictionary_defcode(">r",      CODE(TO_RS), 0);
-        forth_dictionary_defcode("r>",      CODE(FROM_RS), 0);
-        forth_dictionary_defcode("rdrop",   CODE(RS_DROP), 0);
-        forth_dictionary_defcode("2rdrop",  CODE(RS_DROP2), 0);
-        forth_dictionary_defcode("rsp@",    CODE(RSP_GET),  0);
-        forth_dictionary_defcode("rsp!",    CODE(RSP_SET), 0);
-        forth_dictionary_defcode(">t",      CODE(TO_TS), 0);
-        forth_dictionary_defcode("t>",      CODE(FROM_TS), 0);
-        forth_dictionary_defcode("0>branch", CODE(GT_ZERO_BRANCH), FLAG_HASARG); /* todo: naming is funny.. not sure I like.. */
-        forth_dictionary_defcode("rot",     CODE(ROT), 0); 
-        forth_dictionary_defcode("-rot",    CODE(MINUS_ROT), 0);
-        forth_dictionary_defcode(".s",      CODE(PRINT_DS), 0);
-        forth_dictionary_defcode("execute", CODE(EXECUTE), 0);
-        forth_dictionary_defcode("exec-builtin", CODE(EXEC_BUILTIN), 0); /* todo: clean up this execute stuff */
-        forth_dictionary_defcode("u<",      CODE(UNSIGNED_LT), 0);
-        forth_dictionary_defcode("f@", CODE(F_FETCH), 0);
-        forth_dictionary_defcode("f!", CODE(F_STORE), 0);
-        forth_dictionary_defcode("format",  CODE(FORMAT),  0);
-        forth_dictionary_defcode("?eol",        CODE(IS_EOL),      0);
-        forth_dictionary_defcode("prompt",      CODE(PROMPT),      0);
-        forth_dictionary_defcode("refill", CODE(REFILL), 0);
-        forth_dictionary_defcode("open-file", CODE(OPEN_FILE), 0);
-        forth_dictionary_defcode("close-file", CODE(CLOSE_FILE), 0);
-        /* outer? */
-        forth_dictionary_defcode("iword",   CODE(IWORD),    0);
-        forth_dictionary_defcode("iexecute", CODE(IEXECUTE), 0);
-        forth_dictionary_defcode("number",  CODE(PARSE_NUMBER), 0);
-        forth_dictionary_defcode("fnumber",  CODE(PARSE_FNUMBER), 0);
-        forth_dictionary_defcode("f,",      CODE(FCOMMA),   0);
-        forth_dictionary_defcode("flit",    CODE(FLIT), FLAG_HASARG);
-        /* end defcodes */
-
-        forth_dictionary_defextern("test-external", test_external, 0);
-
-        forth_dictionary_defconst("f_builtin",   FLAG_BUILTIN);
-        forth_dictionary_defconst("f_hasarg",    FLAG_HASARG);
-        forth_dictionary_defconst("f_immediate", FLAG_IMMEDIATE);
-        forth_dictionary_defconst("f_hidden",    FLAG_HIDDEN);
-        forth_dictionary_defconst("f_inline",    FLAG_INLINE);
-        forth_dictionary_defconst("f_deferred",  FLAG_DEFERRED);
-        forth_dictionary_defconst("state",      (cell)&state);
-        forth_dictionary_defconst("base",       (cell)&base);
-        forth_dictionary_defconst("cellsize",   (cell)sizeof(cell));
-        forth_dictionary_defconst("floatsize",  (cell)sizeof(float));
-        forth_dictionary_defconst("s0", (cell)&current_d0); /* todo: change to current_s0? */
-        forth_dictionary_defconst("r0", (cell)&current_r0);
-        forth_dictionary_defconst("f0", (cell)&current_f0);
-        forth_dictionary_defconst("t0", (cell)&current_t0);
-        forth_dictionary_defconst("here",       (cell)&dictionary_pointer);
-        forth_dictionary_defconst("here0",      (cell)dictionary_base);
-        forth_dictionary_defconst("consthere",  (cell)string_space_pointer);
-        forth_dictionary_defconst("consthere0", (cell)string_space_base);
-        forth_dictionary_defconst("datahere",   (cell)scratch_buffer_pointer);
-        forth_dictionary_defconst("datahere0",  (cell)scratch_buffer_base);
-
-        /* convenience codes -- kind of a hack tbh */
-        // call_code = forth_dictionary_get_xt_by_name("call");
-        // lit_code  = forth_dictionary_get_xt_by_name("lit");
-
-        // printf("initialized.\n");
-        forth_initialized = 1;
+#define TICK() \
+    char* next_word = forth_io_get_next_word(); \
+    word_header_t* word = forth_dictionary_find_word(next_word); \
+    cell code; \
+    if(word == NULL) { \
+        fprintf(stderr, "Error: no such word: %s\n", next_word); \
+        NEXT(); \
+    } else { \
+        code = (cell)forth_dictionary_get_xt(word); \
+    } \
+    if(state == STATE_IMMEDIATE) DS_PUSH(code); \
+    else { \
+        forth_dictionary_compile((cell)CODE(LIT)); \
+        forth_dictionary_compile(code); \
     }
 
-    void* quitcode[] = { 
-        CODE(INTERPRET), 
-        CODE(BRANCH), 
-        OFFSET(-2),
-        CODE(EOW)
-    };
-    current_ip = quitcode;
+#define COMMA() \
+    cell val = forth_vm_pop_ds(); \
+    forth_dictionary_compile(val);
 
-    // printf("starting forth...\n");
+#define FETCH() \
+    cell* address = (cell*)forth_vm_pop_ds(); \
+    DS_PUSH(*address);     
 
-    NEXT();
+#define CFETCH() \
+    char *ptr = (char*)forth_vm_pop_ds(); \
+    DS_PUSH((cell)*ptr);   
 
-    /* we return here to avoid fallthrough */
-    fprintf(stderr, "Err: forth_vm_run function somehow fell through...\n");
-    return 1;
+#define STORE() \
+    cell* ptr = (cell*)forth_vm_pop_ds(); \
+    temp = forth_vm_pop_ds(); \
+    *ptr = temp;
 
-    /* labels */
-    OP(DIE): DIE();
-    OP(BYE): BYE();
+#define CSTORE() \
+    char* ptr = (char*)forth_vm_pop_ds(); \
+    temp = forth_vm_pop_ds(); \
+    *ptr = (char)temp;  
 
-    /* forth core ops */
-    OP(INTERPRET): {
-        INTERPRET();
-        NEXT();
+#define ADD() \
+    temp = forth_vm_pop_ds(); \
+    DS_AT(0) += temp;
+
+#define MULTIPLY() \
+    temp = forth_vm_pop_ds(); \
+    DS_AT(0) *= temp;     
+
+#define SUB() \
+    temp = forth_vm_pop_ds(); \
+    DS_AT(0) -= temp;
+
+#define MEMADD() \
+    cell *addr = (cell*)forth_vm_pop_ds(); \
+    temp = forth_vm_pop_ds(); \
+    *addr += temp;    
+
+#define TO_XT() \
+    word_header_t* word = (word_header_t*)forth_vm_pop_ds(); \
+    DS_PUSH((cell)forth_dictionary_get_xt(word));
+
+/* todo: to deprecate? */
+#define TO_CFA() \
+    word_header_t* word = (word_header_t*)forth_vm_pop_ds(); \
+    DS_PUSH((cell)forth_dictionary_get_cfa(word));
+
+#define INTERPRET() \
+    char* wordbuf = forth_io_get_next_word(); \
+    if(!wordbuf) { \
+        if(forth_io_input_is_stdin()) return 1; \
+        NEXT(); \
+    } \
+    word_header_t* word = forth_dictionary_find_word(wordbuf); \
+    if(word) { \
+        void* code = forth_dictionary_get_xt(word); \
+        if(state == STATE_COMPILE && !(word->flags & FLAG_IMMEDIATE)) { \
+            if(word->flags & FLAG_BUILTIN) { \
+                forth_dictionary_compile((cell)code); \
+            } else { /* todo: use getcode here? so we can move the \
+                function into the interpreter module \
+                and interpret outside of the outer interpreter loop */ \
+                forth_dictionary_compile((cell)CODE(CALL)); \
+                forth_dictionary_compile((cell)code); \
+            } \
+        } else { \
+            forth_vm_push_ns(); \
+            if(word->flags & FLAG_BUILTIN) { \
+                builtin_immediatebuf[0] = code; \
+                current_ip = builtin_immediatebuf; \
+            } else {                                                        \
+                word_immediatebuf[1] = code;                                \
+                current_ip = word_immediatebuf;                             \
+            }                                                               \
+            NEXT();                                                         \
+        }                                                                   \
+    }                                                                       \
+    else {                                                                  \
+        /* check if word is a number */                                     \
+        int number; /* todo: make is_number more forth-friendly             \
+        for builtin? maybe not cause we define a new is_number              \
+        in forth later */                                                   \
+        int is_number = forth_interpreter_parse_number(wordbuf, &number);   \
+        if(is_number) {                                                     \
+            if(state == STATE_COMPILE) { \
+                forth_dictionary_compile((cell) CODE(LIT)); \
+                forth_dictionary_compile((cell) number); \
+            } \
+            else DS_PUSH((cell)number); \
+        } \
+        else { fprintf(stderr, "Error: no such word: %s\n", wordbuf); NEXT(); } \
+        NEXT(); \
     }
 
-    // OP(INTERPRET): {
-    //     forth_interpreter_interpret();
-    //     NEXT();
-    // }
-
-    OP(SKIP_LINE):  { SKIP_LINE();  NEXT(); }
-    OP(BRANCH):     { BRANCH();     NEXT(); }   
-    OP(IRETURN):    { IRETURN();    NEXT(); }
-    OP(CALL): {
-        CALL();
-        NEXT();
+/* 
+    #define INTERPRET() { \
+        forth_interpreter_interpret(); \
+            NEXT(); \
     }
+*/
 
-    OP(IEXECUTE): { IEXECUTE(); NEXT(); }
-
-    /* todo: reorder inner ops */
-    /* todo: move parse_number to interpreter? */
-    /* as in.. rename to inumber or something */
-    /* maybe parse_number_from_stack? */
-    OP(PARSE_NUMBER):  { PARSE_NUMBER();  NEXT(); }
-    OP(PARSE_FNUMBER): { PARSE_FNUMBER(); NEXT(); }
-    OP(FCOMMA): { FCOMMA(); NEXT(); }
-    OP(INCLUDE): { INCLUDE(); NEXT(); }
-    
-
-    OP(LIT): {
-        LIT();
-        NEXT();
-    }
-
-    OP(EOW): { /* end of word marker -- do nothing */
-        EOW();
-        NEXT(); 
-    }
-
-    OP(NOT_EQUAL): { NOT_EQUAL(); NEXT(); }
-    OP(LTE_ZERO): { LTE_ZERO(); NEXT(); }
-    OP(GTE_ZERO): { GTE_ZERO(); NEXT(); }
-    OP(NIP): { NIP(); NEXT(); }
-    OP(GET_DSP): { GET_DSP(); NEXT(); }
-    OP(SET_DSP): { SET_DSP(); NEXT(); }
-    OP(LT): { LT(); NEXT(); }
-    OP(GT): { GT(); NEXT(); }
-    OP(IS_EOF): { IS_EOF(); NEXT(); }
-    OP(TO_RS): { TO_RS(); NEXT(); }
-    OP(FROM_RS): { FROM_RS(); NEXT(); }
-    OP(RS_DROP): { RS_DROP(); NEXT(); }
-    OP(RSP_GET): { RSP_GET(); NEXT(); }
-    OP(RS_DROP2): { RS_DROP2(); NEXT(); }
-    OP(LTE): { LTE(); NEXT(); }
-    OP(MINUS_ROT): { MINUS_ROT(); NEXT(); }
-    OP(EXECUTE): { EXECUTE(); NEXT(); }
-    OP(EXEC_BUILTIN): { EXEC_BUILTIN(); NEXT(); }
-
-    /* forth interpreter words */
-    OP(LEFT_BRACKET): {
-        LEFT_BRACKET();
-        NEXT();
-    }
-
-    OP(RIGHT_BRACKET): {
-        RIGHT_BRACKET();
-        NEXT();
-    }
-
-    /* todo: rename to wordname? */
-    OP(CURRENT_WORDBUF): { CURRENT_WORDBUF(); NEXT(); }
-    OP(TO_NAME): { TO_NAME(); NEXT(); }
-    OP(OR): { OR(); NEXT(); }
-    OP(COLON): { COLON(); NEXT(); }
-    OP(KEY): { KEY(); NEXT(); }
-    OP(SKIP_PARENS): { SKIP_PARENS(); NEXT(); }
-    OP(DEPTH):  { DEPTH();  NEXT(); }
-    OP(STRCMP): { STRCMP(); NEXT(); }
-    OP(STRCPY): { STRCPY(); NEXT(); }
-    OP(STRLEN): { STRLEN(); NEXT(); }
-    OP(DROP2):  { DROP2();  NEXT(); }
-    OP(DUP2): { DUP2(); NEXT(); }
-    OP(NIP2): { NIP2(); NEXT(); }
-    OP(IWORD): { IWORD(); NEXT(); }
-    OP(SEMICOLON): {
-        SEMICOLON();
-        NEXT();
-    }
-
-    OP(DIV):     { DIV();     NEXT(); }
-    OP(MOD):     { MOD();     NEXT(); }
-    OP(DIVMOD):  { DIVMOD();  NEXT(); }
-    OP(UDIVMOD): { UDIVMOD(); NEXT(); }
-    OP(LT_ZERO): { LT_ZERO(); NEXT(); }
-    OP(GT_ZERO): { GT_ZERO(); NEXT(); }
-    OP(FORMAT): { FORMAT(); NEXT(); }
-
-    OP(PRINT_DS): { PRINT_DS(); NEXT(); }
-    OP(UNSIGNED_LT): { UNSIGNED_LT(); NEXT(); }
-    OP(FROM_TS): { FROM_TS(); NEXT(); }
-    OP(TO_TS): { TO_TS(); NEXT(); }
-    OP(GET_TSP): { GET_TSP(); NEXT(); }
-    OP(SET_TSP): { SET_TSP(); NEXT(); }
-    OP(GET_FSP): { GET_FSP(); NEXT(); }
-    OP(SET_FSP): { SET_FSP(); NEXT(); }
-    OP(F_FETCH): { F_FETCH(); NEXT(); }
-    OP(F_STORE): { F_STORE(); NEXT(); }
-    OP(IS_EOL):      { IS_EOL();      NEXT(); }
-    OP(PROMPT):      { PROMPT();      NEXT(); }
-    OP(REFILL): { REFILL(); NEXT(); }
-    OP(OPEN_FILE): { OPEN_FILE(); NEXT(); } /* todo: error in c or f? */
-    OP(CLOSE_FILE): { CLOSE_FILE(); NEXT(); }
-
-
-    /* forth vm words */
-    OP(NOOP): { NEXT(); }
-
-    OP(EXIT): {
-        EXIT();
-        NEXT();
-    }
-
-    OP(ZERO_BRANCH): { /* todo: FLAG_HASARG */
-        ZERO_BRANCH();
-        NEXT();
-    }
-
-    OP(FLIT): { FLIT(); NEXT(); }
-
-    OP(IF_BRANCH): { /* todo: FLAG_HASARG */
-        IF_BRANCH(); /* todo: rename to BRANCH_IF_TRUE??? */
-        NEXT();
-    }
-
-    OP(JUMP): {
-        JUMP();
-        NEXT();
-    }
-
-    /* forth dictionary ops */
-    OP(CREATE): {
-        CREATE();
-        NEXT();
-    }
-
-    OP(WORD): { /* todo: check ans definitions of word and create... */
-        WORD();
-        NEXT();
-    }
-
-    OP(FIND): {
-        FIND();
-        NEXT();
-    }
-
-    OP(HIDDEN): {
-        HIDDEN();
-        NEXT();
-    }
-
-    OP(EXTERNAL): { EXTERNAL(); NEXT(); }
-
-    OP(TICK): {
-        TICK();
-        NEXT();
-    }
-
-    OP(FETCH): { /* todo: a little confused about the pointer semantics here, apparently */
-        FETCH();   
-        NEXT();
-    }
-
-    OP(RSP_SET): { RSP_SET(); NEXT(); }
-
-    OP(CFETCH): { CFETCH(); NEXT(); }
-
-    OP(COMMA):      { COMMA();      NEXT(); }
-    OP(STORE):      {  STORE();     NEXT(); }
-    OP(CSTORE):     { CSTORE();     NEXT(); }
-    OP(LATEST):     { LATEST();     NEXT(); }
-    OP(IMMEDIATE):  { IMMEDIATE();  NEXT(); }
-    OP(ADD):        { ADD();        NEXT(); }
-    OP(MULTIPLY):   { MULTIPLY();   NEXT(); }
-    OP(SUB):        { SUB();        NEXT(); }
-    OP(SUB1):       { SUB1();       NEXT(); }
-    OP(TO_XT):      { TO_XT();      NEXT(); }
-    OP(TO_CFA):     { TO_CFA();     NEXT(); }
-    OP(GT_ZERO_BRANCH): { GT_ZERO_BRANCH(); NEXT(); }
-
-    OP(ADD1): {
-        ADD1();
-        NEXT();
-    }
-
-    OP(EQ): {
-        EQ();
-        NEXT();
-    }
-
-    OP(EQ_ZERO): {
-        EQ_ZERO();
-        NEXT();
-    }
-
-    OP(NEQ_ZERO): {
-        NEQ_ZERO();
-        NEXT();
-    }
-
-    OP(MEMADD): {
-        MEMADD();
-        NEXT();
-    }
-    
-    OP(INVERT): {
-        INVERT();
-        NEXT();
-    }
-
-    OP(SWAP): {
-        SWAP();
-        NEXT();
-    }
-
-    OP(AND): {
-        AND();
-        NEXT();
-    }
-
-    /* forth io ops */
-    OP(EMIT): {
-        EMIT();
-        NEXT();
-    }
-
-    OP(TELL): {
-        TELL();
-        NEXT();
-    }
-
-    OP(DOT): {
-        DOT();
-        NEXT();
-    }
-
-    OP(DUP): {
-        DUP();
-        NEXT();
-    }
-
-    OP(COND_DUP): {
-        COND_DUP();
-        NEXT();
-    }
-
-    OP(DROP): {
-        DROP();
-        NEXT();
-    }
-
-    OP(OVER): { OVER(); NEXT(); }
-
-    OP(XOR): {
-        XOR();
-        NEXT();
-    }
-
-    OP(ROT): { ROT(); NEXT(); }
-
-    OP(BREAKPOINT): { BREAKPOINT(); NEXT(); }
-}
-
-// void forth_vm_print_ds() {
-//     printf("<ds> ");
-//     for(cell* p = current_d0 - 1; p >= current_ds; p--)
-//         printf("%ld ", (long)*p);
-//     printf("\n");
-// }
+#endif /* FORTH_OPS_H */

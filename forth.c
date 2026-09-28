@@ -10,7 +10,7 @@
 */
 
 void forth_interpret_string(const char* str) {
-    forth_io_set_string_input(str);
+    forth_io_set_input_string(str);
     forth_vm_run();
 }
 
@@ -88,19 +88,16 @@ void forth_bootstrap_and_exit(void) {}
 void forth_bootstrap_and_run(void) {}
 
 void forth_cleanup_and_exit(void) {
-    forth_cleanup_lib_sys_tty();
+    #ifdef INCLUDE_LIB_SYS_TTY
+        forth_cleanup_lib_sys_tty();
+    #endif
 }
 
 int main(void) {
     forth_init_defaults();
-    forth_interpret_string("bye"); /* init vm */
-    // forth_io_set_input_file("forth_bootstrap.f");
-    /* todo: use "require" instead of include later */
-    if(!forth_io_include_file("forth_bootstrap.f")) { /* todo: no return val perhaps */
-        printf("Error: Bootstrap file missing.\n"); 
-        return 1; /* todo: error messages and fallback to internal bootstrap sequence */
-    }
-    forth_include_lib_sys_tty();
+    forth_interpret_string("bye"); /* init vm so we can built libs, kind of a cheap workaround I know.. */
+    forth_io_set_input_file("forth_bootstrap.f");
+    // forth_include_lib_sys_tty();
     forth_vm_run();
 
     /* todo: is atexit just a unix thing? */

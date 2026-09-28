@@ -11,7 +11,7 @@
 #include "forth_builtins.h"
 
 /* forth libraries */
-#define INCLUDE_LIB_SYS_TTY
+// #define INCLUDE_LIB_SYS_TTY
 // #define INCLUDE_LIB_RAYLIB
 
 /* forth config */
@@ -75,11 +75,10 @@ extern int  forth_interpreter_interpret_string(const char* str);
 extern void         forth_io_init_defaults(void);
 extern void         forth_io_define_words(void);
 extern FILE*        forth_io_open_file(const char* name);
-extern void         forth_io_set_string_input(const char* input);
-extern void         forth_io_read_string(const char* str);
-extern int          forth_io_include_file(const char* filename);
-extern void         forth_io_set_input_file(const char* filename); /* todo: rm */
-extern char*        forth_io_get_current_wordbuf(void);
+/* todo: forth_io_close_file */
+extern void         forth_io_set_input_file(const char* filename); /* todo: rm? */
+extern void         forth_io_set_input_string(const char* input);
+extern void         forth_io_read_string(const char* str); /* todo: remove? */
 extern int          forth_io_is_eof(void);
 extern int          forth_io_is_eol(void);
 extern char*        forth_io_get_next_word(void);  /* WORD */
@@ -94,6 +93,7 @@ extern int          forth_io_refill(void);
 extern const char*  forth_io_format(const char* format_str);
 extern int          forth_io_input_is_stdin(void);       /* forth io helpers */
 extern void         forth_io_print_current_word(void);  /* forth io dbg */
+extern void         forth_io_print_state(void);
 
 /* FORTH DICTIONARY */ /* todo: defvar, defword */
 extern void             forth_dictionary_init_defaults(void);
@@ -120,13 +120,6 @@ extern float forth_vm_pop_fs(void);
 extern void  forth_vm_schedule_builtin(void** code); /* todo: make into macro */
 extern void  forth_vm_schedule_word(void** code); /* todo: make into macro */
 
-/* forth libs */
-extern void forth_include_lib_sys_tty(void);
-extern void forth_cleanup_lib_sys_tty(void);
-// extern void forth_lib_sys_tty_enable_raw_mode(void);
-// extern void forth_lib_sys_tty_disable_raw_mode(void);
-// extern void forth_lib_sys_tty_clear_screen(void);
-
 /* debug */
 extern void forth_debug_breakpoint(void);
 // extern void forth_vm_dbg_print_state(void);
@@ -139,5 +132,14 @@ extern void forth_vm_print_rs(void);
 extern void forth_interpreter_debug_state(void);
 
 extern void test_external(void);
+
+/* forth libs */
+#ifdef INCLUDE_LIB_SYS_TTY
+    extern void forth_include_lib_sys_tty(void);
+    extern void forth_cleanup_lib_sys_tty(void);
+    // extern void forth_lib_sys_tty_enable_raw_mode(void);
+    // extern void forth_lib_sys_tty_disable_raw_mode(void);
+    // extern void forth_lib_sys_tty_clear_screen(void);
+#endif
 
 #endif /* FORTH_H */

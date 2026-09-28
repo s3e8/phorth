@@ -1,8 +1,8 @@
 #include "forth.h"
 
-#define DEFAULT_INPUT_STACK_SIZE 32
-#define DEFAULT_WORD_BUFFER_SIZE 128
-#define DEFAULT_LINE_BUFFER_SIZE 2048
+#define DEFAULT_INPUT_STACK_SIZE 32 /* aka MAX_DEPTH */
+#define DEFAULT_WORD_BUFFER_SIZE 128 /* todo: rename to config_word_Buffer_size */
+#define DEFAULT_INPUT_BUFFER_SIZE 2048
 
 typedef struct input_t { /* todo: separate if we bootstrap from forth instead? */
     FILE* stream;        /* ---   though this would mean exposing the globals */
@@ -14,63 +14,30 @@ typedef struct input_t { /* todo: separate if we bootstrap from forth instead? *
 static input_t* input_stack_pointer;
 static input_t* input_stack_base;
 static int      input_stack_size;
+static input_t  input_stack[DEFAULT_INPUT_STACK_SIZE];
+static char     input_buffers[DEFAULT_INPUT_STACK_SIZE][DEFAULT_INPUT_BUFFER_SIZE];
+static char* current_input_buffer; /* todo: rename to input_buffer*/
+static char* current_input_buffer_position;
+static int   current_input_buffer_size; /*todo: do we need? */
+static FILE* current_input_stream;
+static FILE* current_output_stream;
 
-static FILE*    current_input_stream;
-static FILE*    current_output_stream;
-static char*    current_line_buffer;
-static char*    current_line_buffer_position;
-static int      current_line_buffer_size;
-static char*    wordbuf; /* todo: rename to long-form words */
-static int      wordbuf_size;
+static char wordbuf[DEFAULT_WORD_BUFFER_SIZE]; /* todo: rename to long-form words */
+static int  wordbuf_size;
 
-static input_t  default_input_stack[DEFAULT_INPUT_STACK_SIZE];
-static char     default_word_buffer[DEFAULT_WORD_BUFFER_SIZE];
-static char     default_line_buffers[DEFAULT_INPUT_STACK_SIZE][DEFAULT_LINE_BUFFER_SIZE];
-
-void forth_io_init_defaults(void) {
-    setvbuf(stdout, NULL, _IONBF, 0); /* todo: should I still be doing this? */
-    setvbuf(stderr, NULL, _IONBF, 0);
-    input_stack_size    = DEFAULT_INPUT_STACK_SIZE;
-    input_stack_base    = default_input_stack;
-    input_stack_pointer = input_stack_base;
-    default_line_buffers[0][0] = '\0';
-    forth_io_set_input_stream(stdin);
-    forth_io_set_output_stream(stdout);
-    forth_io_set_wordbuf(default_word_buffer, sizeof(default_word_buffer));
-    forth_io_set_linebuf(default_line_buffers[0], DEFAULT_LINE_BUFFER_SIZE); /* todo: use var or macro */
-}
+static const char* prompt_text = "outer>";
 
 void forth_io_define_words(void) {
-    forth_dictionary_defconst("input-stream",      (cell)&current_input_stream);
-    forth_dictionary_defconst("input-buffer",      (cell)&current_line_buffer);
-    forth_dictionary_defconst("input-pos",         (cell)&current_line_buffer_position);
-    forth_dictionary_defconst("input-buffer-size", (cell)DEFAULT_LINE_BUFFER_SIZE);
-    forth_dictionary_defconst("<stdin>",           (cell)stdin);
-}
-
-void forth_io_push_input_stack(FILE* stream) {
-    if(input_stack_pointer - input_stack_base >= input_stack_size - 1) {
-        fprintf(stderr, "Input stack overflow\n");
-        fclose(stream);
-        return;
-    }
-    *input_stack_pointer++ = (input_t){ current_input_stream, current_line_buffer, current_line_buffer_position };
-
-    current_input_stream         = stream;
-    current_line_buffer          = default_line_buffers[input_stack_pointer - input_stack_base];
-    current_line_buffer[0]       = '\0';
-    current_line_buffer_position = current_line_buffer;
-}
-
-int forth_io_pop_input_stack(void) {
-    if(input_stack_pointer <= input_stack_base) return 0;
-    fclose(current_input_stream);
-
-    input_t input = *--input_stack_pointer;
-    current_input_stream         = input.stream;
-    current_line_buffer          = input.buffer;
-    current_line_buffer_position = input.position;
-    return 1;
+    forth_dictionary_defconst("input-stack",           (cell)input_stack);
+    forth_dictionary_defconst("input-buffers",         (cell)input_buffers);
+    forth_dictionary_defconst("input-stack-max-depth", (cell)DEFAULT_INPUT_STACK_SIZE);
+    forth_dictionary_defconst("input-stream",          (cell)&current_input_stream); /* todo: rename to input? */
+    forth_dictionary_defconst("input-buffer",          (cell)&current_input_buffer); /* todo: rename to line? */
+    forth_dictionary_defconst("input-buffer-pos",      (cell)&current_input_buffer_position);
+    forth_dictionary_defconst("input-buffer-size",     (cell)DEFAULT_INPUT_BUFFER_SIZE); /* todo: rename to line-size? */
+    forth_dictionary_defconst("output-stream",         (cell)&current_output_stream);
+    forth_dictionary_defconst("prompt-text",           (cell)&prompt_text);
+    forth_dictionary_defconst("<stdin>",               (cell)stdin);
 }
 
 void forth_io_set_input_stream(FILE* input_stream) {
@@ -80,6 +47,16 @@ void forth_io_set_input_stream(FILE* input_stream) {
 
 void forth_io_set_output_stream(FILE* output_stream) {
     current_output_stream = output_stream;
+}
+
+void forth_io_set_input_buffers(char* linebuf, int size) {
+    current_input_buffer          = linebuf;
+    current_input_buffer_position = current_input_buffer;
+    current_input_buffer_size     = size;
+}
+
+FILE* forth_io_open_file(const char* filename) {
+    return fopen(filename, "r");
 }
 
 FILE* forth_io_open_or_create_file(const char* filename, const char* mode) {
@@ -100,109 +77,48 @@ void forth_io_set_input_file(const char* filename) {
     current_input_stream = fp;
 }
 
-void forth_io_set_wordbuf(char* buf, int size) {
-    wordbuf      = buf;
-    wordbuf_size = size;
-}
-
-void forth_io_set_linebuf(char* linebuf, int size) {
-    current_line_buffer          = linebuf;
-    current_line_buffer_position = current_line_buffer;
-    current_line_buffer_size     = size;
-}
-
-/* todo: don't need both of these.. can set i/o in forth */
-void forth_io_open_input_file(const char* filename, const char* mode) {
-    FILE* f = fopen(filename, mode);
-    if(!f) {
-        fprintf(stderr, "Error opening file: %s\n", filename);
+/* todo: cant include from a string.. */
+void forth_io_set_input_string(const char* input) {
+    if(strlen(input) >= current_input_buffer_size) { /* todo: > or >= */
+        printf("Error: Input string must be shorter than linebuf.\n");
         return;
     }
-    current_input_stream = f;
-}
 
-void forth_io_open_output_file(const char* filename, const char* mode) {
-    FILE* f = fopen(filename, mode);
-    if(!f) {
-        fprintf(stderr, "Error opening file: %s\n", filename);
-        return;
+    const char* position = input;
+    int i;
+
+    for (i = 0; i < current_input_buffer_size - 1 && *position; i++) {
+        current_input_buffer[i] = *position++;
     }
-    current_output_stream = f;
+    current_input_buffer[i] = '\0';
+    current_input_buffer_position = current_input_buffer;
 }
 
-void forth_io_close_input() {
-    if(current_input_stream && current_input_stream != stdin) {
-        fclose(current_input_stream);
-        current_input_stream = NULL;
-    }
-}
-
-void forth_io_close_all(void) {}
-
-int forth_io_include_file(const char* filename) {
-    FILE* fp = forth_io_open_or_create_file(filename, "r");
-    if(!fp) return 0;
-    forth_io_push_input_stack(fp);
-    return 1;
-}
-
-/* io debug */
-void forth_io_print_current_word(void) {
-    printf("wordbuf: %s\n", wordbuf);
-}
-
-char* forth_io_get_current_wordbuf(void) {
-    return wordbuf;
-}
-
-void forth_io_print_state(void) {
-    forth_io_print_current_word();
-    printf("current_linebuf: %s\n",     current_line_buffer);
-    printf("current_linebuf_pos: %s\n", current_line_buffer_position);
-}
 
 int forth_io_is_eof(void) {
-    return (*current_line_buffer_position == '\0') && feof(current_input_stream);
+    return (*current_input_buffer_position == '\0') && feof(current_input_stream);
 }
 
 int forth_io_is_eol(void) {
-    while(*current_line_buffer_position && isspace(*current_line_buffer_position))
-        current_line_buffer_position++;
-    return *current_line_buffer_position == '\0';
+    while(*current_input_buffer_position && isspace(*current_input_buffer_position))
+        current_input_buffer_position++;
+    return *current_input_buffer_position == '\0';
 }
 
-/* print prompt are read one line from the current stream into the line buffer */
-void forth_io_prompt(const char* prompt_text) {
-    for(;;) {
-        if(current_input_stream == stdin) fputs(prompt_text, current_output_stream);
-        char* line = fgets(current_line_buffer, current_line_buffer_size, current_input_stream);
-        if(line) {
-            current_line_buffer_position = current_line_buffer;
-            return;
-        }
-        if(!forth_io_pop_input_stack()) {              /* real eof on stdin */
-            current_line_buffer[0] = '\0';
-            current_line_buffer_position = current_line_buffer;
-            return;
-        }
-        if(*current_line_buffer_position) return;     /* parent still has words on its line */
-    }
-}
-
-/* read the next line of the current stream into the current buffer.
-   returns NULL at EOF (buffer left empty). nesting is handled in forth. */
+/* todo: rename without namespace to indicate local helper not included in api? 
+    read the next line of the current stream into the current buffer.
+    returns NULL at EOF (buffer left empty). nesting is handled in forth. */
 char* forth_io_get_next_line(void) {
-    char* line = fgets(current_line_buffer, current_line_buffer_size, current_input_stream);
-    if(!line) current_line_buffer[0] = '\0';
-    current_line_buffer_position = current_line_buffer;
+    char* line = fgets(current_input_buffer, current_input_buffer_size, current_input_stream);
+    if(!line) current_input_buffer[0] = '\0';
+    current_input_buffer_position = current_input_buffer;
     return line;
 }
 
 /* Parse next word from a string, updating a position pointer */
-char* forth_io_get_next_word()
-{
+char* forth_io_get_next_word() {
     char*  tmp       = wordbuf;
-    char*  position  = current_line_buffer_position;
+    char*  position  = current_input_buffer_position;
     int    size      = wordbuf_size;
     size_t count     = 0;
 
@@ -212,12 +128,10 @@ char* forth_io_get_next_word()
     skip_whitespace:
         while(*position && isspace(*position)) position++;
 
-    /* if line is empty, check for new line */
+    /* If line is empty, check for new line */
     if(*position == '\0') {
         if(!forth_io_get_next_line()) return NULL;
-        position = current_line_buffer_position;
-        // printf("tmp: %s\n", tmp);
-        // printf("pos: %s\n", pos);
+        position = current_input_buffer_position;
         goto skip_whitespace;
     }
 
@@ -229,7 +143,7 @@ char* forth_io_get_next_word()
     *tmp = '\0';
 
     if(*position) position++; 
-    current_line_buffer_position = position;
+    current_input_buffer_position = position;
 
     // printf("word retrieved.\n");
 
@@ -240,39 +154,17 @@ int forth_io_get_char() {
     return fgetc(current_input_stream);
 }
 
-/* read the next line of the current stream into the current buffer.
-   returns NULL at EOF (buffer left empty). nesting is handled in forth. */
-// char* forth_io_get_next_line(void) {
-//     char* line = fgets(current_line_buffer, current_line_buffer_size, current_input_stream);
-//     if(!line) current_line_buffer[0] = '\0';
-//     current_line_buffer_position = current_line_buffer;
-//     return line;
-// }
-
-int   forth_io_refill(void)                 { return forth_io_get_next_line() != NULL; }
-FILE* forth_io_open_file(const char* name)  { return fopen(name, "r"); }
-int   forth_io_input_is_stdin(void)         { return current_input_stream == stdin; }
-
-void forth_io_set_string_input(const char* input) {
-        if(strlen(input) >= current_line_buffer_size) { /* todo: > or >= */
-        printf("Error: Input string must be shorter than linebuf.\n");
-        return;
-    }
-
-    const char* position = input;
-    int i;
-
-    for (i = 0; i < current_line_buffer_size - 1 && *position; i++) {
-        current_line_buffer[i] = *position++;
-    }
-    current_line_buffer[i] = '\0';
-    current_line_buffer_position = current_line_buffer;
+int forth_io_refill(void) { 
+    return forth_io_get_next_line() != NULL; 
+}
+int forth_io_input_is_stdin(void) { 
+    return current_input_stream == stdin; 
 }
 
 void forth_io_read_string(const char* str) {
-    forth_io_set_string_input(str);
+    forth_io_set_input_string(str);
 
-    while(*current_line_buffer_position) {
+    while(*current_input_buffer_position) {
         forth_io_get_next_word();
         printf("Got word: '%s'\n", wordbuf);
     }
@@ -292,20 +184,19 @@ void forth_io_dot(cell value) {
 }
 
 /* todo: without the (unsigned char) cast, a byte >=127 sign-extends to a negative int 
-   and could collide with the -1 EOF sentinel — fine for ASCII bootstrap text, 
+   and could collide with the -1 EOF sentinel.. fine for ASCII bootstrap text? 
    revisit if non-ASCII input matters later 
 */
 int forth_io_get_next_char(void) { /* todo: read_key vs get_char? */
-    if(*current_line_buffer_position == '\0') {
+    if(*current_input_buffer_position == '\0') {
         if(!forth_io_get_next_line()) return -1;
     }
-    return *current_line_buffer_position++;
+    return *current_input_buffer_position++;
 }
-
 
 /* other ops */
 void forth_io_skip_line(void) {
-    while(*current_line_buffer_position) current_line_buffer_position++;
+    while(*current_input_buffer_position) current_input_buffer_position++;
 }
 
 void forth_io_skip_parens(void) {
@@ -360,4 +251,27 @@ const char* forth_io_format(const char* format_string) {
 
     outbuf[outlen] = '\0';
     return outbuf;
+}
+
+void forth_io_init_defaults(void) {
+    setvbuf(stdout, NULL, _IONBF, 0); /* todo: should I still be doing this? */
+    setvbuf(stderr, NULL, _IONBF, 0);
+    input_stack_size    = DEFAULT_INPUT_STACK_SIZE;
+    input_stack_base    = input_stack; /* todo: is this growing up or down? */
+    input_stack_pointer = input_stack_base;
+    // default_line_buffers[0][0] = '\0';
+    forth_io_set_input_stream(stdin);
+    forth_io_set_output_stream(stdout);
+    // forth_io_set_wordbuf(word_buffer, sizeof(word_buffer));
+    forth_io_set_input_buffers(input_buffers[0], DEFAULT_INPUT_BUFFER_SIZE); /* todo: use var or macro */
+}
+
+void forth_io_print_current_word(void) {
+    printf("word buffer: %s\n", wordbuf);
+}
+
+void forth_io_print_state(void) {
+    printf("          word buffer: %s\n", wordbuf);
+    printf("  current line buffer: %s\n", current_input_buffer);
+    printf("current line position: %s\n", current_input_buffer_position);
 }
