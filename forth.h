@@ -11,7 +11,7 @@
 #include "forth_builtins.h"
 
 /* forth libraries */
-// #define INCLUDE_LIB_SYS_TTY
+#define INCLUDE_LIB_SYS_TTY
 // #define INCLUDE_LIB_RAYLIB
 
 /* forth config */

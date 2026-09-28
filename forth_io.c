@@ -27,6 +27,7 @@ void forth_io_define_words(void) {
     forth_dictionary_defconst("input-stack",           (cell)input_stack); /* whats the */
     forth_dictionary_defconst("input-buffers",         (cell)input_buffers);
     forth_dictionary_defconst("input-stack-max-depth", (cell)DEFAULT_INPUT_STACK_SIZE);
+    forth_dictionary_defconst("input-stack-pointer",   (cell)&input_stack_pointer);
     forth_dictionary_defconst("input-stream",          (cell)&current_input_stream); /* todo: rename to input? */
     forth_dictionary_defconst("input-buffer",          (cell)&current_input_buffer); /* todo: rename to line? */
     forth_dictionary_defconst("input-buffer-pos",      (cell)&current_input_buffer_position);
