@@ -37,8 +37,8 @@ static cell   default_tempstack[DEFAULT_TEMPSTACK_SIZE];
 static float  default_floatstack[DEFAULT_FLOATSTACK_SIZE];
 
 /* todo: rename this stuff to fit everything else */
-void**  nesting_stack_space[DEFAULT_NESTINGSTACK_MAX_DEPTH];
-void*** nesting_stack = nesting_stack_space + DEFAULT_NESTINGSTACK_MAX_DEPTH;
+void**  nesting_stack[DEFAULT_NESTINGSTACK_MAX_DEPTH];
+void*** nesting_stack_pointer = nesting_stack + DEFAULT_NESTINGSTACK_MAX_DEPTH;
 
 void* builtin_immediatebuf[2];
 void*    word_immediatebuf[3];
@@ -61,8 +61,7 @@ typedef struct forth_vm_s {
     struct forth_vm_s*  next;
 } forth_vm_t;
 
-forth_vm_t* current_thread = NULL;
-// char* current_thread_name  = NULL;
+forth_vm_t* current_thread = NULL; /* todo: green-thread stuff  */
 
 void forth_vm_print_state(void) {
     
@@ -233,7 +232,7 @@ void forth_vm_push_ns(void) {
     // }
     // printf("pushing '%p' to return stack...\n", code);
     // printf("pushing '%p' to nesting stack...\n", current_ip);
-    *--nesting_stack = current_ip;
+    *--nesting_stack_pointer = current_ip;
 }
 
 xt forth_vm_pop_ns(void) {
@@ -241,7 +240,7 @@ xt forth_vm_pop_ns(void) {
     //     fprintf(stderr, "Return stack underflow\n");
     //     return NULL;
     // }
-    return *nesting_stack++;
+    return *nesting_stack_pointer++;
 }
 
 void forth_vm_schedule_builtin(void** code) {

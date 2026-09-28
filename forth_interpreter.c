@@ -53,7 +53,7 @@ int forth_interpreter_interpret(void) {
             }
         } else { /* execute */
             forth_vm_push_ns();
-            // *--nesting_stack = current_ip;
+            // *--nesting_stack_pointer = current_ip;
             if(word->flags & FLAG_BUILTIN) {
                 // builtin_immediatebuf[0] = *code;
                 forth_vm_schedule_builtin(code);
