@@ -95,9 +95,12 @@ void forth_cleanup_and_exit(void) {
 
 int main(void) {
     forth_init_defaults();
-    forth_interpret_string("bye"); /* init vm so we can built libs, kind of a cheap workaround I know.. */
+    forth_interpret_string("bye"); /* init vm so we can built libs, kind of a cheap workaround I know.. todo: fix workaround.. */
     forth_io_set_input_file("forth_bootstrap.f");
-    // forth_include_lib_sys_tty();
+    
+    #ifdef INCLUDE_LIB_SYS_TTY
+        forth_include_lib_sys_tty();
+    #endif
     forth_vm_run();
 
     /* todo: is atexit just a unix thing? */
