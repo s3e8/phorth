@@ -96,7 +96,11 @@ void forth_cleanup_and_exit(void) {
 int main(void) {
     forth_init_defaults();
     forth_interpret_string("bye"); /* init vm so we can built libs, kind of a cheap workaround I know.. todo: fix workaround.. */
-    forth_io_set_input_file("forth_bootstrap.f");
+    // forth_io_set_input_file("forth_bootstrap.f");
+
+    FILE* bootstrap = fopen("forth_bootstrap.f", "r");
+    if(!bootstrap) { fprintf(stderr, "Unable to open forth_bootstrap.f\n"); return 1; }
+    forth_io_set_input_stream(bootstrap);
     
     #ifdef INCLUDE_LIB_SYS_TTY
         forth_include_lib_sys_tty();

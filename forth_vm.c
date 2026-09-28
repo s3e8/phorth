@@ -322,6 +322,7 @@ int forth_vm_run(void) {
         forth_dictionary_defcode(":", CODE(COLON),          0);
         forth_dictionary_defcode(";", CODE(SEMICOLON),      FLAG_IMMEDIATE );
         /* vm */
+        forth_dictoinary_defcode("noop",    CODE(NOOP), 0);
         forth_dictionary_defcode("die",     CODE(DIE),          0);
         forth_dictionary_defcode("0branch", CODE(ZERO_BRANCH),  FLAG_HASARG  ); /* todo: these are  definitely interpreter opcodes */
         forth_dictionary_defcode("1branch", CODE(IF_BRANCH),    FLAG_HASARG  );
@@ -354,6 +355,8 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("0<>",     CODE(NEQ_ZERO),     0);
         forth_dictionary_defcode("0<",      CODE(LT_ZERO),      0);
         forth_dictionary_defcode("0>",      CODE(GT_ZERO),      0);
+        forth_dictionary_defcode("0<=",     CODE(LTE_ZERO), 0);
+          forth_dictionary_defcode("0>=",   CODE(GTE_ZERO), 0);
         /* dictionary */
         forth_dictionary_defcode("latest",    CODE(LATEST),       0);
         forth_dictionary_defcode("(create)",    CODE(CREATE),       0);

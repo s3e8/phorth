@@ -24,6 +24,10 @@ static FILE* current_output_stream;
 static const char* prompt_text = "outer>";
 
 void forth_io_define_words(void) {
+    forth_dictionary_defconst("<stdin>",               (cell)stdin); /* todo: stdout?*/
+    forth_dictionary_defconst("prompt-text",           (cell)&prompt_text);
+    forth_dictionary_defconst("output-stream",         (cell)&current_output_stream);
+
     forth_dictionary_defconst("input-stack",           (cell)input_stack); /* whats the */
     forth_dictionary_defconst("input-buffers",         (cell)input_buffers);
     forth_dictionary_defconst("input-stack-max-depth", (cell)DEFAULT_INPUT_STACK_SIZE);
@@ -32,9 +36,6 @@ void forth_io_define_words(void) {
     forth_dictionary_defconst("input-buffer",          (cell)&current_input_buffer); /* todo: rename to line? */
     forth_dictionary_defconst("input-buffer-pos",      (cell)&current_input_buffer_position);
     forth_dictionary_defconst("input-buffer-size",     (cell)DEFAULT_INPUT_BUFFER_SIZE); /* todo: rename to line-size? */
-    forth_dictionary_defconst("output-stream",         (cell)&current_output_stream);
-    forth_dictionary_defconst("prompt-text",           (cell)&prompt_text);
-    forth_dictionary_defconst("<stdin>",               (cell)stdin);
 }
 
 void forth_io_set_input_stream(FILE* input_stream) {
@@ -65,13 +66,6 @@ FILE* forth_io_open_or_create_file(const char* filename, const char* mode) {
     setvbuf(fp, NULL, _IONBF, 0);  // disable input buffering, we have our own
 
     return fp;
-}
-
-void forth_io_set_input_file(const char* filename) {
-    FILE* fp = forth_io_open_or_create_file(filename, "r");
-    if(!fp) return; /* todo */
-
-    current_input_stream = fp;
 }
 
 /* todo: cant include from a string.. */

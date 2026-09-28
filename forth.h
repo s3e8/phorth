@@ -77,7 +77,7 @@ extern void         forth_io_init_defaults(void);
 extern void         forth_io_define_words(void);
 extern FILE*        forth_io_open_file(const char* name);
 /* todo: forth_io_close_file */
-extern void         forth_io_set_input_file(const char* filename); /* todo: rm? */
+// extern void         forth_io_set_input_file(const char* filename); /* todo: rm? */
 extern void         forth_io_set_input_string(const char* input);
 extern void         forth_io_read_string(const char* str); /* todo: remove? */
 extern int          forth_io_is_eof(void);
