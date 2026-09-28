@@ -27,20 +27,18 @@ static cell*   current_t0;
 static float*  current_fs; /* float stack */
 static float*  current_f0;
 static int     current_rs_size;
-static int     current_ns_size;
 static int     current_ds_size;
 static int     current_ts_size;
 static int     current_fs_size;
 
 static void** default_returnstack[DEFAULT_RETURNSTACK_SIZE];
-static void** default_nestingstack[DEFAULT_NESTINGSTACK_MAX_DEPTH];
 static cell   default_datastack[DEFAULT_DATASTACK_SIZE];
 static cell   default_tempstack[DEFAULT_TEMPSTACK_SIZE];
 static float  default_floatstack[DEFAULT_FLOATSTACK_SIZE];
 
 /* todo: rename this stuff to fit everything else */
-void**  nestingstack_space[DEFAULT_NESTINGSTACK_MAX_DEPTH];
-void*** nestingstack = nestingstack_space + DEFAULT_NESTINGSTACK_MAX_DEPTH;
+void**  nesting_stack_space[DEFAULT_NESTINGSTACK_MAX_DEPTH];
+void*** nesting_stack = nesting_stack_space + DEFAULT_NESTINGSTACK_MAX_DEPTH;
 
 void* builtin_immediatebuf[2];
 void*    word_immediatebuf[3];
@@ -98,7 +96,7 @@ forth_vm_t* forth_vm_init_thread(
         current_rs = new->returnstack;
         current_r0 = new->returnstack_base;
         // current_ns = new->current_ns;
-        // nestingstack = new->nestingstack_base;
+        // nesting_stack = new->nestingstack_base;
         current_ds = new->datastack;
         current_d0 = new->datastack_base;
         current_ts = new->tempstack;
@@ -145,7 +143,7 @@ void forth_vm_init_defaults(void) {
     current_ts_size = DEFAULT_TEMPSTACK_SIZE;
     current_fs_size = DEFAULT_FLOATSTACK_SIZE;
     current_r0 = default_returnstack  + current_rs_size;
-    // nestingstack = default_nestingstack + current_ns_size;
+    // nesting_stack = default_nestingstack + current_ns_size;
     current_d0 = default_datastack    + current_ds_size;
     current_t0 = default_tempstack    + current_ts_size;
     current_f0 = default_floatstack   + current_fs_size;
@@ -229,21 +227,21 @@ xt forth_vm_pop_rs(void) {
 }
 
 void forth_vm_push_ns(void) {
-    // if(current_ns - 1 < nestingstack - current_ns_size) {
+    // if(current_ns - 1 < nesting_stack - current_ns_size) {
     //     fprintf(stderr, "Return stack underflow\n");
     //     return;
     // }
     // printf("pushing '%p' to return stack...\n", code);
     // printf("pushing '%p' to nesting stack...\n", current_ip);
-    *--nestingstack = current_ip;
+    *--nesting_stack = current_ip;
 }
 
 xt forth_vm_pop_ns(void) {
-    // if(current_ns >= nestingstack) {
+    // if(current_ns >= nesting_stack) {
     //     fprintf(stderr, "Return stack underflow\n");
     //     return NULL;
     // }
-    return *nestingstack++;
+    return *nesting_stack++;
 }
 
 void forth_vm_schedule_builtin(void** code) {

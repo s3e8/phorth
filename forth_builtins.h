@@ -32,7 +32,7 @@
 #define EOW()           /* do nothing */
 #define NOOP()          /* do nothing */
 #define EXIT()          current_ip = forth_vm_pop_rs();
-#define IRETURN()       current_ip = *nestingstack++;
+#define IRETURN()       current_ip = *nesting_stack++;
 #define LIT()           DS_PUSH(RS_INTARG());
 #define LEFT_BRACKET()  state = STATE_IMMEDIATE; 
 #define RIGHT_BRACKET() state = STATE_COMPILE;
@@ -138,7 +138,7 @@
 // #define IEXECUTE()
 //     word_header_t* entry = (word_header_t*)DS_POP();
 //     void** code = cfa(entry);
-//     *--nestingstack = ip;
+//     *--nesting_stack = ip;
 //     if(entry->flags & FLAG_BUILTIN) {
 //       builtin_immediatebuf[0] = *code;
 //       ip = builtin_immediatebuf;
@@ -150,7 +150,7 @@
 #define IEXECUTE() \
     word_header_t* word = (word_header_t*)DS_POP(); \
     void* code = forth_dictionary_get_xt(word); \
-    *--nestingstack = current_ip; \
+    *--nesting_stack = current_ip; \
     if(word->flags & FLAG_BUILTIN) { \
         builtin_immediatebuf[0] = code; \
         current_ip = builtin_immediatebuf; \
