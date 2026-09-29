@@ -741,10 +741,27 @@ hide copytohere
     ] 
 ;
 
-\ : ['] immediate
-\     ' lit ,
-\ ;
 : ['] immediate [compile] ' ;
+: compile, ( xt -- )  dup here0 here @ within if ' call , then , ;
+
+\ ( create / does> )
+\ a created word's code:  lit <body>  exit  0  eow  | body...
+\ does> patches it to:     lit <body>  jump <does-code>  eow
+: create ( "name" -- )
+    word (create)
+    ' lit ,  here @ 4 cells + ,      \ push body address (right after these 5 cells)
+    ' exit ,  0 ,                     \ slot does> will patch into  jump <xt>
+    ' eow ,
+;
+: (does>) ( does-code -- )
+    latest @ >cfa 2 cells +          ( code slot )
+    ['] jump over !  cell+ ! 
+;
+: does> immediate
+    ' lit ,  here @ 4 cells + ,       \ address of the code after this does>
+    ['] (does>) compile,              \ colon words are compiled as  call <xt>
+    ' exit ,
+;
 
 : id. cell+ cell+ tell ;
 
@@ -931,18 +948,6 @@ defer breakpoint
     ." Hello" cr
     usage
 ;
-
-\ : final-quit
-\     reset-input
-\     begin
-\ 	format-prompt prompt
-\ 	?eof not
-\     while
-\ 	    begin ?eol not while ' interpret catch drop repeat
-\ 	    cr
-\     repeat
-\     die
-\ ;
 
 : r/o  s" r" ;
 : w/o  s" w" ;

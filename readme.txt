@@ -3,6 +3,7 @@ WIP forth
 
 ### todo:
 - [ ] rename <stdin> to stdin etc
+- [ ] ans allot? 
 - [x] include stack
 - [ ] revert 'create' to original functionality
 - [ ] print-ds
