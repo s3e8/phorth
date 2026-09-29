@@ -960,6 +960,12 @@ defer breakpoint
 
 : next-input-buffer ( -- addr )  input-buffers  input-depth 1+  input-buffer-size * + ;
 
+: interpret-file ( -- )
+    begin refill while
+	begin ?eol not while interpret repeat
+    repeat
+;
+
 : included ( c-addr -- )
     input-depth 1+ input-stack-max-depth = if drop ." too many includes" cr exit then
     r/o open-file ?dup 0= if ." no such file" cr exit then
@@ -967,11 +973,10 @@ defer breakpoint
     save-input
     input-stream !
     dup input-buffer !  dup input-buffer-pos !  0 swap c!
-    begin refill while
-	begin ?eol not while interpret repeat
-    repeat
+    ['] interpret-file catch     ( 0 | throw-code )
     input-stream @ close-file
     restore-input
+    throw                        \ re-throw after cleanup (0 throw does nothing)
 ;
 
 : include ( "name" -- )  word included ;
