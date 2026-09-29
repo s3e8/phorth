@@ -98,7 +98,7 @@ int main(void) {
     forth_interpret_string("bye"); /* init vm so we can built libs, kind of a cheap workaround I know.. todo: fix workaround.. */
     // forth_io_set_input_file("forth_core_bootstrap.f");
 
-    FILE* bootstrap = forth_io_open_file("forth_bootstrap.f", "r");
+    FILE* bootstrap = forth_io_open_file("forth_core_bootstrap.f", "r");
     if(!bootstrap) { fprintf(stderr, "Unable to load bootstrap file. Exiting...\n"); return 1; }
     forth_io_set_input_stream(bootstrap);
     

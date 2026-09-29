@@ -2,6 +2,7 @@
 WIP forth
 
 ### todo:
+- [ ] rename <stdin> to stdin etc
 - [x] include stack
 - [ ] revert 'create' to original functionality
 - [ ] print-ds
