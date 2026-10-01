@@ -2,6 +2,7 @@
 WIP forth
 
 ### todo:
+- [ ] : help: word print-usage ;
 - [ ] rename <stdin> to stdin etc
 - [ ] ans allot? 
 - [x] include stack
