@@ -928,17 +928,17 @@ defer breakpoint
 ;
 
 \ todo: clean up prompt stuff \
-: simple-prompt s" >";
+defer prompt
+: simple-prompt s" > ";
 : format-prompt
-    prompt-display-data s" [ds:%d ts:%d fs:%d %s]> " format
-;
+    prompt-display-data s" [ds:%d ts:%d fs:%d %s]> "       format ;
 : format-debugger-prompt
-    prompt-display-data s" [ds:%d ts:%d fs:%d %s] DEBUG> " format
-;
+    prompt-display-data s" [ds:%d ts:%d fs:%d %s] DEBUG> " format ;
+' simple-prompt is prompt
 
-: bytes-used       here @ here0 - ;
+: bytes-used       here      @      here0   - ;
 : const-bytes-used consthere @ consthere0 @ - ;
-: data-bytes-used  datahere @ datahere0 @ - ;
+: data-bytes-used  datahere  @  datahere0 @ - ;
 
 : usage
     ."         space used: " bytes-used       . cr
@@ -950,10 +950,10 @@ defer breakpoint
     usage
 ;
 
-: r/o  s" r" ;
-: w/o  s" w" ;
-: r/w  s" r+" ;
-: a/o  s" a" ; \ append only
+: r/o  s" r" ;  \ read only
+: w/o  s" w" ;  \ write only
+: r/w  s" r+" ; \ read/write \ todo: rename to rw? or is this ans
+: a/o  s" a" ;  \ append only
 
 : with-output  ( fp xt -- ) output-stream @ >r  swap output-stream ! catch r> output-stream ! throw ;                 
 
@@ -991,8 +991,7 @@ defer breakpoint
     <stdin> input-stream !
     0 input-buffer @ c!  input-buffer @ input-buffer-pos !
     begin
-	/ format-prompt prompt-text ! refill
-    simple-prompt prompt-text ! refill
+	simple-prompt tell refill
     while
 	    begin ?eol not while ' interpret catch drop repeat
 	    cr

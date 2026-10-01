@@ -2,7 +2,11 @@
 WIP forth
 
 ### todo:
+- [ ] move prompt out of get_next_line
+- [ ] dependency graph
+    - [ ] generic graph
 - [ ] : help: word print-usage ;
+    - [ ] hash table
 - [ ] rename <stdin> to stdin etc
 - [ ] ans allot? 
 - [x] include stack

@@ -395,9 +395,14 @@
     DS_PUSH((cell)forth_dictionary_get_cfa(word));
 
 #define INTERPRET() \
+    /* c fallback repl prompt */ \
+    if(forth_io_input_is_stdin() && forth_io_is_eol()) forth_io_tell("c> "); \
     char* wordbuf = forth_io_get_next_word(); \
     if(!wordbuf) { \
+        /* eof on stdin: exit */ \
         if(forth_io_input_is_stdin()) return 1; \
+         /* bootstrap ended without quit: c fallback repl */ \
+        forth_io_set_input_stream(stdin); \
         NEXT(); \
     } \
     word_header_t* word = forth_dictionary_find_word(wordbuf); \

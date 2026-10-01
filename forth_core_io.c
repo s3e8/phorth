@@ -21,8 +21,6 @@ static int   current_input_buffer_size; /*todo: do we need? */
 static FILE* current_input_stream;
 static FILE* current_output_stream;
 
-static const char* prompt_text = "outer>";
-
 void forth_io_define_words(void) {
     forth_dictionary_defconst("<stdin>",               (cell)stdin); /* todo: rm brackets? */
     forth_dictionary_defconst("<stdout>",              (cell)stdout);
@@ -38,8 +36,6 @@ void forth_io_define_words(void) {
     forth_dictionary_defconst("input-buffer",          (cell)&current_input_buffer); 
     forth_dictionary_defconst("input-buffer-pos",      (cell)&current_input_buffer_position);
     forth_dictionary_defconst("input-buffer-size",     (cell)DEFAULT_INPUT_BUFFER_SIZE); /* todo: macro or var */
-
-    forth_dictionary_defconst("prompt-text",           (cell)&prompt_text);
 }
 
 void forth_io_set_input_stream(FILE* input_stream) {
@@ -100,7 +96,6 @@ int forth_io_is_eol(void) {
     read the next line of the current stream into the current buffer.
     returns NULL at EOF (buffer left empty). nesting is handled in forth. */
 char* forth_io_get_next_line(void) {
-    if(current_input_stream == stdin && prompt_text) fputs(prompt_text, current_output_stream);
     char* line = fgets(current_input_buffer, current_input_buffer_size, current_input_stream);
     if(!line) current_input_buffer[0] = '\0';
     current_input_buffer_position = current_input_buffer;
