@@ -927,10 +927,11 @@ defer breakpoint
     depth 3 - \ todo: this uses the c-defined, cells-based depth.. revisit? 
 ;
 
+\ todo: clean up prompt stuff \
+: simple-prompt s" >";
 : format-prompt
     prompt-display-data s" [ds:%d ts:%d fs:%d %s]> " format
 ;
-
 : format-debugger-prompt
     prompt-display-data s" [ds:%d ts:%d fs:%d %s] DEBUG> " format
 ;
@@ -990,7 +991,8 @@ defer breakpoint
     <stdin> input-stream !
     0 input-buffer @ c!  input-buffer @ input-buffer-pos !
     begin
-	format-prompt prompt-text ! refill
+	/ format-prompt prompt-text ! refill
+    simple-prompt prompt-text ! refill
     while
 	    begin ?eol not while ' interpret catch drop repeat
 	    cr
