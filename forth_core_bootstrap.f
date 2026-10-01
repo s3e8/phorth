@@ -946,7 +946,7 @@ defer prompt
     ."    data space used: " data-bytes-used  . cr
 ;
 : welcome
-    ." Hello" cr
+    ." ---------- Forth ----------" cr
     usage
 ;
 
@@ -1003,7 +1003,6 @@ defer prompt
 
 
 
-
 : redirect-input-buffer ( fp "rest of line" -- )
     output-stream @ >r  output-stream !
     begin ?eol not while interpret repeat
@@ -1013,8 +1012,8 @@ defer prompt
 : stderr<< ( "rest of line" -- )  <stderr> redirect-input-buffer ;
 : stdout<< ( "rest of line" -- )  <stdout> redirect-input-buffer ;
 
-welcome
-hide welcome
+\ welcome
+\ hide welcome
 
 
 include forth_lib_tty.f
