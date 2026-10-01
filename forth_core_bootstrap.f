@@ -991,7 +991,7 @@ defer prompt
     <stdin> input-stream !
     0 input-buffer @ c!  input-buffer @ input-buffer-pos !
     begin
-	simple-prompt tell refill
+	prompt tell refill
     while
 	    begin ?eol not while ' interpret catch drop repeat
 	    cr
