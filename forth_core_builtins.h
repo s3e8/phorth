@@ -355,7 +355,7 @@
     DS_PUSH(*address);     
 
 #define CFETCH() \
-    char *ptr = (unsigned char*)forth_vm_pop_ds(); \
+    unsigned char* ptr = (unsigned char*)forth_vm_pop_ds(); \
     DS_PUSH((cell)*ptr);   
 
 #define STORE() \

@@ -15,6 +15,7 @@
 : lit,     ( n -- )  ' lit , , ;
 : call,    ( xt -- ) ' call , , ;
 : end,     ( -- )    ' exit , ' eow , ;
+\ : here     ( -- )    dp @ ; \ todo: dp in defcode..
 : >mark    ( -- addr ) here @ 0 , ;              \ leave a hole (if, while)
 : >resolve ( addr -- ) dup here @ swap - swap ! ; \ fill the hole (then)
 : <resolve ( addr -- ) here @ - , ;               \ jump back (until, again)
@@ -36,13 +37,7 @@
 : else  immediate  branch, >mark swap >resolve ;
 : then  immediate >resolve ;
 
-
-
-: recurse immediate
-    ' call ,
-    latest @
-    >xt ,
-;
+: recurse immediate call, latest @ >xt , ;
 
 : begin immediate
     here @
