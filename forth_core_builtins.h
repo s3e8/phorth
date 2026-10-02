@@ -364,7 +364,8 @@
     *ptr = temp;
 
 #define CSTORE() \
-    char* ptr = (char*)forth_vm_pop_ds(); \
+    /* todo: proper typecast? */ \
+    unsigned char* ptr = (unsigned char*)forth_vm_pop_ds(); \
     temp = forth_vm_pop_ds(); \
     *ptr = (char)temp;  
 

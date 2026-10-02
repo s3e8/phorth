@@ -7,18 +7,18 @@
 : cell    inline cellsize   ;
 : cells   inline cellsize * ;
 : aligned cellsize 1- + cellsize 1- invert and ;
-: align   here @ aligned here  ! ;
-: (allot) here @ swap    here +! align ;
+: align   here aligned dp  ! ;
+: (allot) here swap    dp +! align ;
 
-:  branch,           '  branch , ;
-: 0branch,           ' 0branch , ;
-: lit,     ( n -- )  ' lit , , ;
-: call,    ( xt -- ) ' call , , ;
-: end,     ( -- )    ' exit , ' eow , ;
-\ : here     ( -- )    dp @ ; \ todo: dp in defcode..
-: >mark    ( -- addr ) here @ 0 , ;              \ leave a hole (if, while)
-: >resolve ( addr -- ) dup here @ swap - swap ! ; \ fill the hole (then)
-: <resolve ( addr -- ) here @ - , ;               \ jump back (until, again)
+:  branch,            '  branch , ;
+: 0branch,            ' 0branch , ;
+: lit,     ( n -- )   ' lit , , ;
+: call,    ( xt -- )  ' call , , ;
+: end,     ( -- )     ' exit , ' eow , ;
+: here     ( -- )      dp @ ;
+: >mark    ( -- addr ) here 0 , ;               \ leave a hole  (if, while)
+: >resolve ( addr -- ) dup here swap - swap ! ; \ fill the hole (then)
+: <resolve ( addr -- ) here - , ;               \ jump back     (until, again)
 
 : make-variable
     (allot) \ todo: fix allot / (allot) stuff
@@ -39,7 +39,7 @@
 
 : recurse immediate latest @ >xt call, ;
 
-: begin immediate here @ ;
+: begin immediate here ;
 : until immediate 0branch, <resolve ;
 : again immediate  branch, <resolve ;
 
@@ -117,15 +117,15 @@
 \ : fmax f2dup f> if fdrop else fnip then ;
 
 
-: constalign consthere @ aligned consthere ! ;
+: constalign consthere aligned constdp ! ;
 
-: c, here @ c! here @ 1+ here ! ;
-: const, consthere @ ! consthere @ cell+ consthere ! ;
-: constc, consthere @ c! consthere @ 1+ consthere ! ;
+: c, here c! here 1+ dp ! ;
+: const, consthere ! consthere cell+ constdp ! ;
+: constc, consthere c! consthere 1+ constdp ! ;
 
 : s" immediate
     state @ if            ( if compiling, emit a lit instruction with the starting pointer )
-	consthere @          ( save string starting pos )
+	consthere          ( save string starting pos )
 	begin
 	    key     ( startpos key )
 	    dup '"' <>  ( startpos key notadoublequote )
@@ -138,7 +138,7 @@
 	,              ( emit starting pos )
 	constalign
     else
-	consthere @
+	consthere
 	begin
 	    key
 	    dup '"' <>
@@ -148,7 +148,7 @@
 	repeat
 	drop
 	0 over c! drop
-	consthere @
+	consthere
     then
 ;
 
@@ -171,10 +171,10 @@
 : pick 1+ cellsize * dsp@ + @ ;
 
 : make-const-str ( str -- conststr )
-    dup consthere @
+    dup consthere
     strcpy drop
-    consthere @ swap
-    strlen 1+ consthere +!
+    consthere swap
+    strlen 1+ constdp +!
     constalign
 ;
 
@@ -223,7 +223,7 @@ variable latest-defined-vocab
 : vocabulary immediate
     word            ( vocabname )
     make-const-str  ( constvocabname )
-    consthere @     ( constvocabname vocabulary )
+    consthere     ( constvocabname vocabulary )
     2dup set-vocab-name   ( constvocabname vocabulary )
     nip                   ( vocabulary )
 
@@ -237,7 +237,7 @@ variable latest-defined-vocab
     over set-vocab-latest   ( vocabulary )  \ save latest
     dup latest-defined-vocab !  \ make it the last defined vocab
     dup current-vocab !         \ it also becomes the current vocab like with in:
-    vocab-useslist consthere !       \ advance consthere
+    vocab-useslist constdp !       \ advance constdp
 ;
 
 : use immediate
@@ -487,7 +487,7 @@ find-first-builtin
 : ?iscall ( dict-entry -- true/false )
     >cfa @ ' call = ;
 
-: copytohere ( addr -- addr+cellsize )
+: copytodp ( addr -- addr+cellsize )
     dup @ , cell+
 ;
 
@@ -497,11 +497,11 @@ find-first-builtin
     while
 	    dup @
 	    find-bytecode ?hasarg if
-		copytohere
+		copytodp
 	    then
-	    copytohere
+	    copytodp
     repeat
-    here @ cell- here !
+    here cell- dp !
     drop
 ;
 
@@ -614,10 +614,10 @@ defer quit
     ]
 ;
 
-hide copytohere
+hide copytodp
 \ hide perform-inline
 
-\ todo: why define here? ;
+\ todo: why define dp? ;
 : cell+ inline cellsize + ;
 : cell- inline cellsize - ;
 
@@ -703,19 +703,19 @@ hide copytohere
 
 : :noname
     0 (create)
-    here @
+    here
     ] 
 ;
 
 : ['] immediate [compile] ' ;
-: compile, ( xt -- )  dup here0 here @ within if ' call , then , ;
+: compile, ( xt -- )  dup dp0 here within if ' call , then , ;
 
 \ ans create / does>
 \ a created word's code:  lit <body>  exit  0  eow  | body...
 \ does> patches it to:     lit <body>  jump <does-code>  eow
 : create ( "name" -- )
     word (create)
-    ' lit ,  here @ 4 cells + ,      \ push body address (right after these 5 cells)
+    ' lit ,  here 4 cells + ,      \ push body address (right after these 5 cells)
     ' exit ,  0 ,                     \ slot does> will patch into  jump <xt>
     ' eow ,
 ;
@@ -724,7 +724,7 @@ hide copytohere
     ['] jump over !  cell+ ! 
 ;
 : does> immediate
-    ' lit ,  here @ 4 cells + ,       \ address of the code after this does>
+    ' lit ,  here 4 cells + ,       \ address of the code after this does>
     ['] (does>) compile,              \ colon words are compiled as  call <xt>
     ' exit ,
 ;
@@ -757,12 +757,12 @@ variable compiling-lambda
 : :lambda immediate
     state @ if     \ if compiling
 	' lit ,
-	datahere @ ,
-	here @     \ save old here ptr
-	datahere @ here !    \ save new here for compilation
+	datahere ,
+	here     \ save old dp ptr
+	datahere dp !    \ save new dp for compilation
     else
 	0 (create)
-	here @
+	here
 	1 compiling-lambda !
 	]
     then
@@ -772,8 +772,8 @@ variable compiling-lambda
     state @ if
 	' exit , ' eow ,
 	compiling-lambda @ 0= if
-	    here @ datahere !   \ advance consthere
-	    here !    \ restore old here pointer
+	    here datadp !   \ advance constdp
+	    dp !    \ restore old dp pointer
 	else
 	    [compile] [
 	then
@@ -789,23 +789,23 @@ variable compiling-lambda
     then
 
     dup ?builtin if
-	here @
+	here
 	' >t ,
 	over >cfa @ ,
 	' t> ,
 	' 1- ,
 	' dup , ' 0>branch ,
-	here @ - ,
+	here - ,
 	' drop ,
     else
-	here @
+	here
 	' >t ,
 	over >cfa
 	' call , ,
 	' t> ,
 	' 1- ,
 	' dup , ' 0>branch ,
-	here @ - ,
+	here - ,
 	' drop ,
     then
     drop
@@ -904,9 +904,9 @@ defer prompt
     prompt-display-data s" [ds:%d ts:%d fs:%d %s] DEBUG> " format ;
 ' simple-prompt is prompt
 
-: bytes-used       here      @      here0   - ;
-: const-bytes-used consthere @ consthere0 @ - ;
-: data-bytes-used  datahere  @  datahere0 @ - ;
+: bytes-used       dp      @      dp0   - ;
+: const-bytes-used consthere constdp0 @ - ;
+: data-bytes-used  datadp  @  datadp0 @ - ;
 
 : usage
     ."         space used: " bytes-used       . cr

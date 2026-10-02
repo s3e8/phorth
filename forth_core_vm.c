@@ -447,8 +447,8 @@ int forth_vm_run(void) {
         forth_dictionary_defconst("r0", (cell)&current_r0);
         forth_dictionary_defconst("f0", (cell)&current_f0);
         forth_dictionary_defconst("t0", (cell)&current_t0);
-        forth_dictionary_defconst("here",       (cell)&dictionary_pointer);
-        forth_dictionary_defconst("here0",      (cell)dictionary_base);
+        forth_dictionary_defconst("dp",       (cell)&dictionary_pointer);
+        forth_dictionary_defconst("here0",      (cell)dictionary_base); /* todo: proper name for dp-base? */
         forth_dictionary_defconst("consthere",  (cell)&string_space_pointer);
         forth_dictionary_defconst("consthere0", (cell)&string_space_base);
         forth_dictionary_defconst("datahere",   (cell)&scratch_buffer_pointer);
