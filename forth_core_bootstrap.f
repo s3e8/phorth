@@ -1,15 +1,3 @@
-: make-inline
-    latest @
-    dup    @ f_inline xor
-    swap !
-;
-: inline  immediate make-inline ;
-: cell    inline cellsize   ;
-: cells   inline cellsize * ;
-: aligned cellsize 1- + cellsize 1- invert and ;
-: align   here aligned dp  ! ;
-: (allot) here swap    dp +! align ;
-
 :  branch,            '  branch , ;
 : 0branch,            ' 0branch , ;
 : lit,     ( n -- )   ' lit , , ;
@@ -45,6 +33,27 @@
 
 : while  immediate 0branch, >mark ;
 : repeat immediate  branch, swap <resolve >resolve ;
+
+
+
+
+
+
+: make-inline
+    latest @
+    dup    @ f_inline xor
+    swap !
+;
+: inline  immediate make-inline ;
+: cell    inline cellsize   ;
+: cells   inline cellsize * ;
+: aligned cellsize 1- + cellsize 1- invert and ;
+: align   here aligned dp  ! ;
+: (allot) here swap    dp +! align ;
+
+
+
+
 
 \ todo: use >xt instead ;
 : [compile] immediate

@@ -364,10 +364,10 @@
     *ptr = temp;
 
 #define CSTORE() \
-    /* todo: proper typecast? */ \
+    /* todo: is this proper typecast? */ \
     unsigned char* ptr = (unsigned char*)forth_vm_pop_ds(); \
     temp = forth_vm_pop_ds(); \
-    *ptr = (char)temp;  
+    *ptr = (unsigned char)temp;  
 
 #define ADD() \
     temp = forth_vm_pop_ds(); \
