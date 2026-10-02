@@ -1,3 +1,6 @@
+\ : null-debugger-vector ;
+\ ' null-debugger-vector debugger-vector !
+
 :  branch,            '  branch , ;
 : 0branch,            ' 0branch , ;
 : lit,     ( n -- )   ' lit , , ;
@@ -7,19 +10,6 @@
 : >mark    ( -- addr ) here 0 , ;               \ leave a hole  (if, while)
 : >resolve ( addr -- ) dup here swap - swap ! ; \ fill the hole (then)
 : <resolve ( addr -- ) here - , ;               \ jump back     (until, again)
-
-: make-variable
-    (allot) \ todo: fix allot / (allot) stuff
-    word (create) make-inline
-    lit, end,
-;
-:   variable        cellsize    make-variable ;
-:  fvariable       floatsize    make-variable ;
-: v3variable 3     floatsize *  make-variable ;
-: m3variable 3 3 * floatsize *  make-variable ;
-
-\ : null-debugger-vector ;
-\ ' null-debugger-vector debugger-vector !
 
 : if    immediate 0branch, >mark ;
 : else  immediate  branch, >mark swap >resolve ;
@@ -51,6 +41,18 @@
 : align   here aligned dp  ! ;
 : (allot) here swap    dp +! align ;
 
+
+
+
+: make-variable
+    (allot) \ todo: fix allot / (allot) stuff
+    word (create) make-inline
+    lit, end,
+;
+:   variable        cellsize    make-variable ;
+:  fvariable       floatsize    make-variable ;
+: v3variable 3     floatsize *  make-variable ;
+: m3variable 3 3 * floatsize *  make-variable ;
 
 
 

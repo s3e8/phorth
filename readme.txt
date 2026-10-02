@@ -2,6 +2,7 @@
 WIP forth
 
 ### todo:
+- [ ] word dependency graph (DEFCODE macro? )
 - [ ] move prompt out of get_next_line
 - [ ] dependency graph
     - [ ] generic graph
