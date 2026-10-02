@@ -27,7 +27,7 @@ variable ptr
 variable src
 here tape ! 30000 allot
 
-: bf-reset-tape
+: bf-reset
     tape @ ptr !                \ pointer at tape cell 0
     tape @                      \ 
     begin                       \ walking address starts at cell 0
@@ -40,7 +40,6 @@ here tape ! 30000 allot
 
 : bf>  1 ptr +! ;               \ shorthand for : bf> ptr @ 1+ ptr ! ;
 : bf< -1 ptr +! ;               \ shorthand for : bf> ptr @ 1- ptr ! ;
-: bf< ptr @    1- ptr    ! ;
 : bf+ ptr @ c@ 1+ ptr @ c! ;
 : bf- ptr @ c@ 1- ptr @ c! ;
 : bf. ptr @ c@ emit ;
@@ -59,7 +58,7 @@ here tape ! 30000 allot
         ']' of  postpone repeat  endof
     endcase
 ;
-: bf-begin-compilation ( "name" -- ) word (create) ' bf-reset-tape call, ;
+: bf-begin-compilation ( "name" -- ) word (create) ' bf-reset call, ;
 
 \ : bf: ( "name" -- )
 \     bf-begin-compilation
@@ -74,15 +73,15 @@ here tape ! 30000 allot
 : bf: ( "name" -- )
     :
     postpone bf-reset
-    begin key dup ';' <> while bf-char repeat drop
+    begin key dup ';' <> while bf-interpret-char repeat drop
     postpone ;
 ;
 
-: bf-interpret-string ( str "name" -- ) bf-begin  ' bf-char for-each-char  end, ;
+: bf-interpret-string ( str "name" -- ) bf-begin-compilation  ' bf-interpret-char for-each-char  end, ;
 
 hide tape  
 hide ptr  
-hide bf-reset-tape  
+hide bf-reset  
 hide bf>  
 hide bf<  
 hide bf+  
