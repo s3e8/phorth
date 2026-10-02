@@ -24,7 +24,6 @@
 
 variable tape
 variable ptr
-variable src
 here tape ! 30000 allot
 
 : bf-reset
@@ -44,7 +43,7 @@ here tape ! 30000 allot
 : bf- ptr @ c@ 1- ptr @ c! ;
 : bf. ptr @ c@ emit ;
 : bf, key ptr @ c! ;
-: ptr=0? ptr @ c@ ;
+: bf@ ptr @ c@ ;
 
 : bf-interpret-char ( ch -- )       \ todo: rename to interpret-byte?
     case
@@ -54,7 +53,7 @@ here tape ! 30000 allot
         '-' of  postpone bf-  endof
         '.' of  postpone bf.  endof
         ',' of  postpone bf,  endof
-        '[' of  postpone begin  postpone ptr=0?  postpone while  endof
+        '[' of  postpone begin  postpone bf@  postpone while  endof
         ']' of  postpone repeat  endof
     endcase
 ;
@@ -88,6 +87,6 @@ hide bf+
 hide bf-
 hide bf.  
 hide bf,  
-hide ptr=0?
+hide bf@
 hide bf-interpret-char  
 hide bf-begin-compilation
