@@ -130,13 +130,13 @@
 
 : constalign consthere @ aligned consthere ! ;
 
-: c,           here c!      here    1+ dp ! ; \ todo: here vs dp seems funny
-: const,  consthere  ! consthere cell+ consthere @ ! ;
-: constc, consthere c! consthere    1+ consthere @ ! ;
+: c,           here   c!      here      1+        dp ! ; \ todo: here vs dp seems funny
+: const,  consthere @  ! consthere @ cell+ consthere ! ;
+: constc, consthere @ c! consthere @    1+ consthere ! ;
 
 : s" immediate
     state @ if            ( if compiling, emit a lit instruction with the starting pointer )
-	consthere             ( save string starting pos )
+	consthere @           ( save string starting pos )
 	begin
 	    key     ( startpos key )
 	    dup '"' <>  ( startpos key notadoublequote )
@@ -182,10 +182,10 @@
 : pick 1+ cellsize * dsp@ + @ ;
 
 : make-const-str ( str -- conststr )
-    dup consthere
+    dup consthere @
     strcpy drop
-    consthere swap
-    strlen 1+ consthere @ +!
+    consthere @ swap
+    strlen 1+ consthere +!
     constalign
 ;
 
@@ -719,7 +719,7 @@ hide copytodp
 ;
 
 : ['] immediate [compile] ' ;
-: compile, ( xt -- )  dup dp0 here within if ' call , then , ;
+: compile, ( xt -- )  dup here0 here within if ' call , then , ;
 
 \ ans create / does>
 \ a created word's code:  lit <body>  exit  0  eow  | body...
@@ -915,9 +915,9 @@ defer prompt
     prompt-display-data s" [ds:%d ts:%d fs:%d %s] DEBUG> " format ;
 ' simple-prompt is prompt
 
-: bytes-used       dp        @        dp0 - ;
-: const-bytes-used consthere @ consthere0 - ;
-: data-bytes-used   datahere @  datahere0 - ;
+: bytes-used       dp        @        here0 - ;
+: const-bytes-used consthere @ consthere0 @ - ;
+: data-bytes-used   datahere @  datahere0 @ - ;
 
 : usage
     ."         space used: " bytes-used       . cr
