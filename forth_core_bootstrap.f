@@ -741,7 +741,13 @@ hide copytodp
 ;
 
 : postpone immediate \ todo: move up in file?
-    word find dup ?immediate if
+    word find
+    ?dup 0=
+    if 
+        ." postpone: no such word" cr exit 
+    then
+    dup ?immediate 
+    if
         >xt compile,
     else
         >xt lit,  ' compile, call,
