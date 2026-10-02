@@ -37,38 +37,14 @@
 : else  immediate  branch, >mark swap >resolve ;
 : then  immediate >resolve ;
 
-: recurse immediate call, latest @ >xt , ;
+: recurse immediate latest @ >xt call, ;
 
-: begin immediate
-    here @
-;
+: begin immediate here @ ;
+: until immediate 0branch, <resolve ;
+: again immediate  branch, <resolve ;
 
-: until immediate
-    ' 0branch ,
-    here @ -
-    ,
-;
-
-: again immediate
-    ' branch ,
-    here @ -
-    ,
-;
-
-: while immediate
-    ' 0branch ,
-    here @
-    0 ,
-;
-
-: repeat immediate
-    ' branch ,
-    swap
-    here @ - ,
-    dup
-    here @ swap -
-    swap !
-;
+: while  immediate 0branch, >mark ;
+: repeat immediate  branch, swap <resolve >resolve ;
 
 \ todo: use >xt instead ;
 : [compile] immediate
