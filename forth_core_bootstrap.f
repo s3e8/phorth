@@ -8,12 +8,21 @@
 : cells   inline cellsize * ;
 : aligned cellsize 1- + cellsize 1- invert and ;
 : align   here @ aligned here  ! ;
-: (allot)   here @ swap    here +! align ;
+: (allot) here @ swap    here +! align ;
+
+:  branch,           '  branch , ;
+: 0branch,           ' 0branch , ;
+: lit,     ( n -- )  ' lit , , ;
+: call,    ( xt -- ) ' call , , ;
+: end,     ( -- )    ' exit , ' eow , ;
+: >mark    ( -- addr ) here @ 0 , ;              \ leave a hole (if, while)
+: >resolve ( addr -- ) dup here @ swap - swap ! ; \ fill the hole (then)
+: <resolve ( addr -- ) here @ - , ;               \ jump back (until, again)
 
 : make-variable
-    (allot)
+    (allot) \ todo: fix allot / (allot) stuff
     word (create) make-inline
-    ' lit , , ' exit , ' eow ,
+    lit, end,
 ;
 :   variable        cellsize    make-variable ;
 :  fvariable       floatsize    make-variable ;
@@ -23,25 +32,11 @@
 \ : null-debugger-vector ;
 \ ' null-debugger-vector debugger-vector !
 
-: if immediate
-    ' 0branch ,
-    here @ 0 ,
-;
+: if    immediate 0branch, >mark ;
+: else  immediate  branch, >mark swap >resolve ;
+: then  immediate >resolve ;
 
-: then immediate
-    dup
-    here @ swap -
-    swap !
-;
 
-: else immediate
-    ' branch ,
-    here @ 0 ,
-    swap
-    dup
-    here @ swap -
-    swap !
-;
 
 : recurse immediate
     ' call ,
@@ -988,6 +983,12 @@ defer prompt
 ;
 
 : include ( "name" -- )  word included ;
+
+
+\ include rest of core 
+include forth_core_vocabularies.f
+
+
 
 : final-quit
     <stdin> input-stream !
