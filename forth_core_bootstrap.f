@@ -126,15 +126,15 @@
 \ : fmax f2dup f> if fdrop else fnip then ;
 
 
-: constalign consthere aligned constdp ! ;
+: constalign consthere @ aligned consthere ! ;
 
-: c, here c! here 1+ dp ! ;
-: const, consthere ! consthere cell+ constdp ! ;
-: constc, consthere c! consthere 1+ constdp ! ;
+: c,           here c!      here    1+ dp ! ; \ todo: here vs dp seems funny
+: const,  consthere  ! consthere cell+ consthere @ ! ;
+: constc, consthere c! consthere    1+ consthere @ ! ;
 
 : s" immediate
     state @ if            ( if compiling, emit a lit instruction with the starting pointer )
-	consthere          ( save string starting pos )
+	consthere             ( save string starting pos )
 	begin
 	    key     ( startpos key )
 	    dup '"' <>  ( startpos key notadoublequote )
@@ -147,7 +147,7 @@
 	,              ( emit starting pos )
 	constalign
     else
-	consthere
+	consthere @
 	begin
 	    key
 	    dup '"' <>
@@ -157,7 +157,7 @@
 	repeat
 	drop
 	0 over c! drop
-	consthere
+	consthere @
     then
 ;
 
@@ -183,7 +183,7 @@
     dup consthere
     strcpy drop
     consthere swap
-    strlen 1+ constdp +!
+    strlen 1+ consthere @ +!
     constalign
 ;
 
@@ -232,7 +232,7 @@ variable latest-defined-vocab
 : vocabulary immediate
     word            ( vocabname )
     make-const-str  ( constvocabname )
-    consthere     ( constvocabname vocabulary )
+    consthere @     ( constvocabname vocabulary )
     2dup set-vocab-name   ( constvocabname vocabulary )
     nip                   ( vocabulary )
 
@@ -246,7 +246,7 @@ variable latest-defined-vocab
     over set-vocab-latest   ( vocabulary )  \ save latest
     dup latest-defined-vocab !  \ make it the last defined vocab
     dup current-vocab !         \ it also becomes the current vocab like with in:
-    vocab-useslist constdp !       \ advance constdp
+    vocab-useslist consthere !       \ advance consthere @
 ;
 
 : use immediate
@@ -764,11 +764,11 @@ variable compiling-lambda
 0 compiling-lambda !
 
 : :lambda immediate
-    state @ if     \ if compiling
+    state @ if       \ if compiling
 	' lit ,
-	datahere ,
-	here     \ save old dp ptr
-	datahere dp !    \ save new dp for compilation
+	datahere @ ,
+	here             \ save old dp ptr
+	datahere @ dp !    \ save new dp for compilation
     else
 	0 (create)
 	here
@@ -781,7 +781,7 @@ variable compiling-lambda
     state @ if
 	' exit , ' eow ,
 	compiling-lambda @ 0= if
-	    here datadp !   \ advance constdp
+	    here datahere !   \ advance consthere @
 	    dp !    \ restore old dp pointer
 	else
 	    [compile] [
@@ -913,9 +913,9 @@ defer prompt
     prompt-display-data s" [ds:%d ts:%d fs:%d %s] DEBUG> " format ;
 ' simple-prompt is prompt
 
-: bytes-used       dp      @      dp0   - ;
-: const-bytes-used consthere constdp0 @ - ;
-: data-bytes-used  datadp  @  datadp0 @ - ;
+: bytes-used       dp        @        dp0 - ;
+: const-bytes-used consthere @ consthere0 - ;
+: data-bytes-used   datahere @  datahere0 - ;
 
 : usage
     ."         space used: " bytes-used       . cr
