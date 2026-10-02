@@ -418,6 +418,8 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("refill", CODE(REFILL), 0);
         forth_dictionary_defcode("open-file", CODE(OPEN_FILE), 0);
         forth_dictionary_defcode("close-file", CODE(CLOSE_FILE), 0);
+        forth_dictionary_defcode("malloc", CODE(MALLOC), 0);
+        forth_dictionary_defcode("mfree", CODE(MFREE), 0);
         /* outer? */
         forth_dictionary_defcode("iword",   CODE(IWORD),    0);
         forth_dictionary_defcode("iexecute", CODE(IEXECUTE), 0);
@@ -746,6 +748,9 @@ int forth_vm_run(void) {
         XOR();
         NEXT();
     }
+
+    OP(MALLOC): { MALLOC(); NEXT(); }
+    OP(MFREE): { MFREE(); NEXT(); }
 
     OP(ROT): { ROT(); NEXT(); }
 

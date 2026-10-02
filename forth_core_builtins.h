@@ -355,7 +355,7 @@
     DS_PUSH(*address);     
 
 #define CFETCH() \
-    char *ptr = (char*)forth_vm_pop_ds(); \
+    char *ptr = (unsigned char*)forth_vm_pop_ds(); \
     DS_PUSH((cell)*ptr);   
 
 #define STORE() \
@@ -382,17 +382,24 @@
 
 #define MEMADD() \
     cell *addr = (cell*)forth_vm_pop_ds(); \
-    temp = forth_vm_pop_ds(); \
+    temp = DS_POP(); \
     *addr += temp;    
 
 #define TO_XT() \
-    word_header_t* word = (word_header_t*)forth_vm_pop_ds(); \
+    word_header_t* word = (word_header_t*)DS_POP(); \
     DS_PUSH((cell)forth_dictionary_get_xt(word));
 
 /* todo: to deprecate? */
 #define TO_CFA() \
-    word_header_t* word = (word_header_t*)forth_vm_pop_ds(); \
+    word_header_t* word = (word_header_t*)DS_POP(); \
     DS_PUSH((cell)forth_dictionary_get_cfa(word));
+
+#define MALLOC() \
+    temp = DS_POP(); \
+    DS_PUSH((cell)malloc((size_t)temp));
+
+#define MFREE() \
+    free((void*)DS_POP());
 
 #define INTERPRET() \
     /* c fallback repl prompt */ \

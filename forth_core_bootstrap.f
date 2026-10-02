@@ -1018,9 +1018,11 @@ defer prompt
 \ hide welcome
 
 
+include forth_lib_brainfuck.f
 include forth_lib_tty.f
 
 quit
 
 \ todo: add reset word to rebuild forth
 \ todo: add help word
+\ todo: lib vs ext
