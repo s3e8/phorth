@@ -739,6 +739,15 @@ hide copytodp
     ['] (does>) compile,              \ colon words are compiled as  call <xt>
     ' exit ,
 ;
+
+: postpone immediate \ todo: move up in file?
+    word find dup ?immediate if
+        >xt compile,
+    else
+        >xt lit,  ' compile, call,
+    then
+;
+
 \ ans allot
 : allot (allot) drop ;
 
@@ -1009,3 +1018,4 @@ quit
 \ todo: add reset word to rebuild forth
 \ todo: add help word
 \ todo: lib vs ext
+\ todo: (create) to create-header?
