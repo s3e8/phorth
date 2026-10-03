@@ -2,6 +2,8 @@
 WIP forth
 
 ### todo:
+- [ ] (create) to create-header
+    - [ ] create() in dictionary also becomes create_header()
 - [ ] word dependency graph (DEFCODE macro? )
 - [ ] move prompt out of get_next_line
 - [ ] dependency graph
