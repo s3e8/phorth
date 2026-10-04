@@ -54,15 +54,24 @@ void forth_io_set_input_buffers(char* linebuf, int size) {
     current_input_buffer_size     = size;
 }
 
+/* todo: do these need to be static? */
 FILE* forth_io_open_file(const char* filename, const char* mode) {
     FILE* fp = fopen(filename, mode);
     if(!fp) {
         fprintf(stderr, "Unable to open file: %s\n", filename);
         return NULL;
     }
-
     return fp;
 }
+
+
+// static void prim_read_file(void) {
+//     FILE*  fp   = (FILE*)forth_vm_pop_ds();
+//     cell   u    = forth_vm_pop_ds();
+//     char*  addr = (char*)forth_vm_pop_ds();
+//     size_t n    = fread(addr, 1, (size_t)u, fp);
+//     forth_vm_push_ds((cell)n);
+// }
 
 /* todo: cant include from a string.. */
 void forth_io_set_input_string(const char* input) {

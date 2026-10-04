@@ -12,7 +12,7 @@
 
 /* forth libraries */
 #define INCLUDE_LIB_SYS_TTY
-// #define INCLUDE_LIB_RAYLIB
+#define INCLUDE_LIB_RAYLIB
 
 /* forth config */
 #define DEFAULT_DICTIONARY_SIZE         10*1024*1024 /* 10mb */
@@ -143,6 +143,9 @@ extern void test_external(void);
     // extern void forth_lib_sys_tty_enable_raw_mode(void);
     // extern void forth_lib_sys_tty_disable_raw_mode(void);
     // extern void forth_lib_sys_tty_clear_screen(void);
+#endif
+#ifdef INCLUDE_LIB_RAYLIB
+    extern void forth_include_lib_raylib(void);
 #endif
 
 #endif /* FORTH_H */

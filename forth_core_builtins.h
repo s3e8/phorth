@@ -85,6 +85,14 @@
 #define OPEN_FILE()  { const char* mode = (const char*)DS_POP(); DS_AT(0) = (cell)forth_io_open_file((const char*)DS_AT(0), mode); }
 #define CLOSE_FILE()    fclose((FILE*)DS_POP()); /* todo: create io builtin */
 
+#define READ_FILE() { \
+    FILE* fp = (FILE*)DS_POP(); \
+    cell u = DS_POP(); \
+    char* addr = (char*)forth_vm_pop_ds(); \
+    size_t n = fread(addr, 1, (size_t)u, fp); \
+    DS_PUSH((cell)n); \
+}
+
 
 /* todo: is push_ns the right name for it? */
 #define EXEC_BUILTIN() \

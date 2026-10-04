@@ -66,7 +66,7 @@
 \ And some words mentioned may not be used at all. I will keep track of anything 
 \ that doesnt appear in the above table here (in no particular order):
 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-\ 2DROP         NIP             -ROT
+\ 2DROP         NIP             -ROT                .#S
 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 \ todo: add examples and definitions from the book?

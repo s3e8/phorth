@@ -2,6 +2,9 @@
 WIP forth
 
 ### todo:
+- [ ] count and type words
+- [ ] debugger.. push graph nodes whether int or ptr etc
+- [ ] unhide bf internals, just use vocab
 - [ ] (create) to create-header
     - [ ] create() in dictionary also becomes create_header()
 - [ ] word dependency graph (DEFCODE macro? )

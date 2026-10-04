@@ -105,6 +105,9 @@ int main(void) {
     #ifdef INCLUDE_LIB_SYS_TTY
         forth_include_lib_sys_tty();
     #endif
+    #ifdef INCLUDE_LIB_RAYLIB
+        forth_include_lib_raylib();
+    #endif
     forth_vm_run();
 
     /* todo: is atexit just a unix thing? */

@@ -1,5 +1,8 @@
 \ forth_lib_brainfuck.f
 
+vocabulary brainfuck
+definitions
+
 \ todo: make helpers global?
 : '+' 43 ;
 : ',' 44 ;
@@ -45,7 +48,7 @@ here tape ! 30000 allot
 : bf, key ptr @ c! ;
 : bf@ ptr @ c@ ;
 
-: bf-interpret-char ( ch -- )       \ todo: rename to interpret-byte?
+: bf-interpret-and-compile-char ( ch -- )       \ todo: rename to interpret-byte?
     case
         '>' of  postpone bf>  endof
         '<' of  postpone bf<  endof
@@ -64,7 +67,7 @@ here tape ! 30000 allot
 \     begin
 \         key dup ';' <> 
 \     while 
-\         bf-interpret-char 
+\         bf-interpret-and-compile-char 
 \     repeat 
 \     drop
 \     end,
@@ -72,21 +75,24 @@ here tape ! 30000 allot
 : bf: ( "name" -- )
     :
     postpone bf-reset
-    begin key dup ';' <> while bf-interpret-char repeat drop
+    begin key dup ';' <> while bf-interpret-and-compile-char repeat drop
     postpone ;
 ;
 
-: bf-interpret-string ( str "name" -- ) bf-begin-compilation  ' bf-interpret-char for-each-char  end, ;
+: bf-interpret-string ( str "name" -- ) bf-begin-compilation  ' bf-interpret-and-compile-char for-each-char  end, ;
 
-hide tape  
-hide ptr  
-hide bf-reset  
-hide bf>  
-hide bf<  
-hide bf+  
-hide bf-
-hide bf.  
-hide bf,  
-hide bf@
-hide bf-interpret-char  
-hide bf-begin-compilation
+\ todo: not needed for definitions right? 
+\ hide tape  
+\ hide ptr  
+\ hide bf-reset  
+\ hide bf>  
+\ hide bf<  
+\ hide bf+  
+\ hide bf-
+\ hide bf.  
+\ hide bf,  
+\ hide bf@
+\ hide bf-interpret-and-compile-char  
+\ hide bf-begin-compilation
+
+in: forth

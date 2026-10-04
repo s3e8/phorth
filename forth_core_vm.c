@@ -340,6 +340,8 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("xor",     CODE(XOR),          0);
         forth_dictionary_defcode("and",     CODE(AND),          0);
         forth_dictionary_defcode("or",      CODE(OR), 0);
+        // DEFCODE("lshift");
+        // DEFCODE("rshift");
         forth_dictionary_defcode("1-",      CODE(SUB1),         0);
         forth_dictionary_defcode("1+",      CODE(ADD1),         0);
         forth_dictionary_defcode("invert",  CODE(INVERT),       0);
@@ -418,6 +420,7 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("refill", CODE(REFILL), 0);
         forth_dictionary_defcode("open-file", CODE(OPEN_FILE), 0);
         forth_dictionary_defcode("close-file", CODE(CLOSE_FILE), 0);
+        forth_dictionary_defcode("read-file", CODE(READ_FILE), 0);
         forth_dictionary_defcode("malloc", CODE(MALLOC), 0);
         forth_dictionary_defcode("mfree", CODE(MFREE), 0);
         /* outer? */
@@ -594,7 +597,7 @@ int forth_vm_run(void) {
     OP(REFILL): { REFILL(); NEXT(); }
     OP(OPEN_FILE): { OPEN_FILE(); NEXT(); } /* todo: error in c or f? */
     OP(CLOSE_FILE): { CLOSE_FILE(); NEXT(); }
-
+    OP(READ_FILE): { READ_FILE(); NEXT(); }
 
     /* forth vm words */
     OP(NOOP): { NEXT(); }

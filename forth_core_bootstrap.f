@@ -555,14 +555,15 @@ find-first-builtin
 	else
 	    fnumber
 	    if
-		state @ if
-		    ' flit ,
-		    f,
-		then
-	    else
-		." Error: In INTERPRET: No such word. (todo: print word)" cr
+            state @ 
+            if
+                ' flit ,
+                f,
+		    then
+	        else
+                ." Error[INTERPRET] No such word: " cr
+	        then
 	    then
-	then
     then
 ;
 
@@ -1015,9 +1016,10 @@ include forth_core_vocabularies.f
 \ welcome
 \ hide welcome
 
-
-include forth_lib_brainfuck.f
 include forth_lib_tty.f
+include .user/forth_lib_emulator_chip8.f
+include .user/forth_lib_emulator_chip8_raylib.f
+include forth_lib_brainfuck.f
 
 quit
 

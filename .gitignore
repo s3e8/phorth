@@ -1,3 +1,9 @@
+.user/
+.temp/
+.sandbox/
+
 forth
 forth.exe
-log.txt
+
+*.txt
+!readme.txt
