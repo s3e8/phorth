@@ -1,6 +1,8 @@
 \ : null-debugger-vector ;
 \ ' null-debugger-vector debugger-vector !
 
+: bit? ( n bit -- flag )  and 0<> ; \ todo: where to put.. && use in emulator
+
 :  branch,            '  branch , ;
 : 0branch,            ' 0branch , ;
 : lit,     ( n -- )   ' lit , , ;
@@ -519,6 +521,7 @@ find-first-builtin
 \ todo: formatting
 : interpret
     iword
+    \ dup ." interpretting: " tell cr
     dup 0= if
 	drop exit
     then
@@ -561,7 +564,8 @@ find-first-builtin
                 f,
 		    then
 	        else
-                ." Error[INTERPRET] No such word: " cr
+                ." Error[INTERPRET] No such word: " cr 
+                \ die
 	        then
 	    then
     then
@@ -949,6 +953,7 @@ defer prompt
 : w/o  s" w" ;  \ write only
 : r/w  s" r+" ; \ read/write \ todo: rename to rw? or is this ans
 : a/o  s" a" ;  \ append only
+\ : r/b  s" rb" ; \ read bytes \ todo: rb or r/b
 
 : with-output  ( fp xt -- ) output-stream @ >r  swap output-stream ! catch r> output-stream ! throw ;                 
 
@@ -984,7 +989,7 @@ defer prompt
 
 
 \ include rest of core 
-include forth_core_vocabularies.f
+\ include forth_core_vocabularies.f
 
 
 

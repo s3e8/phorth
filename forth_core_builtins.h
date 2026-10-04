@@ -86,13 +86,24 @@
 #define CLOSE_FILE()    fclose((FILE*)DS_POP()); /* todo: create io builtin */
 
 #define READ_FILE() { \
-    FILE* fp = (FILE*)DS_POP(); \
-    cell u = DS_POP(); \
-    char* addr = (char*)forth_vm_pop_ds(); \
-    size_t n = fread(addr, 1, (size_t)u, fp); \
-    DS_PUSH((cell)n); \
+    FILE*  fp            = (FILE*)DS_POP(); \
+    cell   bytes_to_read = DS_POP(); \
+    char*  dest          = (char*)DS_POP(); \
+    size_t bytes_read    = fread(dest, 1, (size_t)bytes_to_read, fp); \
+    DS_PUSH((cell)bytes_read); \
 }
 
+#define LSHIFT() { \
+    cell n = DS_POP(); \
+    cell x = DS_POP(); \
+    DS_PUSH(x << n); \
+}
+
+#define RSHIFT() { \
+    cell n = DS_POP(); \
+    cell x = DS_POP(); \
+    DS_PUSH((cell)((ucell)x >> n));  /* logical, unsigned shift, not arithmatic */ \
+}
 
 /* todo: is push_ns the right name for it? */
 #define EXEC_BUILTIN() \

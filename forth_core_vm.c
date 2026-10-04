@@ -340,8 +340,8 @@ int forth_vm_run(void) {
         forth_dictionary_defcode("xor",     CODE(XOR),          0);
         forth_dictionary_defcode("and",     CODE(AND),          0);
         forth_dictionary_defcode("or",      CODE(OR), 0);
-        // DEFCODE("lshift");
-        // DEFCODE("rshift");
+        forth_dictionary_defcode("lshift", CODE(LSHIFT), 0);
+        forth_dictionary_defcode("rshift", CODE(RSHIFT), 0);
         forth_dictionary_defcode("1-",      CODE(SUB1),         0);
         forth_dictionary_defcode("1+",      CODE(ADD1),         0);
         forth_dictionary_defcode("invert",  CODE(INVERT),       0);
@@ -559,6 +559,8 @@ int forth_vm_run(void) {
     /* todo: rename to wordname? */
     OP(TO_NAME): { TO_NAME(); NEXT(); }
     OP(OR): { OR(); NEXT(); }
+    OP(LSHIFT): { LSHIFT(); NEXT(); }
+    OP(RSHIFT): { RSHIFT(); NEXT(); }
     OP(COLON): { COLON(); NEXT(); }
     OP(KEY): { KEY(); NEXT(); }
     OP(SKIP_PARENS): { SKIP_PARENS(); NEXT(); }
