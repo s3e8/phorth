@@ -2,6 +2,8 @@
 WIP forth
 
 ### todo:
+- [ ] skip-this-file: 0
+- [ ] rewrite defer with noop
 - [ ] count and type words
 - [ ] debugger.. push graph nodes whether int or ptr etc
 - [ ] unhide bf internals, just use vocab

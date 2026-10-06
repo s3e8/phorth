@@ -15,7 +15,7 @@
 
 \ The words required from this version of forth (FORTH-83)
 \ for this particular system are the following:
-\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+\ \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 \ Nucleus Layer
 \ !             2+              CMOVE>              MOD
 \ #             2-              COUNT               NEGATE
@@ -32,25 +32,25 @@
 \ 1+            C@              MAX                 UM*
 \ 1-            CMOVE           MIN                 UM/MOD
 \                                                   XOR
-\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+\ \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 \ Device Layer
 \ BLOCK         KEY
 \ BUFFER        SAVE-BUFFERS
 \ CR            SPACES
 \ EXPECT        TYPE
 \ FLUSH         UPDATE
-\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+\ \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 \ Interpreter Layer
-\ @             <@              FIND                PAD
-\ @>            >BODY           FORGET              QUIT
-\ @S            >IN             FORTH               SIGN
-\ @TIB          ABORT           FORTH-83            SPAN
+\ #             <#              FIND                PAD
+\ #>            >BODY           FORGET              QUIT
+\ #S            >IN             FORTH               SIGN
+\ #TIB          ABORT           FORTH-83            SPAN
 \ ,             BASE            HERE                TIB
 \ (             BLK             HOLD                U-
 \ -TRAILING     CONVERT         LOAD                WORD
 \ .             DECIMAL
 \ .(            DEFINITIONS
-\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+\ \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 \ Compiler Layer
 \ +LOOP         ,               ."                  :
 \ ;             DO              LOOP                VOCABULARY
@@ -60,23 +60,98 @@
 \ COMPILE       IMMEDIATE       UNTIL               [COMPILE]
 \ CONSTANT      LEAVE           VARIABLE            ]
 \ CREATE        LITERAL
-\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+\ \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 \ Here, the book is not completely exhaustive in all the words used throughout.
 \ And some words mentioned may not be used at all. I will keep track of anything 
 \ that doesnt appear in the above table here (in no particular order):
-\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+\ \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 \ 2DROP         NIP             -ROT                .#S
-\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+\ \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+: .#s  1+ 1 do i . loop ;
 
 \ todo: add examples and definitions from the book?
 
 vocabulary expert-system
 definitions
 
+: !+ +! ;
+\ ------------------------------------
+\ LISP LIST-BUILDING WORDS IN FORTH-83
+
+variable nil    nil nil !
+
+( #items -> ) \ #items = maximum number of items in this list
+: newlist create here 2+ , nil , 2* allot ; \ todo: make sure this allot doesnt leave anything on the stack
+                                            \ todo: make list pointer not require max-list-size allotment 
+
+( @LIST -> @FiRST) \ @FIRST IS A POINTER TO FIRST ITEM OF LIST
+: first ( list -- item )
+  @ ;
+
+( @LIST | NIL -> FLAG) \ FLAG = TRUE IF LIST IS EMPTY
+: null? ( list -- flag ) \ this was originally named 'null' in the book. I wanted it to be more explicit 
+  @ nil = ;
+
+( @LIST -> @TAIL) \ @TAIL IS A POINTER TO THE TAIL OF THE LIST
+: tail ( list -- tail )
+  dup null? if @ else 2- then ;
+
+( I -> ) \ SET LIST TO NIL (EMPTY LIST) \ todo: idky this is "I" ;
+: empty dup 2+ dup rot ! nil swap ! ;
+
+( I @LIST -> ) \ SETS LIST-ID TO POINT TO @LIST
+: set  dup nil = if drop empty else swap ! then ;
+
+( @ITEM I -> ) \ ADDS @ITEM TO THE LIST-ID I
+: cons 2 over !+ @ ! ;
+
+\ recursion word -- \ todo: rename
+: recurse  immediate latest @ name> , ; \ latest is originally called "last"
 
 
 
+( nil s1 s2 s3 ... sn i -> ) \ builds list at i 
+: list >r 
+    begin  dupnull not
+    while  r@  cons 
+    repeat r> 2drop
+;
+
+( @list i -> ) \ recursive word for 2append
+: 2append 
+    over null? 
+    if 2drop
+    else over tail over recurse 
+        swap first swap cons
+    then 
+;
+
+( @ -> flag ) \ flag = true if @ is pfa of variable 
+: atom? body> @ ['] nil @ = ;
+
+( @list -> )
+: printl 
+    cr ." ("
+    begin dup first dup atom?
+        if dup null? not
+            if body> >name .id else drop then 
+        else recurse
+        then tail dup null?
+    until 8 ( backspace) emit ." ) " drop 
+;
+
+( @list -> )
+: print 
+    dup @ null?
+    if drop cr ." nil"
+    else dup atom? 
+        if body> >name .id 
+        else printl 
+        then
+    then
+;
 
 in: forth
 

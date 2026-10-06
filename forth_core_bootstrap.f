@@ -129,6 +129,9 @@
 \ : fmin f2dup f< if fdrop else fnip then ;
 \ : fmax f2dup f> if fdrop else fnip then ;
 
+: 2+ ( n -- n ) 2 + ;
+: 2- ( n -- n ) 2 - ;
+: 2* ( n -- n ) 2 * ;
 
 : constalign consthere @ aligned consthere ! ;
 
@@ -521,7 +524,7 @@ find-first-builtin
 \ todo: formatting
 : interpret
     iword
-    \ dup ." interpretting: " tell cr
+    dup ." interpretting: " tell cr
     dup 0= if
 	drop exit
     then
@@ -565,7 +568,7 @@ find-first-builtin
 		    then
 	        else
                 ." Error[INTERPRET] No such word: " cr 
-                \ die
+                die
 	        then
 	    then
     then
@@ -1021,10 +1024,8 @@ defer prompt
 \ welcome
 \ hide welcome
 
-include forth_lib_tty.f
-include .user/forth_lib_emulator_chip8.f
-include .user/forth_lib_emulator_chip8_raylib.f
-include forth_lib_brainfuck.f
+include ./forth_lib.f
+include ./.user/forth_lib_user.f
 
 quit
 
