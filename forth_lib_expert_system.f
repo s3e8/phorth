@@ -24,7 +24,7 @@
 \ +             =               DEPTH               OVER
 \ +!            >               DNEGATE             PICK
 \ -             >R              DROP                R>
-\ /             ?DUP            DEXECUTE            R@
+\ /             ?DUP            DEXECUTE            R@      \ cant actually find "dexecute" anywhere.. misprint?  
 \ /MOD          @               EXIT                ROLL
 \ 0<            ABS             FILL                ROT
 \ 0=            AND             I                   SWAP
@@ -70,51 +70,66 @@
 \ \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 : .#s  1+ 1 do i . loop ;
+: name> >xt ;
 
 \ todo: add examples and definitions from the book?
 
 vocabulary expert-system
 definitions
 
-: !+ +! ;
-\ ------------------------------------
-\ LISP LIST-BUILDING WORDS IN FORTH-83
+\ making my vars value after header/body
+: make-variable ( size -- )
+    word (create) make-inline
+    ' lit , here 3 cells + , end,    \ lit <body> exit eow | body
+    allot ;
 
-variable nil    nil nil !
+: variable make-variable ;
 
-( #items -> ) \ #items = maximum number of items in this list
-: newlist create here 2+ , nil , 2* allot ; \ todo: make sure this allot doesnt leave anything on the stack
-                                            \ todo: make list pointer not require max-list-size allotment 
+\ \ ------------------------------------
+\ \ LISP LIST-BUILDING WORDS IN FORTH-83
 
-( @LIST -> @FiRST) \ @FIRST IS A POINTER TO FIRST ITEM OF LIST
-: first ( list -- item )
-  @ ;
+\ variable nil    nil nil !
 
-( @LIST | NIL -> FLAG) \ FLAG = TRUE IF LIST IS EMPTY
-: null? ( list -- flag ) \ this was originally named 'null' in the book. I wanted it to be more explicit 
-  @ nil = ;
+\ ( #items -> ) \ #items = maximum number of items in this list
+\ : newlist create here 2+ , nil , 2* allot ; \ todo: make sure this allot doesnt leave anything on the stack
+\                                             \ todo: make list pointer not require max-list-size allotment 
 
-( @LIST -> @TAIL) \ @TAIL IS A POINTER TO THE TAIL OF THE LIST
-: tail ( list -- tail )
-  dup null? if @ else 2- then ;
+\ ( @LIST -> @FiRST) \ @FIRST IS A POINTER TO FIRST ITEM OF LIST
+\ : first ( list -- item )
+\   @ ;
 
-( I -> ) \ SET LIST TO NIL (EMPTY LIST) \ todo: idky this is "I" ;
-: empty dup 2+ dup rot ! nil swap ! ;
+\ ( @LIST | NIL -> FLAG) \ FLAG = TRUE IF LIST IS EMPTY
+\ : null? ( list -- flag ) \ this was originally named 'null' in the book. I wanted it to be more explicit 
+\   @ nil = ;
 
-( I @LIST -> ) \ SETS LIST-ID TO POINT TO @LIST
-: set  dup nil = if drop empty else swap ! then ;
+\ ( @LIST -> @TAIL) \ @TAIL IS A POINTER TO THE TAIL OF THE LIST
+\ : tail ( list -- tail )
+\   dup null? if @ else 2- then ;
 
-( @ITEM I -> ) \ ADDS @ITEM TO THE LIST-ID I
-: cons 2 over !+ @ ! ;
+\ ( I -> ) \ SET LIST TO NIL (EMPTY LIST) \ todo: idky this is "I" ;
+\ : empty dup 2+ dup rot ! nil swap ! ;
 
-\ recursion word -- \ todo: rename
-: recurse  immediate latest @ name> , ; \ latest is originally called "last"
+\ ( I @LIST -> ) \ SETS LIST-ID TO POINT TO @LIST
+\ : set  dup nil = if drop empty else swap ! then ;
+
+\ ( @ITEM I -> ) \ ADDS @ITEM TO THE LIST-ID I
+\ : cons 2 over +! @ ! ;
+
+\ \ RECURSE -- commented out as we already have it in our code..
+\ \ \ recursion word -- \ todo: rename
+\ \ : recurse  immediate latest @ name> , ; \ latest is originally called "last"
+
+create nil here ,
+: first  ( list -- s )     @ ;
+: tail   ( list -- list )  cell+ @ ;
+: null   ( list -- f )     nil = ;
+
 
 
 
 ( nil s1 s2 s3 ... sn i -> ) \ builds list at i 
 : list >r 
-    begin  dupnull not
+    begin  dup null? not
     while  r@  cons 
     repeat r> 2drop
 ;
