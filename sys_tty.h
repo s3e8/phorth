@@ -2,6 +2,8 @@
 #ifndef SYS_TTY_H
 #define SYS_TTY_H
 
+/* rename tty to io? */
+
 extern void sys_hello(void);
 extern void sys_tty_enable_raw_mode(void);
 extern void sys_tty_disable_raw_mode(void);

@@ -21,7 +21,7 @@ static int   current_input_buffer_size; /*todo: do we need? */
 static FILE* current_input_stream;
 static FILE* current_output_stream;
 
-void forth_io_define_words(void) {
+void forth_io_define_constants(void) {
     forth_dictionary_defconst("<stdin>",               (cell)stdin); /* todo: rm brackets? */
     forth_dictionary_defconst("<stdout>",              (cell)stdout);
     forth_dictionary_defconst("<stderr>",              (cell)stderr);

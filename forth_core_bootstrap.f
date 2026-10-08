@@ -524,7 +524,7 @@ find-first-builtin
 \ todo: formatting
 : interpret
     iword
-    dup ." interpretting: " tell cr
+    \ dup ." interpretting: " tell cr
     dup 0= if
 	drop exit
     then
@@ -568,7 +568,7 @@ find-first-builtin
 		    then
 	        else
                 ." Error[INTERPRET] No such word: " cr 
-                die
+                \ die
 	        then
 	    then
     then
